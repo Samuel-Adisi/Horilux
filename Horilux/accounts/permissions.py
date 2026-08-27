@@ -62,7 +62,7 @@ def has_permission(user, action: str, resource: str, obj=None) -> bool:
             return True
 
     if "team" in scopes:
-        agent = getattr(obj, "agent", None) or getattr(obj, "assigned_agent", None)
+        agent = getattr(obj, "agent", None) or getattr(obj, "assigned_agent", None) or getattr(obj, "created_by", None)
         if agent and agent.department_id == user.department_id:
             return True
 
