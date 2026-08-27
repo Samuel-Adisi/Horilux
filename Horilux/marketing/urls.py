@@ -1,10 +1,12 @@
 from django.urls import path
 from rest_framework.routers import DefaultRouter
 
+from .views import MarketingCampaignViewSet, CampaignPerformanceViewSet
+
 app_name = "marketing"
 
 router = DefaultRouter()
-# TODO: register ViewSets here as they're built, e.g.:
-# router.register(r"properties", PropertyViewSet, basename="property")
+router.register(r"campaigns", MarketingCampaignViewSet, basename="campaign")
+router.register(r"campaign-performance", CampaignPerformanceViewSet, basename="campaign-performance")
 
 urlpatterns = router.urls

@@ -22,6 +22,7 @@ RBAC_MATRIX = {
         "lead": {"view", "export"},
         "client": {"view", "export"},
         "viewing": {"view", "export"},
+        "followup": {"view", "export"},
         "transaction": {"view", "approve", "export"},
         "payment_commission": {"view", "export"},
         "marketing_campaign": {"view", "export"},
@@ -39,7 +40,8 @@ RBAC_MATRIX = {
         "lead": {"view", "create", "edit", "assign"},
         "client": {"view", "create", "edit"},
         "viewing": {"view", "create", "edit"},
-        "transaction": {"create"},
+        "followup": {"view", "create", "edit"},
+        "transaction": {"view", "create", "edit"},
         "report": {"view"},
     },
     "Marketing": {
@@ -59,6 +61,7 @@ RBAC_MATRIX = {
         "lead": {"view"},
         "client": {"view"},
         "viewing": {"view", "edit"},
+        "followup": {"view", "edit"},
         "transaction": {"view"},
         "marketing_campaign": {"view"},
         "user_management": {"view", "create", "edit"},  # staff records only

@@ -43,24 +43,30 @@ class ViewingViewSet(viewsets.ModelViewSet):
         outcome = request.data.get("outcome")
         next_action = request.data.get("next_action", "")
 
+        follow_up_due_date = request.data.get("follow_up_due_date")
+
         if viewing.status not in [Viewing.Status.SCHEDULED, Viewing.Status.CONFIRMED]:
             raise ValidationError(f"Cannot complete a viewing in status '{viewing.status}'.")
         if outcome not in dict(Viewing.Outcome.choices):
             raise ValidationError("outcome must be one of: hot, warm, cold.")
+        if outcome in (Viewing.Outcome.WARM, Viewing.Outcome.COLD) and not follow_up_due_date:
+            raise ValidationError(
+                "follow_up_due_date is required when outcome is 'warm' or 'cold'."
+            )
 
         viewing.status = Viewing.Status.COMPLETED
         viewing.outcome = outcome
         viewing.next_action = next_action
         viewing.save(update_fields=["status", "outcome", "next_action"])
 
-        # Auto-create a follow-up per spec §8/§9: every completed viewing needs a next action.
-        FollowUp.objects.create(
-            viewing=viewing,
-            client=viewing.client,
-            due_date=request.data.get("follow_up_due_date"),
-            notes=next_action,
-            responsible_agent=viewing.agent,
-        ) if request.data.get("follow_up_due_date") else None
+        if follow_up_due_date:
+            FollowUp.objects.create(
+                viewing=viewing,
+                client=viewing.client,
+                due_date=follow_up_due_date,
+                notes=next_action,
+                responsible_agent=viewing.agent,
+            )
 
         return Response(ViewingSerializer(viewing).data)
 
@@ -79,7 +85,12 @@ class ViewingViewSet(viewsets.ModelViewSet):
 class FollowUpViewSet(viewsets.ModelViewSet):
     serializer_class = FollowUpSerializer
     permission_classes = [RBACPermission]
-    rbac_resource = "viewing"  # follow-ups share the viewing resource's permission scope
+    rbac_resource = "followup"
+    rbac_action_map = {
+        "list": "view", "retrieve": "view", "create": "create",
+        "update": "edit", "partial_update": "edit", "destroy": "delete",
+        "mark_complete": "edit",
+    }
 
     def get_queryset(self):
         return filter_queryset_for_user(

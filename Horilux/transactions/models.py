@@ -1,8 +1,10 @@
 import uuid
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db import models
 from properties.models import Property, PropertyOwner
 from crm.models import Client
+from accounts.models import Role
 
 
 class Transaction(models.Model):
@@ -45,6 +47,43 @@ class Payment(models.Model):
     status = models.CharField(max_length=10, choices=Status.choices, default=Status.PENDING)
     method = models.CharField(max_length=50, blank=True)
     reference = models.CharField(max_length=100, blank=True)
+
+
+class CommissionRule(models.Model):
+    """
+    Per-role commission split. `role=None` is the fallback/default rule used
+    when the closing agent's role has no specific rule defined.
+
+    Editable data, not code -- mirrors how RBAC permissions are seeded/managed,
+    so the split can change without a redeploy. `agent_split_percent` is the
+    agent's share of the transaction's total commission; company keeps the rest.
+    """
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    role = models.OneToOneField(
+        Role, on_delete=models.CASCADE, related_name="commission_rule",
+        null=True, blank=True,
+        help_text="Leave blank for the default/fallback rule.",
+    )
+    agent_split_percent = models.DecimalField(max_digits=5, decimal_places=2)
+    active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                check=models.Q(agent_split_percent__gte=0) & models.Q(agent_split_percent__lte=100),
+                name="commission_rule_split_between_0_and_100",
+            ),
+        ]
+
+    def clean(self):
+        if not (0 <= self.agent_split_percent <= 100):
+            raise ValidationError("agent_split_percent must be between 0 and 100.")
+
+    def __str__(self):
+        label = self.role.name if self.role else "Default"
+        return f"{label}: {self.agent_split_percent}% agent"
 
 
 class Commission(models.Model):
