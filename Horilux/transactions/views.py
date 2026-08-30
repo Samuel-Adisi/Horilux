@@ -78,10 +78,18 @@ class TransactionViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=["post"])
     def record_payment(self, request, pk=None):
         """Log a payment against this transaction and keep received/outstanding totals in sync."""
+        from decimal import Decimal, InvalidOperation
+
         txn = self.get_object()
-        amount = request.data.get("amount")
-        if not amount:
+        raw_amount = request.data.get("amount")
+        if not raw_amount:
             raise ValidationError("amount is required.")
+        try:
+            amount = Decimal(str(raw_amount))
+        except InvalidOperation:
+            raise ValidationError("amount must be a valid decimal number.")
+        if amount <= 0:
+            raise ValidationError("amount must be greater than zero.")
 
         payment = Payment.objects.create(
             transaction=txn,

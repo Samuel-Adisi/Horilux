@@ -28,7 +28,11 @@ class LeadViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         # Website enquiries and manual entries both land here; default status is 'new'.
-        serializer.save(status=Lead.Status.NEW)
+        # Default assigned_agent to the creating Sales user if not explicitly set --
+        # otherwise a newly created lead is invisible to its own creator under
+        # "assigned" scope (filter_queryset_for_user filters on assigned_agent).
+        assigned_agent = serializer.validated_data.get("assigned_agent") or self.request.user
+        serializer.save(status=Lead.Status.NEW, assigned_agent=assigned_agent)
 
     @action(detail=True, methods=["post"])
     def assign(self, request, pk=None):
