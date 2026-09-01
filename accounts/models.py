@@ -97,7 +97,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     phone = models.CharField(max_length=20, blank=True)
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
-    department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, blank=True, related_name="users")
+    department = models.ForeignKey(Department, on_delete=models.PROTECT, null=True, blank=True, related_name="users")
     roles = models.ManyToManyField(Role, through="UserRole", related_name="users")
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
