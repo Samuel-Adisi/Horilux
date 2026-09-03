@@ -170,3 +170,38 @@ class RBACPermission(BasePermission):
         resource = getattr(view, "rbac_resource", None)
         action = self._resolve_action(view)
         return has_permission(request.user, action, resource, obj=obj)
+
+
+def get_user_scopes_bulk(user, action: str, resources: list[str]) -> dict[str, set[str]]:
+    """
+    Same as get_user_scopes() but for multiple resources under the same
+    action, in a single query. Returns {resource: {scopes}}.
+    Use this instead of calling get_user_scopes() in a loop.
+    """
+    if user.is_superuser:
+        return {r: {"company"} for r in resources}
+
+    role_ids = user.user_roles.values_list("role_id", flat=True)
+    rows = RolePermission.objects.filter(
+        role_id__in=role_ids,
+        permission__action=action,
+        permission__resource__in=resources,
+    ).values_list("permission__resource", "permission__scope").distinct()
+
+    result = {r: set() for r in resources}
+    for resource, scope in rows:
+        result[resource].add(scope)
+    return result
+
+
+def has_permission_bulk(user, action: str, resources: list[str]) -> dict[str, bool]:
+    """
+    Bulk capability check (obj=None case only) for multiple resources.
+    Returns {resource: bool}. Use for views that gate on several
+    resources at once, e.g. a dashboard requiring company scope on
+    report_listing + report_sales + report_marketing + ... in one shot.
+    """
+    if not user or not user.is_authenticated:
+        return {r: False for r in resources}
+    scopes_by_resource = get_user_scopes_bulk(user, action, resources)
+    return {r: bool(scopes) for r, scopes in scopes_by_resource.items()}

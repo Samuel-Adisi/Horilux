@@ -30,6 +30,9 @@ class Viewing(models.Model):
     next_action = models.CharField(max_length=255, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        ordering = ['-created_at']
+
 
 class FollowUp(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

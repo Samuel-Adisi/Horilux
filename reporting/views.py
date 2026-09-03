@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 
-from accounts.permissions import has_permission, get_user_scopes
+from accounts.permissions import has_permission, get_user_scopes, get_user_scopes_bulk
 from reporting import services
 
 
@@ -55,8 +55,8 @@ class CEODashboardView(APIView):
     def get(self, request):
         if request.user.is_superuser:
             return Response(services.ceo_dashboard())
+        scopes_by_resource = get_user_scopes_bulk(request.user, "view", self.resources)
         for resource in self.resources:
-            scopes = get_user_scopes(request.user, "view", resource)
-            if "company" not in scopes:
+            if "company" not in scopes_by_resource[resource]:
                 return Response({"detail": "Not permitted."}, status=403)
         return Response(services.ceo_dashboard())
