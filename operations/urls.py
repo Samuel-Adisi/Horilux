@@ -1,10 +1,9 @@
-from django.urls import path
 from rest_framework.routers import DefaultRouter
+from operations.views import TaskViewSet
 
 app_name = "operations"
 
 router = DefaultRouter()
-# TODO: register ViewSets here as they're built, e.g.:
-# router.register(r"properties", PropertyViewSet, basename="property")
+router.register(r"tasks", TaskViewSet, basename="task")
 
 urlpatterns = router.urls

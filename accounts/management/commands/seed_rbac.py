@@ -33,11 +33,13 @@ RBAC_MATRIX = {
         "report_finance": {"view", "export"},
         "report_operations": {"view", "export"},
         "audit_log": {"view"},
+        "task": {"view", "edit"},
     },
     "Listing": {
         "property": {"view", "create", "edit"},
         "property_verification": {"create", "edit"},
         "report_listing": {"view"},
+        "task": {"view", "edit"},
     },
     "Sales": {
         "property": {"view"},
@@ -47,11 +49,13 @@ RBAC_MATRIX = {
         "followup": {"view", "create", "edit"},
         "transaction": {"view", "create", "edit"},
         "report_sales": {"view"},
+        "task": {"view", "edit"},
     },
     "Marketing": {
         "property": {"view"},  # published only — enforced in serializer/service layer
         "marketing_campaign": {"view", "create", "edit", "publish"},
         "report_marketing": {"view"},
+        "task": {"view", "edit"},
     },
     "Finance": {
         "property": {"view"},
@@ -59,6 +63,7 @@ RBAC_MATRIX = {
         "transaction": {"view", "create", "edit"},
         "payment_commission": {"view", "create", "edit", "approve"},
         "report_finance": {"view", "export"},
+        "task": {"view", "edit"},
     },
     "Operations": {
         "property": {"view"},
@@ -71,6 +76,7 @@ RBAC_MATRIX = {
         "user_management": {"view", "create", "edit"},  # staff records only
         "report_operations": {"view", "export"},
         "audit_log": {"view"},
+        "task": {"view", "edit"},
     },
 }
 
