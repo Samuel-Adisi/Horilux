@@ -25,7 +25,11 @@ class ViewingViewSet(viewsets.ModelViewSet):
         )
 
     def perform_create(self, serializer):
-        serializer.save(status=Viewing.Status.SCHEDULED)
+        # Default agent to the creating user if not explicitly set -- otherwise
+        # a newly created viewing is invisible to its own creator under the
+        # "assigned" RBAC scope (same bug class fixed on Lead creation in Phase 9).
+        agent = serializer.validated_data.get("agent") or self.request.user
+        serializer.save(status=Viewing.Status.SCHEDULED, agent=agent)
 
     @action(detail=True, methods=["post"])
     def confirm(self, request, pk=None):

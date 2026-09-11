@@ -42,4 +42,4 @@ gunicorn
 whitenoise
 
 # Monitoring
-sentry-sdkdjangorestframework_simplejwt==5.5.1
+sentry-sdk
