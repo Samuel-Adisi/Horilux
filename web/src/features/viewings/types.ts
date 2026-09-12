@@ -11,8 +11,13 @@ export type ViewingOutcome = "hot" | "warm" | "cold" | string;
 export interface Viewing {
   id: string;
   client: string;
+  client_name: string;
   property: string;
-  agent: string;
+  property_title: string;
+  property_location: string;
+  property_image_url: string | null;
+  agent: string | null;
+  agent_name: string | null;
   date: string;
   time: string;
   status: ViewingStatus;
@@ -25,6 +30,7 @@ export interface Viewing {
 export interface CreateViewingPayload {
   client: string;
   property: string;
+  agent?: string;
   date: string;
   time: string;
   notes?: string;

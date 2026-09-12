@@ -38,3 +38,18 @@ class UserSerializer(serializers.ModelSerializer):
 
     def get_full_name(self, obj):
         return f"{obj.first_name} {obj.last_name}".strip()
+
+
+class UserListItemSerializer(serializers.ModelSerializer):
+    """Minimal user shape for agent-picker dropdowns. Identity data only,
+    no RBAC gate needed since this is not a scoped business resource."""
+    full_name = serializers.SerializerMethodField()
+    department_name = serializers.CharField(source="department.name", default=None, read_only=True)
+
+    class Meta:
+        model = User
+        fields = ["id", "full_name", "email", "department_name"]
+        read_only_fields = fields
+
+    def get_full_name(self, obj):
+        return f"{obj.first_name} {obj.last_name}".strip()

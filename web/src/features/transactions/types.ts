@@ -24,6 +24,18 @@ export interface Transaction {
   created_at: string;
 }
 
+export interface CreateTransactionPayload {
+  property: string;
+  client: string;
+  owner: string;
+  price: string;
+  commission_percent: string;
+}
+
+export interface RecordPaymentPayload {
+  amount: string;
+}
+
 export interface PaginatedResponse<T> {
   count: number;
   next: string | null;

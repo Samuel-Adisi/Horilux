@@ -7,8 +7,10 @@ import type {
   CancelViewingPayload,
 } from "../types";
 
-export async function fetchViewings(): Promise<PaginatedResponse<Viewing>> {
-  const { data } = await apiClient.get<PaginatedResponse<Viewing>>("/viewings/");
+export async function fetchViewings(page: number = 1): Promise<PaginatedResponse<Viewing>> {
+  const { data } = await apiClient.get<PaginatedResponse<Viewing>>("/viewings/", {
+    params: { page },
+  });
   return data;
 }
 

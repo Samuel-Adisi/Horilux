@@ -1,9 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { fetchViewings } from "../api/viewings";
 
-export function useViewings() {
+export function useViewings(page: number = 1) {
   return useQuery({
-    queryKey: ["viewings"],
-    queryFn: fetchViewings,
+    queryKey: ["viewings", page],
+    queryFn: () => fetchViewings(page),
   });
 }

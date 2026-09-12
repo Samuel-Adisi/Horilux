@@ -32,7 +32,6 @@ export function ReportsPage() {
 
     return (
       <div>
-        <h1 className="mb-6 text-xl font-semibold text-gray-900">Company Dashboard</h1>
         <div className="space-y-8">
           <section>
             <h2 className="mb-3 text-sm font-semibold text-gray-700">{SECTION_TITLES.listing}</h2>
@@ -64,9 +63,6 @@ export function ReportsPage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-xl font-semibold text-gray-900">
-        {SECTION_TITLES[department]} Report
-      </h1>
       {department === "listing" && <ListingReportView report={report as never} />}
       {department === "sales" && <SalesReportView report={report as never} />}
       {department === "marketing" && <MarketingReportView report={report as never} />}

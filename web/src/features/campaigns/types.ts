@@ -28,6 +28,15 @@ export interface Campaign {
   performance_records: CampaignPerformance[];
 }
 
+export interface CreateCampaignPayload {
+  property: string;
+  content: CampaignContent;
+}
+
+export interface SchedulePayload {
+  scheduled_date: string;
+}
+
 export interface PaginatedResponse<T> {
   count: number;
   next: string | null;

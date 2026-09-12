@@ -34,3 +34,10 @@ export interface AuthTokens {
   access: string;
   refresh: string;
 }
+
+export interface UserListItem {
+  id: string;
+  full_name: string;
+  email: string;
+  department_name: string | null;
+}

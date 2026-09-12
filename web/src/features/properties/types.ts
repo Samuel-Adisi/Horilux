@@ -23,6 +23,16 @@ export interface PropertyOwner {
   created_at: string;
 }
 
+export interface PropertyMedia {
+  id: string;
+  property: string;
+  file: string; // Cloudinary URL
+  media_type: "photo" | "video" | string;
+  order: number;
+  uploaded_by: string | null;
+  uploaded_at: string;
+}
+
 export interface Property {
   id: string;
   title: string;
@@ -31,23 +41,28 @@ export interface Property {
   price: string; // decimal as string from DRF
   currency: string;
   location: string;
+  region?: string | null;
+  rental_period?: "daily" | "monthly" | "yearly" | null;
+  sqft?: string | null;
+  amenities?: string[];
   bedrooms: number | null;
   bathrooms: number | null;
   status: PropertyStatus;
   completion_percent: number;
   agent: string; // user id
   created_at: string;
+  image_url?: string | null;
 }
 
 export interface PropertyDetail extends Property {
   address: string;
   land_size: string | null;
   building_size: string | null;
-  amenities: string[];
   description: string;
   owner: string;
   owner_detail: PropertyOwner;
   updated_at: string;
+  media: PropertyMedia[];
 }
 
 export interface CreatePropertyPayload {

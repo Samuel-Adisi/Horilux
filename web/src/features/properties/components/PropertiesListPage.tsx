@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { AdminLayout } from "./AdminLayout";
 import { PropertyCard, type PropertyCardData } from "./PropertyCard";
@@ -31,10 +32,22 @@ function CardSkeleton() {
 }
 
 export function PropertiesListPage() {
-  const { data, isLoading, isError } = useProperties();
+  const navigate = useNavigate();
+  const [page, setPage] = useState(1);
+  const { data, isLoading, isError } = useProperties(page);
   const [search, setSearch] = useState("");
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [filters, setFilters] = useState<PropertyFilters>(DEFAULT_FILTERS);
+
+  const handleSearchChange = (value: string) => {
+    setSearch(value);
+    setPage(1);
+  };
+
+  const handleFiltersChange = (next: PropertyFilters) => {
+    setFilters(next);
+    setPage(1);
+  };
 
   const properties = (data?.results ?? []) as PropertyCardData[];
 
@@ -67,7 +80,7 @@ export function PropertiesListPage() {
       const price = Number(p.price);
       if (!Number.isNaN(price) && (price < filters.priceMin || price > filters.priceMax)) return false;
 
-      if (p.sqft != null && (p.sqft < filters.sqftMin || p.sqft > filters.sqftMax)) return false;
+      if (p.sqft != null) { const sqft = Number(p.sqft); if (!Number.isNaN(sqft) && (sqft < filters.sqftMin || sqft > filters.sqftMax)) return false; }
 
       if (filters.bedrooms && (p.bedrooms ?? 0) < filters.bedrooms) return false;
       if (filters.bathrooms && (p.bathrooms ?? 0) < filters.bathrooms) return false;
@@ -93,7 +106,7 @@ export function PropertiesListPage() {
     (filters.sqftMin !== DEFAULT_FILTERS.sqftMin || filters.sqftMax !== DEFAULT_FILTERS.sqftMax ? 1 : 0);
 
   return (
-    <AdminLayout pageTitle="Properties" pageSubtitle={`${data?.count ?? 0} total`}>
+    <AdminLayout pageTitle="Properties" pageSubtitle={`${data?.count ?? 0} total listings`}>
       <div className="mb-5 flex items-center gap-3">
         <div className="flex flex-1 items-center gap-2 rounded-[4px] border border-[#E4E1D9] bg-white px-3 py-2.5">
           <span className="text-[#8A8578]">
@@ -102,7 +115,7 @@ export function PropertiesListPage() {
           <input
             type="text"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => handleSearchChange(e.target.value)}
             placeholder="Search by title, location, or region…"
             className="w-full bg-transparent text-[13px] text-[#17131F] placeholder:text-[#8A8578] focus:outline-none"
           />
@@ -147,15 +160,35 @@ export function PropertiesListPage() {
             </div>
           ) : (
             filtered.map((property) => (
-              <PropertyCard key={property.id} property={property} onClick={() => {}} />
+              <PropertyCard key={property.id} property={property} onClick={() => navigate(`/properties/${property.id}`)} />
             ))
           )}
         </div>
 
         {filtersOpen && (
-          <PropertyFiltersPanel filters={filters} onChange={setFilters} onClose={() => setFiltersOpen(false)} />
+          <PropertyFiltersPanel filters={filters} onChange={handleFiltersChange} onClose={() => setFiltersOpen(false)} />
         )}
       </div>
+
+      {!search && activeFilterCount === 0 && (data?.next || data?.previous) && (
+        <div className="mt-4 flex items-center justify-between">
+          <button
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={!data?.previous}
+            className="rounded-[4px] border border-[#D8D3C6] px-3 py-1.5 text-[12px] font-medium text-[#3E3A31] hover:bg-white disabled:opacity-40"
+          >
+            Previous
+          </button>
+          <span className="text-[12px] text-[#8A8578]">Page {page}</span>
+          <button
+            onClick={() => setPage((p) => p + 1)}
+            disabled={!data?.next}
+            className="rounded-[4px] border border-[#D8D3C6] px-3 py-1.5 text-[12px] font-medium text-[#3E3A31] hover:bg-white disabled:opacity-40"
+          >
+            Next
+          </button>
+        </div>
+      )}
     </AdminLayout>
   );
 }

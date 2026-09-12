@@ -26,6 +26,11 @@ class Property(models.Model):
         RESIDENTIAL = "residential", "Residential"
         COMMERCIAL = "commercial", "Commercial"
 
+    class RentalPeriod(models.TextChoices):
+        DAILY = "daily", "Daily"
+        MONTHLY = "monthly", "Monthly"
+        YEARLY = "yearly", "Yearly"
+
     class Status(models.TextChoices):
         DRAFT = "draft", "Draft"
         ONBOARDING = "onboarding", "Onboarding"
@@ -45,12 +50,14 @@ class Property(models.Model):
     price = models.DecimalField(max_digits=14, decimal_places=2)
     currency = models.CharField(max_length=3, default="GHS")
     location = models.CharField(max_length=255)
+    region = models.CharField(max_length=100, blank=True)
     address = models.TextField(blank=True)
     bedrooms = models.PositiveIntegerField(null=True, blank=True)
     bathrooms = models.PositiveIntegerField(null=True, blank=True)
     land_size = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     building_size = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     amenities = models.JSONField(default=list, blank=True)
+    rental_period = models.CharField(max_length=10, choices=RentalPeriod.choices, null=True, blank=True)
     description = models.TextField(blank=True)
     owner = models.ForeignKey(PropertyOwner, on_delete=models.PROTECT, related_name="properties")
     agent = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name="listed_properties")

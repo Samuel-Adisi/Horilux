@@ -8,8 +8,10 @@ import type {
   CreateOwnerPayload,
 } from "../types";
 
-export async function fetchProperties(): Promise<PaginatedResponse<Property>> {
-  const { data } = await apiClient.get<PaginatedResponse<Property>>("/properties/");
+export async function fetchProperties(page: number = 1): Promise<PaginatedResponse<Property>> {
+  const { data } = await apiClient.get<PaginatedResponse<Property>>("/properties/", {
+    params: { page },
+  });
   return data;
 }
 

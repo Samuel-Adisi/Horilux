@@ -52,13 +52,24 @@ class VerificationChecklistSerializer(serializers.ModelSerializer):
 class PropertyListSerializer(serializers.ModelSerializer):
     """Lightweight serializer for list views — avoids over-fetching nested data."""
 
+    sqft = serializers.DecimalField(source="building_size", max_digits=10, decimal_places=2, read_only=True)
+    image_url = serializers.SerializerMethodField()
+
     class Meta:
         model = Property
         fields = [
             "id", "title", "property_type", "listing_type", "price", "currency",
-            "location", "bedrooms", "bathrooms", "status", "completion_percent",
-            "agent", "created_at",
+            "location", "region", "bedrooms", "bathrooms", "status", "completion_percent",
+            "agent", "created_at", "amenities", "rental_period", "sqft", "image_url",
         ]
+
+    def get_image_url(self, obj):
+        first_photo = obj.media.filter(media_type="photo").order_by("order").first()
+        if not first_photo or not first_photo.file:
+            return None
+        request = self.context.get("request")
+        url = first_photo.file.url
+        return request.build_absolute_uri(url) if request else url
 
 
 class PropertyDetailSerializer(serializers.ModelSerializer):
@@ -73,8 +84,8 @@ class PropertyDetailSerializer(serializers.ModelSerializer):
         model = Property
         fields = [
             "id", "title", "property_type", "listing_type", "price", "currency",
-            "location", "address", "bedrooms", "bathrooms", "land_size", "building_size",
-            "amenities", "description", "owner", "owner_detail", "agent", "status",
+            "location", "region", "address", "bedrooms", "bathrooms", "land_size", "building_size",
+            "amenities", "rental_period", "description", "owner", "owner_detail", "agent", "status",
             "completion_percent", "media", "documents", "verification",
             "created_at", "updated_at",
         ]
