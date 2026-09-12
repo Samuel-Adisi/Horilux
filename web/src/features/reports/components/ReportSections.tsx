@@ -5,98 +5,149 @@ import type {
   FinanceReport,
   OperationsReport,
 } from "../types";
+import type { LucideIcon } from "lucide-react";
+import {
+  Home,
+  TrendingUp,
+  Users,
+  UserCheck,
+  AlertTriangle,
+  Eye,
+  MessageSquare,
+  Target,
+  CalendarCheck,
+  CheckCircle2,
+  Receipt,
+  Wallet,
+  PiggyBank,
+  ClipboardList,
+  Clock,
+  Megaphone,
+} from "lucide-react";
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 
-type Tone = "good" | "attention" | "neutral";
+type Tone = "neutral" | "positive" | "attention" | "brand";
 
-function getStatusTone(key: string): Tone {
-  const k = key.toLowerCase();
-  if (/(complete|paid|won|active|available|confirmed|approved|closed_won)/.test(k)) return "good";
-  if (/(overdue|cancel|lost|reject|no_show|failed|closed_lost)/.test(k)) return "attention";
-  return "neutral";
-}
+const TONE_STYLES: Record<Tone, { text: string; bg: string; ring: string }> = {
+  neutral: { text: "text-gray-900", bg: "bg-gray-50", ring: "ring-gray-200" },
+  positive: { text: "text-emerald-700", bg: "bg-emerald-50", ring: "ring-emerald-200" },
+  attention: { text: "text-amber-700", bg: "bg-amber-50", ring: "ring-amber-200" },
+  brand: { text: "text-midnight", bg: "bg-midnight/5", ring: "ring-midnight/10" },
+};
 
-function toneBarClass(tone: Tone) {
-  if (tone === "good") return "bg-forest";
-  if (tone === "attention") return "bg-taupe";
-  return "bg-midnight/60";
-}
+const PALETTE = ["#1e1b4b", "#0ea5e9", "#10b981", "#f59e0b", "#8b5cf6", "#f43f5e"];
 
-function toneDotClass(tone: Tone) {
-  if (tone === "good") return "bg-forest";
-  if (tone === "attention") return "bg-taupe";
-  return "bg-midnight/60";
-}
-
-function toneTextClass(tone: Tone) {
-  if (tone === "good") return "text-forest";
-  if (tone === "attention") return "text-taupe";
-  return "text-gray-900";
-}
-
-function HeroStat({ value, label }: { value: string | number; label: string }) {
-  return (
-    <div>
-      <p className="text-4xl font-bold tracking-tight text-midnight tabular-nums">{value}</p>
-      <p className="mt-1 text-sm text-gray-500">{label}</p>
-    </div>
-  );
-}
-
-function SecondaryStat({
-  value,
+function HeroStat({
+  icon: Icon,
   label,
-  tone = "neutral",
+  value,
+  tone = "brand",
 }: {
-  value: string | number;
+  icon: LucideIcon;
   label: string;
+  value: string | number;
   tone?: Tone;
 }) {
+  const t = TONE_STYLES[tone];
   return (
-    <div>
-      <p className={`text-xl font-semibold tabular-nums ${toneTextClass(tone)}`}>{value}</p>
-      <p className="mt-0.5 text-xs text-gray-500">{label}</p>
+    <div className={`flex items-center gap-4 rounded-xl border border-gray-200 bg-white p-5 shadow-sm ring-1 ${t.ring}`}>
+      <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-lg ${t.bg}`}>
+        <Icon className={`h-5 w-5 ${t.text}`} strokeWidth={2} />
+      </div>
+      <div className="min-w-0">
+        <p className="text-xs font-medium uppercase tracking-wide text-gray-500">{label}</p>
+        <p className="mt-0.5 truncate text-2xl font-semibold text-gray-900">{value}</p>
+      </div>
     </div>
   );
 }
 
-function Breakdown({ title, data }: { title: string; data: Record<string, number> }) {
-  const entries = Object.entries(data).filter(([, v]) => v > 0);
-  const total = entries.reduce((sum, [, v]) => sum + v, 0);
+function StatCard({
+  icon: Icon,
+  label,
+  value,
+  tone = "neutral",
+}: {
+  icon: LucideIcon;
+  label: string;
+  value: string | number;
+  tone?: Tone;
+}) {
+  const t = TONE_STYLES[tone];
+  return (
+    <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+      <div className="flex items-center gap-2">
+        <Icon className={`h-3.5 w-3.5 ${t.text}`} strokeWidth={2.5} />
+        <p className="text-xs font-medium uppercase tracking-wide text-gray-500">{label}</p>
+      </div>
+      <p className={`mt-2 text-xl font-semibold ${t.text}`}>{value}</p>
+    </div>
+  );
+}
+
+function BreakdownChart({ title, data }: { title: string; data: Record<string, number> }) {
+  const entries = Object.entries(data);
+  const total = entries.reduce((sum, [, count]) => sum + count, 0);
+  const chartData = entries.map(([key, value]) => ({
+    name: key.replace(/_/g, " "),
+    value,
+  }));
 
   return (
-    <div>
-      <p className="mb-2 text-xs text-gray-500">{title}</p>
-      {entries.length === 0 || total === 0 ? (
-        <p className="text-sm text-gray-400">No data yet</p>
+    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+      <p className="mb-4 text-xs font-medium uppercase tracking-wide text-gray-500">{title}</p>
+      {entries.length === 0 ? (
+        <p className="text-sm text-gray-400">No data</p>
       ) : (
-        <>
-          <div className="flex h-2 w-full overflow-hidden rounded-full bg-gray-100">
-            {entries.map(([key, count]) => {
-              const tone = getStatusTone(key);
-              const pct = (count / total) * 100;
-              return (
-                <div
-                  key={key}
-                  className={`h-full ${toneBarClass(tone)}`}
-                  style={{ width: `${pct}%` }}
-                  title={`${key.replace(/_/g, " ")}: ${count}`}
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-[180px_1fr] sm:items-center">
+          <div className="mx-auto h-[180px] w-[180px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={chartData}
+                  dataKey="value"
+                  nameKey="name"
+                  innerRadius="60%"
+                  outerRadius="100%"
+                  paddingAngle={2}
+                  strokeWidth={0}
+                >
+                  {chartData.map((_, i) => (
+                    <Cell key={i} fill={PALETTE[i % PALETTE.length]} />
+                  ))}
+                </Pie>
+                <Tooltip
+                  formatter={(value: unknown, name: unknown) => {
+                    const num = typeof value === "number" ? value : 0;
+                    const pct = total === 0 ? 0 : Math.round((num / total) * 100);
+                    return [`${num} (${pct}%)`, String(name)] as [string, string];
+                  }}
+                  contentStyle={{ borderRadius: 8, border: "1px solid #e5e7eb", fontSize: 13 }}
                 />
-              );
-            })}
+              </PieChart>
+            </ResponsiveContainer>
           </div>
-          <ul className="mt-3 flex flex-wrap gap-x-5 gap-y-1.5">
-            {entries.map(([key, count]) => {
-              const tone = getStatusTone(key);
+          <ul className="space-y-2.5">
+            {entries.map(([key, count], i) => {
+              const pct = total === 0 ? 0 : Math.round((count / total) * 100);
               return (
-                <li key={key} className="flex items-center gap-1.5 text-sm">
-                  <span className={`h-1.5 w-1.5 rounded-full ${toneDotClass(tone)}`} />
-                  <span className="capitalize text-gray-600">{key.replace(/_/g, " ")}</span>
-                  <span className="font-medium text-gray-900">{count}</span>
+                <li key={key} className="flex items-center justify-between text-sm">
+                  <span className="flex items-center gap-2 text-gray-600">
+                    <span
+                      className="h-2.5 w-2.5 shrink-0 rounded-full"
+                      style={{ backgroundColor: PALETTE[i % PALETTE.length] }}
+                    />
+                    <span className="capitalize">{key.replace(/_/g, " ")}</span>
+                  </span>
+                  <span className="flex items-baseline gap-1.5">
+                    <span className="font-semibold text-gray-900">{count}</span>
+                    <span className="text-xs text-gray-400">{pct}%</span>
+                  </span>
                 </li>
               );
             })}
           </ul>
-        </>
+        </div>
       )}
     </div>
   );
@@ -108,87 +159,95 @@ function formatMoney(value: number, currency = "GHS") {
 
 export function ListingReportView({ report }: { report: ListingReport }) {
   return (
-    <div className="grid grid-cols-1 gap-6 sm:grid-cols-[minmax(0,220px)_1fr] sm:gap-10">
-      <div className="flex gap-8 sm:flex-col sm:gap-5">
-        <HeroStat value={report.total_properties} label="Total properties" />
-        <SecondaryStat value={`${Math.round(report.avg_completion_percent)}%`} label="Avg. completion" />
+    <div className="grid grid-cols-1 gap-5 sm:grid-cols-[minmax(0,240px)_1fr] sm:gap-8">
+      <div className="flex gap-4 sm:flex-col">
+        <HeroStat icon={Home} label="Total Properties" value={report.total_properties} />
+        <StatCard
+          icon={TrendingUp}
+          label="Avg Completion"
+          value={`${Math.round(report.avg_completion_percent)}%`}
+          tone="positive"
+        />
       </div>
-      <Breakdown title="By status" data={report.by_status} />
+      <BreakdownChart title="By Status" data={report.by_status} />
     </div>
   );
 }
 
 export function SalesReportView({ report }: { report: SalesReport }) {
   return (
-    <div className="grid grid-cols-1 gap-6 sm:grid-cols-[minmax(0,220px)_1fr] sm:gap-10">
-      <div className="flex gap-8 sm:flex-col sm:gap-5">
-        <HeroStat value={report.total_leads} label="Total leads" />
-        <SecondaryStat value={report.total_clients} label="Clients" />
-        <SecondaryStat
-          value={report.overdue_followups}
-          label="Overdue follow-ups"
-          tone={report.overdue_followups > 0 ? "attention" : "neutral"}
-        />
+    <div className="grid grid-cols-1 gap-5 sm:grid-cols-[minmax(0,240px)_1fr] sm:gap-8">
+      <div className="flex gap-4 sm:flex-col">
+        <HeroStat icon={Users} label="Total Leads" value={report.total_leads} />
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-1">
+          <StatCard icon={UserCheck} label="Total Clients" value={report.total_clients} tone="positive" />
+          <StatCard
+            icon={AlertTriangle}
+            label="Overdue Follow-ups"
+            value={report.overdue_followups}
+            tone={report.overdue_followups > 0 ? "attention" : "neutral"}
+          />
+        </div>
       </div>
-      <Breakdown title="Leads by status" data={report.leads_by_status} />
+      <BreakdownChart title="Leads by Status" data={report.leads_by_status} />
     </div>
   );
 }
 
 export function MarketingReportView({ report }: { report: MarketingReport }) {
-  const { performance } = report;
   return (
-    <div className="grid grid-cols-1 gap-6 sm:grid-cols-[minmax(0,320px)_1fr] sm:gap-10">
-      <div className="flex flex-col gap-5">
-        <HeroStat value={report.total_campaigns} label="Total campaigns" />
-        <div className="grid grid-cols-2 gap-x-6 gap-y-4">
-          <SecondaryStat value={performance.views} label="Views" />
-          <SecondaryStat value={performance.enquiries} label="Enquiries" />
-          <SecondaryStat value={performance.leads_generated} label="Leads generated" tone="good" />
-          <SecondaryStat value={performance.viewings_booked} label="Viewings booked" />
-          <SecondaryStat value={performance.conversions} label="Conversions" tone="good" />
+    <div className="grid grid-cols-1 gap-5 sm:grid-cols-[minmax(0,240px)_1fr] sm:gap-8">
+      <div className="flex flex-col gap-4">
+        <HeroStat icon={Megaphone} label="Total Campaigns" value={report.total_campaigns} />
+        <div className="grid grid-cols-2 gap-3">
+          <StatCard icon={Eye} label="Views" value={report.performance.views} />
+          <StatCard icon={MessageSquare} label="Enquiries" value={report.performance.enquiries} />
+          <StatCard icon={Target} label="Leads Generated" value={report.performance.leads_generated} tone="positive" />
+          <StatCard icon={CalendarCheck} label="Viewings Booked" value={report.performance.viewings_booked} />
+          <StatCard icon={CheckCircle2} label="Conversions" value={report.performance.conversions} tone="positive" />
         </div>
       </div>
-      <Breakdown title="Campaigns by status" data={report.by_status} />
+      <BreakdownChart title="Campaigns by Status" data={report.by_status} />
     </div>
   );
 }
 
 export function FinanceReportView({ report }: { report: FinanceReport }) {
-  const { commission } = report;
   return (
-    <div className="grid grid-cols-1 gap-6 sm:grid-cols-[minmax(0,320px)_1fr] sm:gap-10">
-      <div className="flex flex-col gap-5">
-        <HeroStat value={report.total_transactions} label="Total transactions" />
-        <div className="grid grid-cols-2 gap-x-6 gap-y-4">
-          <SecondaryStat value={formatMoney(commission.expected)} label="Expected commission" />
-          <SecondaryStat value={formatMoney(commission.received)} label="Received" tone="good" />
-          <SecondaryStat
-            value={formatMoney(commission.outstanding)}
+    <div className="grid grid-cols-1 gap-5 sm:grid-cols-[minmax(0,260px)_1fr] sm:gap-8">
+      <div className="flex flex-col gap-4">
+        <HeroStat icon={Receipt} label="Total Transactions" value={report.total_transactions} />
+        <div className="grid grid-cols-2 gap-3">
+          <StatCard icon={Wallet} label="Expected" value={formatMoney(report.commission.expected)} />
+          <StatCard icon={PiggyBank} label="Received" value={formatMoney(report.commission.received)} tone="positive" />
+          <StatCard
+            icon={AlertTriangle}
             label="Outstanding"
-            tone={commission.outstanding > 0 ? "attention" : "neutral"}
+            value={formatMoney(report.commission.outstanding)}
+            tone={report.commission.outstanding > 0 ? "attention" : "neutral"}
           />
-          <SecondaryStat value={formatMoney(commission.agent_share)} label="Agent share" />
-          <SecondaryStat value={formatMoney(commission.company_share)} label="Company share" />
+          <StatCard icon={Users} label="Agent Share" value={formatMoney(report.commission.agent_share)} />
+          <StatCard icon={Home} label="Company Share" value={formatMoney(report.commission.company_share)} />
         </div>
       </div>
-      <Breakdown title="Transactions by status" data={report.by_status} />
+      <BreakdownChart title="Transactions by Status" data={report.by_status} />
     </div>
   );
 }
 
 export function OperationsReportView({ report }: { report: OperationsReport }) {
   return (
-    <div className="grid grid-cols-1 gap-6 sm:grid-cols-[minmax(0,220px)_1fr] sm:gap-10">
-      <div className="flex gap-8 sm:flex-col sm:gap-5">
-        <HeroStat value={report.total_tasks} label="Total tasks" />
-        <SecondaryStat
+    <div className="grid grid-cols-1 gap-5 sm:grid-cols-[minmax(0,240px)_1fr] sm:gap-8">
+      <div className="flex gap-4 sm:flex-col">
+        <HeroStat icon={ClipboardList} label="Total Tasks" value={report.total_tasks} />
+        <StatCard
+          icon={Clock}
+          label="Overdue Tasks"
           value={report.overdue_tasks}
-          label="Overdue tasks"
           tone={report.overdue_tasks > 0 ? "attention" : "neutral"}
         />
       </div>
-      <Breakdown title="Tasks by status" data={report.by_status} />
+      <BreakdownChart title="Tasks by Status" data={report.by_status} />
     </div>
   );
 }
