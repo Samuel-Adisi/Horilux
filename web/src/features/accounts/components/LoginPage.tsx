@@ -65,7 +65,7 @@ export function LoginPage() {
 
       {/* Brand mark, bottom-left, sitting on the image */}
       <div className="absolute bottom-10 left-10 flex items-center gap-3 text-white">
-        <img src="/logo.png" alt="" className="h-10 w-10 object-contain" />
+        <img src="/logo1.png" alt="" className="h-10 w-10 object-contain" />
         <span className="text-3xl font-semibold tracking-tight">Horilux Estates</span>
       </div>
 
