@@ -49,11 +49,16 @@ export function Sidebar() {
 
   return (
     <aside className="hidden md:flex w-60 shrink-0 flex-col border-r border-[#EFEDE6] bg-white h-screen sticky top-0">
-      <div className="flex items-center gap-2 px-5 py-5">
-        <img src="/logo1.png" alt="Horilux" className="h-9 w-9 object-contain" />
-        <span className="text-[16px] font-semibold tracking-tight text-[#17131F]">
-          Horilux
-        </span>
+      <div className="flex items-center gap-2.5 px-5 py-5">
+        <img src="/logo1.png" alt="Horilux" className="h-9 w-9 shrink-0 object-contain" />
+        <div className="flex min-w-0 flex-col">
+          <span className="truncate text-[15px] font-semibold leading-tight tracking-tight text-[#17131F]">
+            Horilux Estates
+          </span>
+          <span className="truncate text-[9.5px] font-medium uppercase leading-tight tracking-wider text-[#8A8578]">
+            Private Wealth &amp; Realty
+          </span>
+        </div>
       </div>
 
       <nav className="flex-1 overflow-y-auto px-3 py-2 space-y-0.5">

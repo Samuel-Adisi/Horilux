@@ -60,7 +60,6 @@ function HeroCarousel({ media, title }: { media: { id: string; file: string }[];
 
       {count > 1 && (
         <>
-          {/* gradient so controls stay legible over bright photos */}
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/35 to-transparent" />
 
           <div className="absolute bottom-4 right-4 flex items-center gap-2">
@@ -175,6 +174,44 @@ function PhotoGallery({ propertyId, media }: { propertyId: string; media: { id: 
   );
 }
 
+function PropertyDetailSkeleton() {
+  return (
+    <div className="overflow-hidden rounded-[8px] border border-[#E4E1D9] bg-white">
+      <div className="h-[460px] w-full animate-pulse bg-[#EFEDE6]" />
+
+      <div className="border-b border-[#EFEDE6] px-5 py-4">
+        <div className="h-5 w-1/2 animate-pulse rounded bg-[#EFEDE6]" />
+        <div className="mt-2 h-3.5 w-1/3 animate-pulse rounded bg-[#EFEDE6]" />
+        <div className="mt-3 h-5 w-24 animate-pulse rounded bg-[#EFEDE6]" />
+      </div>
+
+      <div className="grid grid-cols-2 gap-4 border-b border-[#EFEDE6] px-5 py-4 sm:grid-cols-4">
+        {Array.from({ length: 8 }).map((_, i) => (
+          <div key={i}>
+            <div className="h-3 w-16 animate-pulse rounded bg-[#EFEDE6]" />
+            <div className="mt-1.5 h-3.5 w-12 animate-pulse rounded bg-[#EFEDE6]" />
+          </div>
+        ))}
+      </div>
+
+      <div className="border-b border-[#EFEDE6] px-5 py-4">
+        <div className="h-3 w-16 animate-pulse rounded bg-[#EFEDE6]" />
+        <div className="mt-2.5 grid grid-cols-3 gap-2.5 sm:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="aspect-square animate-pulse rounded-[6px] bg-[#EFEDE6]" />
+          ))}
+        </div>
+      </div>
+
+      <div className="px-5 py-4">
+        <div className="h-3 w-20 animate-pulse rounded bg-[#EFEDE6]" />
+        <div className="mt-2 h-3.5 w-full animate-pulse rounded bg-[#EFEDE6]" />
+        <div className="mt-1.5 h-3.5 w-2/3 animate-pulse rounded bg-[#EFEDE6]" />
+      </div>
+    </div>
+  );
+}
+
 export function PropertyDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -191,7 +228,7 @@ export function PropertyDetailPage() {
       </button>
 
       {isLoading ? (
-        <p className="text-[13px] text-[#8A8578]">Loading property…</p>
+        <PropertyDetailSkeleton />
       ) : isError || !property || !id ? (
         <p className="text-[13px] text-[#8A2E2E]">Couldn't load this property.</p>
       ) : (

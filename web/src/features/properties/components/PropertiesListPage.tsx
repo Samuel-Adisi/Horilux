@@ -14,18 +14,27 @@ function Icon({ d, ...props }: { d: string } & React.SVGProps<SVGSVGElement>) {
   );
 }
 
-const SEARCH_ICON = "M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm10 2-4.35-4.35";
-const SLIDERS_ICON = "M4 6h16M7 12h10M10 18h4";
-const PLUS_ICON = "M12 5v14M5 12h14";
+const SEARCH_ICON = "M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z";
+const SLIDERS_ICON = "M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z";
+const PLUS_ICON = "M12 4v16m8-8H4";
+const CHEVRON_LEFT = "M15 19l-7-7 7-7";
+const CHEVRON_RIGHT = "M9 5l7 7-7 7";
+const SEARCH_EMPTY_ICON = "M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z";
+const ERROR_ICON = "M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z";
 
 function CardSkeleton() {
   return (
-    <div className="flex gap-4 border-b border-[#EFEDE6] px-5 py-4 last:border-0">
-      <div className="h-28 w-40 shrink-0 animate-pulse rounded-[6px] bg-[#EFEDE6]" />
-      <div className="flex-1 space-y-3 py-1">
-        <div className="h-3.5 w-2/3 animate-pulse rounded bg-[#EFEDE6]" />
-        <div className="h-3 w-1/3 animate-pulse rounded bg-[#EFEDE6]" />
-        <div className="h-3 w-1/2 animate-pulse rounded bg-[#EFEDE6]" />
+    <div className="animate-pulse overflow-hidden rounded-md border border-[#E4E1D9] bg-white shadow-xs">
+      <div className="h-60 bg-[#EAE8E3]" />
+      <div className="space-y-3 p-5">
+        <div className="h-3 w-1/3 rounded-xs bg-[#EAE8E3]" />
+        <div className="h-5 w-3/4 rounded-xs bg-[#EAE8E3]" />
+        <div className="mt-2 h-7 w-1/2 rounded-xs bg-[#EAE8E3]" />
+        <div className="flex justify-between border-t border-[#F1EFEA] pt-4">
+          <div className="h-4 w-1/4 rounded-xs bg-[#EAE8E3]" />
+          <div className="h-4 w-1/4 rounded-xs bg-[#EAE8E3]" />
+          <div className="h-4 w-1/4 rounded-xs bg-[#EAE8E3]" />
+        </div>
       </div>
     </div>
   );
@@ -105,63 +114,120 @@ export function PropertiesListPage() {
     (filters.priceMin !== DEFAULT_FILTERS.priceMin || filters.priceMax !== DEFAULT_FILTERS.priceMax ? 1 : 0) +
     (filters.sqftMin !== DEFAULT_FILTERS.sqftMin || filters.sqftMax !== DEFAULT_FILTERS.sqftMax ? 1 : 0);
 
+  // NOTE: your data model always filters by listing_type ("sale" | "rent") —
+  // there's no "all listings" or "off-market" state in PropertyFilters/the API,
+  // so unlike the Stitch mock's "All / For Sale / For Rent / Off-Market Pocket"
+  // chips with fabricated counts (148/112/36/14), these two chips just toggle
+  // the real filters.listingType, and their counts reflect the current page's
+  // results only (no backend aggregate endpoint exists to show true totals).
+  const saleCountOnPage = properties.filter((p) => p.listing_type === "sale").length;
+  const rentCountOnPage = properties.filter((p) => p.listing_type === "rent").length;
+
   return (
-    <AdminLayout pageTitle="Properties" pageSubtitle={`${data?.count ?? 0} total listings`}>
-      <div className="mb-5 flex items-center gap-3">
-        <div className="flex flex-1 items-center gap-2 rounded-[4px] border border-[#E4E1D9] bg-white px-3 py-2.5">
-          <span className="text-[#8A8578]">
-            <Icon d={SEARCH_ICON} />
-          </span>
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => handleSearchChange(e.target.value)}
-            placeholder="Search by title, location, or region…"
-            className="w-full bg-transparent text-[13px] text-[#17131F] placeholder:text-[#8A8578] focus:outline-none"
-          />
+    <AdminLayout pageTitle="Properties">
+      <div className="mb-5 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div>
+          <div className="flex items-center space-x-3">
+            <h1 className="text-2xl font-bold tracking-tight text-[#18014e]">Properties</h1>
+            <span className="inline-flex items-center rounded px-2 py-0.5 font-mono text-[11px] font-medium text-[#240270] border border-[#240270]/15 bg-[#240270]/5">
+              {data?.count ?? 0} total listings
+            </span>
+          </div>
+          <p className="mt-0.5 text-xs text-[#7D756B]">
+            Browse and manage listings across your portfolio.
+          </p>
         </div>
 
-        <button
-          onClick={() => setFiltersOpen((v) => !v)}
-          className={`relative flex items-center gap-2 rounded-[4px] border px-4 py-2.5 text-[13px] font-medium transition-colors ${
-            filtersOpen ? "border-[#240270] bg-[#EAE3F7] text-[#240270]" : "border-[#D8D3C6] text-[#3E3A31] hover:bg-[#F7F6F3]"
-          }`}
-        >
-          <Icon d={SLIDERS_ICON} width={15} height={15} />
-          Advanced filters
-          {activeFilterCount > 0 && (
-            <span className="flex h-4 w-4 items-center justify-center rounded-full bg-[#240270] text-[10px] font-semibold text-white">
-              {activeFilterCount}
-            </span>
-          )}
-        </button>
+        <div className="flex items-center space-x-3">
+          <button
+            onClick={() => setFiltersOpen((v) => !v)}
+            className={`relative flex items-center space-x-2 rounded-sm border px-3 py-2 text-xs font-medium shadow-xs transition ${
+              filtersOpen ? "border-[#240270] bg-[#EAE3F7] text-[#240270]" : "border-[#D8D3C6] bg-white text-[#18014e] hover:bg-[#FAF9F6]"
+            }`}
+          >
+            <Icon d={SLIDERS_ICON} width={14} height={14} className="text-[#240270]" />
+            <span>Advanced Filters</span>
+            {activeFilterCount > 0 && (
+              <span className="flex h-4 w-4 items-center justify-center rounded-full bg-[#240270] font-mono text-[10px] font-bold text-white">
+                {activeFilterCount}
+              </span>
+            )}
+          </button>
 
-        <Link
-          to="/properties/new"
-          className="flex items-center gap-2 rounded-[4px] bg-[#240270] px-4 py-2.5 text-[13px] font-medium text-white hover:opacity-90"
-        >
-          <Icon d={PLUS_ICON} width={15} height={15} />
-          New property
-        </Link>
+          <Link
+            to="/properties/new"
+            className="flex items-center space-x-2 rounded-sm border border-[#1c0159] bg-[#240270] px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-[#1c0159]"
+          >
+            <Icon d={PLUS_ICON} width={14} height={14} strokeWidth={2.5} />
+            <span>New Property</span>
+          </Link>
+        </div>
       </div>
 
-      <div className="flex items-start gap-5">
-        <div className="min-w-0 flex-1 overflow-hidden rounded-[6px] border border-[#E4E1D9] bg-white">
+      <div className="mb-6 flex flex-col gap-3 rounded-sm border border-[#E8E5DF] bg-white p-3 shadow-xs md:flex-row md:items-center md:justify-between">
+        <div className="flex flex-1 flex-wrap items-center gap-3">
+          <div className="relative min-w-[280px] max-w-md flex-1">
+            <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-[#7D756B]">
+              <Icon d={SEARCH_ICON} />
+            </span>
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => handleSearchChange(e.target.value)}
+              placeholder="Search by title, location, or region…"
+              className="w-full rounded-sm border border-[#E8E5DF] bg-[#FAF9F6] py-1.5 pl-9 pr-3 text-xs font-medium text-[#18014e] placeholder-[#7D756B] transition focus:border-[#240270] focus:bg-white focus:outline-none"
+            />
+          </div>
+
+          <div className="flex items-center gap-1.5 overflow-x-auto text-xs">
+            <button
+              onClick={() => handleFiltersChange({ ...filters, listingType: "sale" })}
+              className={`rounded-sm border px-3 py-1 text-xs font-semibold transition ${
+                filters.listingType === "sale" ? "border-[#240270] bg-[#240270] text-white" : "border-[#E8E5DF] bg-white text-[#7D756B] hover:text-[#18014e]"
+              }`}
+            >
+              For Sale ({saleCountOnPage})
+            </button>
+            <button
+              onClick={() => handleFiltersChange({ ...filters, listingType: "rent" })}
+              className={`rounded-sm border px-3 py-1 text-xs font-semibold transition ${
+                filters.listingType === "rent" ? "border-[#240270] bg-[#240270] text-white" : "border-[#E8E5DF] bg-white text-[#7D756B] hover:text-[#18014e]"
+              }`}
+            >
+              For Rent ({rentCountOnPage})
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex flex-col items-start gap-6 lg:flex-row">
+        <div className="w-full flex-1">
           {isLoading ? (
-            Array.from({ length: 5 }).map((_, i) => <CardSkeleton key={i} />)
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              {Array.from({ length: 4 }).map((_, i) => <CardSkeleton key={i} />)}
+            </div>
           ) : isError ? (
-            <div className="px-5 py-10 text-center text-[13px] text-[#8A2E2E]">
-              Couldn't load properties. Check your connection and try again.
+            <div className="mx-auto my-8 max-w-lg rounded-md border border-rose-200 bg-rose-50 p-8 text-center shadow-xs">
+              <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-rose-100 text-rose-700">
+                <Icon d={ERROR_ICON} width={20} height={20} />
+              </div>
+              <h3 className="text-sm font-bold text-rose-900">Couldn't load properties</h3>
+              <p className="mt-1 text-xs text-rose-700">Check your connection and try again.</p>
             </div>
           ) : filtered.length === 0 ? (
-            <div className="px-5 py-14 text-center">
-              <p className="text-[13.5px] font-medium text-[#17131F]">No properties match your filters</p>
-              <p className="mt-1 text-[12.5px] text-[#8A8578]">Try widening your search or clearing a filter.</p>
+            <div className="mx-auto my-8 max-w-lg rounded-md border border-[#E4E1D9] bg-white p-12 text-center shadow-xs">
+              <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full border border-[#E8E5DF] bg-[#FAF9F6] text-[#7D756B]">
+                <Icon d={SEARCH_EMPTY_ICON} width={24} height={24} strokeWidth={1.5} />
+              </div>
+              <h3 className="text-base font-bold text-[#18014e]">No properties match your filters</h3>
+              <p className="mt-1 text-xs text-[#7D756B]">Try widening your search or clearing a filter.</p>
             </div>
           ) : (
-            filtered.map((property) => (
-              <PropertyCard key={property.id} property={property} onClick={() => navigate(`/properties/${property.id}`)} />
-            ))
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              {filtered.map((property) => (
+                <PropertyCard key={property.id} property={property} onClick={() => navigate(`/properties/${property.id}`)} />
+              ))}
+            </div>
           )}
         </div>
 
@@ -171,22 +237,33 @@ export function PropertiesListPage() {
       </div>
 
       {!search && activeFilterCount === 0 && (data?.next || data?.previous) && (
-        <div className="mt-4 flex items-center justify-between">
-          <button
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
-            disabled={!data?.previous}
-            className="rounded-[4px] border border-[#D8D3C6] px-3 py-1.5 text-[12px] font-medium text-[#3E3A31] hover:bg-white disabled:opacity-40"
-          >
-            Previous
-          </button>
-          <span className="text-[12px] text-[#8A8578]">Page {page}</span>
-          <button
-            onClick={() => setPage((p) => p + 1)}
-            disabled={!data?.next}
-            className="rounded-[4px] border border-[#D8D3C6] px-3 py-1.5 text-[12px] font-medium text-[#3E3A31] hover:bg-white disabled:opacity-40"
-          >
-            Next
-          </button>
+        <div className="mt-6 flex flex-col items-center justify-between gap-3 rounded-sm border border-[#D8D3C6] bg-white px-4 py-3 shadow-xs sm:flex-row">
+          <span className="text-xs text-[#3E3A31]">
+            Page <strong className="font-mono text-[#18014e]">{page}</strong>
+            {data?.count != null && (
+              <>
+                {" "}· <strong className="font-mono text-[#18014e]">{data.count}</strong> total properties
+              </>
+            )}
+          </span>
+          <div className="flex items-center space-x-1.5">
+            <button
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={!data?.previous}
+              className="flex items-center space-x-1 rounded-sm border border-[#D8D3C6] bg-white px-3 py-1 text-xs font-medium text-[#3E3A31] transition hover:bg-[#FAF9F6] disabled:opacity-40"
+            >
+              <Icon d={CHEVRON_LEFT} width={14} height={14} />
+              <span>Previous</span>
+            </button>
+            <button
+              onClick={() => setPage((p) => p + 1)}
+              disabled={!data?.next}
+              className="flex items-center space-x-1 rounded-sm border border-[#D8D3C6] bg-white px-3 py-1 text-xs font-medium text-[#3E3A31] transition hover:bg-[#FAF9F6] disabled:opacity-40"
+            >
+              <span>Next</span>
+              <Icon d={CHEVRON_RIGHT} width={14} height={14} />
+            </button>
+          </div>
         </div>
       )}
     </AdminLayout>
