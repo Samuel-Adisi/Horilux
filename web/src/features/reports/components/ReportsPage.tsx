@@ -1,3 +1,4 @@
+import { Building2, Users, Megaphone, Wallet, ClipboardList } from "lucide-react";
 import { useReport } from "../hooks/use-report";
 import {
   ListingReportView,
@@ -7,13 +8,13 @@ import {
   OperationsReportView,
 } from "./ReportSections";
 
-const SECTION_TITLES: Record<string, string> = {
-  listing: "Listing",
-  sales: "Sales",
-  marketing: "Marketing",
-  finance: "Finance",
-  operations: "Operations",
-};
+const SECTIONS = [
+  { key: "listing", title: "Listing", icon: Building2, View: ListingReportView },
+  { key: "sales", title: "Sales", icon: Users, View: SalesReportView },
+  { key: "marketing", title: "Marketing", icon: Megaphone, View: MarketingReportView },
+  { key: "finance", title: "Finance", icon: Wallet, View: FinanceReportView },
+  { key: "operations", title: "Operations", icon: ClipboardList, View: OperationsReportView },
+] as const;
 
 export function ReportsPage() {
   const result = useReport();
@@ -31,43 +32,33 @@ export function ReportsPage() {
     if (!dashboard) return null;
 
     return (
-      <div>
-        <div className="space-y-8">
-          <section>
-            <h2 className="mb-3 text-sm font-semibold text-gray-700">{SECTION_TITLES.listing}</h2>
-            <ListingReportView report={dashboard.listing} />
+      <div className="divide-y divide-gray-100">
+        {SECTIONS.map(({ key, title, icon: Icon, View }) => (
+          <section key={key} className="py-8 first:pt-0">
+            <div className="mb-5 flex items-center gap-2.5">
+              <Icon className="h-4 w-4 text-midnight" strokeWidth={2} />
+              <h2 className="text-base font-semibold text-gray-900">{title}</h2>
+            </div>
+            <View report={dashboard[key] as never} />
           </section>
-          <section>
-            <h2 className="mb-3 text-sm font-semibold text-gray-700">{SECTION_TITLES.sales}</h2>
-            <SalesReportView report={dashboard.sales} />
-          </section>
-          <section>
-            <h2 className="mb-3 text-sm font-semibold text-gray-700">{SECTION_TITLES.marketing}</h2>
-            <MarketingReportView report={dashboard.marketing} />
-          </section>
-          <section>
-            <h2 className="mb-3 text-sm font-semibold text-gray-700">{SECTION_TITLES.finance}</h2>
-            <FinanceReportView report={dashboard.finance} />
-          </section>
-          <section>
-            <h2 className="mb-3 text-sm font-semibold text-gray-700">{SECTION_TITLES.operations}</h2>
-            <OperationsReportView report={dashboard.operations} />
-          </section>
-        </div>
+        ))}
       </div>
     );
   }
 
   const { department, report } = result;
   if (!report) return null;
+  const section = SECTIONS.find((s) => s.key === department);
+  if (!section) return null;
+  const { icon: Icon, title, View } = section;
 
   return (
     <div>
-      {department === "listing" && <ListingReportView report={report as never} />}
-      {department === "sales" && <SalesReportView report={report as never} />}
-      {department === "marketing" && <MarketingReportView report={report as never} />}
-      {department === "finance" && <FinanceReportView report={report as never} />}
-      {department === "operations" && <OperationsReportView report={report as never} />}
+      <div className="mb-5 flex items-center gap-2.5">
+        <Icon className="h-4 w-4 text-midnight" strokeWidth={2} />
+        <h2 className="text-base font-semibold text-gray-900">{title}</h2>
+      </div>
+      <View report={report as never} />
     </div>
   );
 }
