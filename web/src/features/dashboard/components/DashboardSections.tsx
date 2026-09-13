@@ -505,3 +505,652 @@ export function MilestoneFeed({ events }: {
     </div>
   );
 }
+
+export function CountBars({ items }: { items: Array<{ label: string; count: number; pct: number; highlight?: boolean }> }) {
+  const maxPct = Math.max(...items.map(i => i.pct));
+  return (
+    <div className="space-y-3">
+      {items.map(it => (
+        <div key={it.label} className="flex items-center justify-between text-sm gap-3">
+          <span className={it.highlight ? 'font-semibold' : 'text-gray-700'} style={it.highlight ? { color: COLORS.forest } : undefined}>{it.label}</span>
+          <div className="flex items-center gap-2">
+            <div className="w-24 h-2 rounded-full bg-gray-100 overflow-hidden">
+              <div className="h-full rounded-full" style={{ width: `${(it.pct / maxPct) * 100}%`, backgroundColor: it.highlight ? COLORS.forest : COLORS.midnight }} />
+            </div>
+            <span className="font-mono font-semibold w-4 text-right" style={it.highlight ? { color: COLORS.forest } : undefined}>{it.count}</span>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export function RadialGauge({ percent, valueLabel, valueSubtext, footnote, tag }: {
+  percent: number; valueLabel: string; valueSubtext?: string; footnote?: string; tag?: string;
+}) {
+  const r = 40, c = 2 * Math.PI * r;
+  const offset = c - (percent / 100) * c;
+  return (
+    <div className="flex flex-col items-center justify-center py-2 space-y-3">
+      {tag && <span className="self-end text-[10px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 font-medium">{tag}</span>}
+      <div className="relative w-44 h-44">
+        <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r={r} fill="none" stroke="#F1F0F5" strokeWidth="10" />
+          <circle cx="50" cy="50" r={r} fill="none" stroke={COLORS.midnight} strokeWidth="10" strokeDasharray={c} strokeDashoffset={offset} strokeLinecap="round" />
+        </svg>
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
+          <span className="text-3xl font-bold" style={{ color: COLORS.midnight }}>{percent}%</span>
+          <span className="text-[10px] uppercase tracking-wide text-gray-400 mt-0.5">Attained</span>
+        </div>
+      </div>
+      <div className="text-center">
+        <div className="text-lg font-bold" style={{ color: COLORS.midnight }}>{valueLabel}</div>
+        {valueSubtext && <p className="text-sm font-medium mt-0.5" style={{ color: COLORS.forest }}>{valueSubtext}</p>}
+        {footnote && <p className="text-xs text-gray-400 mt-1">{footnote}</p>}
+      </div>
+    </div>
+  );
+}
+
+export function CommissionTracker({ earned, earnedDelta, earnedSparkline, pending, breakdown }: {
+  earned: string; earnedDelta?: string; earnedSparkline?: number[]; pending: string;
+  breakdown: Array<{ label: string; value: string; tone: 'warn' | 'info' | 'danger' }>;
+}) {
+  const toneClass = (t: string) => t === 'danger' ? 'bg-red-50 text-red-700' : t === 'warn' ? 'bg-amber-50 text-amber-700' : 'bg-indigo-50 text-indigo-700';
+  const renderSparkline = () => {
+    if (!earnedSparkline || earnedSparkline.length < 2) return null;
+    const w = 120, h = 28;
+    const min = Math.min(...earnedSparkline), max = Math.max(...earnedSparkline), range = max - min || 1;
+    const pts = earnedSparkline.map((v, i) => `${(i / (earnedSparkline.length - 1)) * w},${h - ((v - min) / range) * h}`).join(' ');
+    return <svg width={w} height={h}><polyline points={pts} fill="none" stroke={COLORS.forest} strokeWidth="2" strokeLinecap="round" /></svg>;
+  };
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="bg-gray-50 rounded-xl p-4 flex flex-col justify-between space-y-3">
+        <div>
+          <span className="text-xs uppercase tracking-wide text-gray-400">Earned This Month</span>
+          <div className="text-xl font-bold mt-1" style={{ color: COLORS.midnight }}>{earned}</div>
+          {earnedDelta && <span className="text-xs font-medium mt-1 inline-block" style={{ color: COLORS.forest }}>▲ {earnedDelta}</span>}
+        </div>
+        {renderSparkline()}
+      </div>
+      <div className="bg-gray-50 rounded-xl p-4 space-y-2">
+        <div>
+          <span className="text-xs uppercase tracking-wide text-gray-400">Pending Payouts</span>
+          <div className="text-xl font-bold mt-1" style={{ color: COLORS.midnight }}>{pending}</div>
+        </div>
+        <div className="space-y-1.5 pt-1">
+          {breakdown.map(b => (
+            <div key={b.label} className="flex items-center justify-between text-sm">
+              <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${toneClass(b.tone)}`}>{b.label}</span>
+              <span className="font-mono font-medium">{b.value}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function ActionQueueList({ items, badge }: {
+  badge?: string;
+  items: Array<{ id: string | number; name: string; waitingLabel: string; waitingUrgent?: boolean; detail: string; buttonLabel: string }>;
+}) {
+  return (
+    <div className="space-y-2.5">
+      {badge && <div className="flex justify-end"><span className="text-xs px-2.5 py-1 rounded-full font-semibold" style={{ backgroundColor: `${COLORS.taupe}22`, color: COLORS.taupe }}>{badge}</span></div>}
+      {items.map(it => (
+        <div key={it.id} className="p-3.5 rounded-xl bg-gray-50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="space-y-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="font-semibold text-sm">{it.name}</span>
+              <span className={`text-[11px] px-2 py-0.5 rounded-full font-medium ${it.waitingUrgent ? 'bg-red-50 text-red-700' : 'bg-gray-200 text-gray-600'}`}>{it.waitingLabel}</span>
+            </div>
+            <p className="text-xs text-gray-500 truncate">{it.detail}</p>
+          </div>
+          <button className="shrink-0 px-3 py-2 rounded-lg text-xs font-semibold text-white" style={{ backgroundColor: COLORS.forest }}>{it.buttonLabel}</button>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export function PriorityFollowUps({ items }: {
+  items: Array<{ id: string | number; initials: string; name: string; time: string; priority: 'Hot' | 'Warm' | 'Cold' }>;
+}) {
+  const priorityStyle = (p: string) => p === 'Hot'
+    ? { backgroundColor: COLORS.midnight, color: 'white' }
+    : p === 'Warm'
+    ? { backgroundColor: `${COLORS.taupe}22`, color: COLORS.taupe }
+    : { backgroundColor: '#F1F0F5', color: '#6B7280' };
+  return (
+    <div className="space-y-2.5">
+      {items.map(it => (
+        <div key={it.id} className="p-3 rounded-xl bg-gray-50 flex items-center justify-between">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold shrink-0">{it.initials}</div>
+            <div className="min-w-0">
+              <div className="text-sm font-semibold truncate">{it.name}</div>
+              <div className="text-xs text-gray-400">{it.time}</div>
+            </div>
+          </div>
+          <span className="text-xs px-2.5 py-0.5 rounded-full font-bold shrink-0" style={priorityStyle(it.priority)}>{it.priority}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export function TransactionsDetailTable({ rows }: {
+  rows: Array<{ id: string | number; property: string; client: string; status: string; statusTone: 'success' | 'info' | 'warn' | 'neutral'; price: string; commission: string; updated: string }>;
+}) {
+  const toneClass = (t: string) => t === 'success' ? 'bg-green-50 text-green-700' : t === 'info' ? 'bg-indigo-50 text-indigo-700' : t === 'warn' ? 'bg-amber-50 text-amber-700' : 'bg-gray-100 text-gray-600';
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full text-left border-collapse text-sm">
+        <thead>
+          <tr className="text-xs uppercase text-gray-400 border-b">
+            <th className="py-2 px-2">Property</th>
+            <th className="py-2 px-2">Client</th>
+            <th className="py-2 px-2">Status</th>
+            <th className="py-2 px-2">Agreed Price</th>
+            <th className="py-2 px-2">Expected Comm.</th>
+            <th className="py-2 px-2">Updated</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y">
+          {rows.map(r => (
+            <tr key={r.id} className="hover:bg-gray-50">
+              <td className="py-3 px-2 font-semibold" style={{ color: COLORS.midnight }}>{r.property}</td>
+              <td className="py-3 px-2">{r.client}</td>
+              <td className="py-3 px-2"><span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${toneClass(r.statusTone)}`}>{r.status}</span></td>
+              <td className="py-3 px-2 font-mono">{r.price}</td>
+              <td className="py-3 px-2 font-mono font-semibold" style={{ color: COLORS.forest }}>{r.commission}</td>
+              <td className="py-3 px-2 text-gray-400">{r.updated}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+export function ReferralClientsList({ items, footnote }: {
+  footnote?: string;
+  items: Array<{ id: string | number; initials: string; name: string; note: string; value: string; valueTag: string }>;
+}) {
+  return (
+    <div className="space-y-2.5">
+      {items.map(it => (
+        <div key={it.id} className="p-3.5 rounded-xl bg-gray-50 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold shrink-0" style={{ backgroundColor: `${COLORS.forest}18`, color: COLORS.forest }}>{it.initials}</div>
+            <div className="min-w-0">
+              <div className="text-sm font-semibold truncate">{it.name}</div>
+              <div className="text-xs text-gray-500 truncate">{it.note}</div>
+            </div>
+          </div>
+          <div className="text-right shrink-0">
+            <div className="text-sm font-bold" style={{ color: COLORS.midnight }}>{it.value}</div>
+            <span className="text-[11px] font-medium" style={{ color: COLORS.forest }}>{it.valueTag}</span>
+          </div>
+        </div>
+      ))}
+      {footnote && <p className="text-xs text-gray-400 pt-1">{footnote}</p>}
+    </div>
+  );
+}
+
+export function InsightDonut({ segments, centerLabel, tag, note }: {
+  segments: Array<{ name: string; value: number; pct: number; color: string }>;
+  centerLabel: string; tag?: string; note?: string;
+}) {
+  return (
+    <div className="space-y-3">
+      {tag && <div className="flex justify-end"><span className="text-[10px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 font-medium">{tag}</span></div>}
+      <div className="flex items-center gap-6">
+        <div className="relative w-32 h-32 shrink-0">
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie data={segments} dataKey="pct" innerRadius={44} outerRadius={62} paddingAngle={2} cornerRadius={4} stroke="none">
+                {segments.map((s, i) => <Cell key={i} fill={s.color} />)}
+              </Pie>
+            </PieChart>
+          </ResponsiveContainer>
+          <div className="absolute inset-0 flex items-center justify-center text-sm font-bold" style={{ color: COLORS.midnight }}>{centerLabel}</div>
+        </div>
+        <div className="space-y-1.5 flex-1 text-sm">
+          {segments.map(s => (
+            <div key={s.name} className="flex items-center justify-between">
+              <span className="flex items-center gap-2 text-gray-700 truncate">
+                <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: s.color }} />
+                {s.name}
+              </span>
+              <span className="font-bold shrink-0" style={{ color: COLORS.midnight }}>{s.pct}%</span>
+            </div>
+          ))}
+        </div>
+      </div>
+      {note && <p className="text-xs text-gray-500 bg-gray-50 p-2.5 rounded-lg">{note}</p>}
+    </div>
+  );
+}
+
+export function ClosedDealCards({ deals }: {
+  deals: Array<{ id: string | number; badge: string; date: string; title: string; buyer: string; price: string; commission: string }>;
+}) {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {deals.map(d => (
+        <div key={d.id} className="p-4 rounded-xl bg-gray-50 space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] px-2.5 py-0.5 rounded-full font-bold flex items-center gap-1" style={{ backgroundColor: `${COLORS.forest}18`, color: COLORS.forest }}>✓ {d.badge}</span>
+            <span className="text-xs text-gray-400">{d.date}</span>
+          </div>
+          <div>
+            <h3 className="font-bold leading-tight" style={{ color: COLORS.midnight }}>{d.title}</h3>
+            <p className="text-xs text-gray-500 mt-0.5">Buyer: {d.buyer}</p>
+          </div>
+          <div className="pt-2 border-t flex items-center justify-between">
+            <div>
+              <span className="text-[10px] uppercase tracking-wide text-gray-400 block">Final Price</span>
+              <span className="text-sm font-bold">{d.price}</span>
+            </div>
+            <div className="text-right">
+              <span className="text-[10px] uppercase tracking-wide text-gray-400 block">Commission</span>
+              <span className="text-sm font-bold" style={{ color: COLORS.forest }}>{d.commission}</span>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export function TeamLeaderboardTable({ rows }: {
+  rows: Array<{ rank: number; initials: string; name: string; title: string; campaigns: number; views: string; leads: number; conversion: string }>;
+}) {
+  const rankBg = (r: number) => r === 1 ? 'bg-amber-100 text-amber-800' : r === 2 ? 'bg-gray-100 text-gray-600' : 'bg-orange-50 text-orange-700';
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full text-left text-sm">
+        <thead>
+          <tr className="text-xs uppercase text-gray-400 border-b">
+            <th className="py-2 px-2">Rank</th>
+            <th className="py-2 px-2">Associate</th>
+            <th className="py-2 px-2 text-center">Campaigns</th>
+            <th className="py-2 px-2 text-right">Views</th>
+            <th className="py-2 px-2 text-right">Leads</th>
+            <th className="py-2 px-2 text-right">Conv.</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y">
+          {rows.map(r => (
+            <tr key={r.rank} className="hover:bg-gray-50">
+              <td className="py-3 px-2">
+                <span className={`w-5 h-5 rounded-full font-bold text-[10px] inline-flex items-center justify-center ${rankBg(r.rank)}`}>{r.rank}</span>
+              </td>
+              <td className="py-3 px-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold shrink-0">{r.initials}</div>
+                  <div>
+                    <div className="font-semibold text-sm">{r.name}</div>
+                    <div className="text-[10px] text-gray-400">{r.title}</div>
+                  </div>
+                </div>
+              </td>
+              <td className="py-3 px-2 text-center font-semibold">{r.campaigns}</td>
+              <td className="py-3 px-2 text-right font-mono">{r.views}</td>
+              <td className="py-3 px-2 text-right font-mono font-semibold" style={{ color: COLORS.midnight }}>{r.leads}</td>
+              <td className="py-3 px-2 text-right font-mono font-semibold text-green-700">{r.conversion}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+export function DualMetricBars({ items, footnoteLeft, footnoteRight }: {
+  footnoteLeft?: string; footnoteRight?: string;
+  items: Array<{ label: string; metricText: string; pct: number }>;
+}) {
+  return (
+    <div className="space-y-4">
+      {items.map(it => (
+        <div key={it.label}>
+          <div className="flex justify-between items-center text-xs mb-1">
+            <span className="font-semibold text-gray-800">{it.label}</span>
+            <span className="text-gray-500 font-medium">{it.metricText}</span>
+          </div>
+          <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+            <div className="h-full rounded-full" style={{ width: `${it.pct}%`, backgroundColor: COLORS.midnight, opacity: 0.5 + it.pct / 200 }} />
+          </div>
+        </div>
+      ))}
+      {(footnoteLeft || footnoteRight) && (
+        <div className="pt-3 border-t mt-4 text-[11px] text-gray-500 flex items-center justify-between">
+          <span>{footnoteLeft}</span>
+          <span className="font-bold" style={{ color: COLORS.midnight }}>{footnoteRight}</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export function ScheduleList({ items }: {
+  items: Array<{ id: string | number; month: string; day: string; title: string; time: string; channel: string; tag: string }>;
+}) {
+  return (
+    <div className="space-y-2.5">
+      {items.map(it => (
+        <div key={it.id} className="p-3.5 rounded-xl bg-gray-50 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-10 h-10 rounded-xl flex flex-col items-center justify-center shrink-0" style={{ backgroundColor: '#EDE9FE', color: '#6D28D9' }}>
+              <span className="text-[9px] uppercase leading-none">{it.month}</span>
+              <span className="text-sm font-extrabold leading-none mt-0.5">{it.day}</span>
+            </div>
+            <div className="min-w-0">
+              <h3 className="text-sm font-semibold truncate">{it.title}</h3>
+              <span className="text-xs text-gray-400">{it.time} • {it.channel}</span>
+            </div>
+          </div>
+          <span className="text-xs px-2.5 py-1 rounded-full font-bold shrink-0" style={{ backgroundColor: '#EDE9FE', color: '#6D28D9' }}>{it.tag}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export function PublishedCampaignCards({ campaigns }: {
+  campaigns: Array<{ id: string | number; badge: string; publishedLabel: string; title: string; subtitle: string; views: string; enquiries: number; leads: number }>;
+}) {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {campaigns.map(c => (
+        <div key={c.id} className="p-4 rounded-xl bg-gray-50 space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] px-2 py-0.5 rounded-md font-bold flex items-center gap-1" style={{ backgroundColor: `${COLORS.forest}18`, color: COLORS.forest }}>
+              <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: COLORS.forest }} /> {c.badge}
+            </span>
+            <span className="text-[11px] text-gray-400">{c.publishedLabel}</span>
+          </div>
+          <div>
+            <h3 className="text-sm font-bold leading-snug">{c.title}</h3>
+            <p className="text-xs text-gray-500 mt-0.5">{c.subtitle}</p>
+          </div>
+          <div className="grid grid-cols-3 gap-2 pt-3 border-t text-center">
+            <div>
+              <span className="text-[10px] uppercase font-bold text-gray-400 block">Views</span>
+              <span className="text-xs font-extrabold" style={{ color: COLORS.midnight }}>{c.views}</span>
+            </div>
+            <div>
+              <span className="text-[10px] uppercase font-bold text-gray-400 block">Enquiries</span>
+              <span className="text-xs font-extrabold text-gray-800">{c.enquiries}</span>
+            </div>
+            <div>
+              <span className="text-[10px] uppercase font-bold text-gray-400 block">Leads</span>
+              <span className="text-xs font-extrabold" style={{ color: COLORS.forest }}>{c.leads}</span>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export function StageRevenueBars({ stages, footer }: {
+  footer?: { label: string; deals: string; value: string; comm: string };
+  stages: Array<{ label: string; deals: number; value: string; comm: string; pct: number; color: string }>;
+}) {
+  return (
+    <div className="space-y-4">
+      {stages.map(s => (
+        <div key={s.label}>
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-0.5 text-xs mb-1">
+            <span className="font-semibold text-gray-800 flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: s.color }} />
+              {s.label} <span className="text-gray-400 font-normal">({s.deals} deals)</span>
+            </span>
+            <span className="font-bold text-gray-800">{s.value} <span className="text-gray-400 font-normal">· Comm: {s.comm}</span></span>
+          </div>
+          <div className="w-full h-2.5 bg-gray-100 rounded-full overflow-hidden">
+            <div className="h-full rounded-full" style={{ width: `${s.pct}%`, backgroundColor: s.color }} />
+          </div>
+        </div>
+      ))}
+      {footer && (
+        <div className="pt-3 border-t">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-0.5 text-xs mb-1">
+            <span className="font-bold text-gray-900 flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: COLORS.forest }} />
+              {footer.label} <span className="text-xs font-extrabold px-2 py-0.5 rounded" style={{ backgroundColor: `${COLORS.forest}18`, color: COLORS.forest }}>{footer.deals}</span>
+            </span>
+            <span className="font-extrabold" style={{ color: COLORS.forest }}>{footer.value} <span className="text-gray-500 font-semibold">· Comm: {footer.comm}</span></span>
+          </div>
+          <div className="w-full h-2.5 bg-gray-100 rounded-full overflow-hidden">
+            <div className="h-full rounded-full" style={{ width: '92%', backgroundColor: COLORS.forest }} />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export function FinanceDonut({ segments, centerPct, centerLabel, footerLeft, footerRight }: {
+  centerPct: number; centerLabel: string; footerLeft?: string; footerRight?: string;
+  segments: Array<{ name: string; value: string; pct: number; color: string; danger?: boolean }>;
+}) {
+  return (
+    <div className="space-y-4">
+      <div className="relative w-44 h-44 mx-auto">
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart>
+            <Pie data={segments} dataKey="pct" innerRadius={62} outerRadius={80} paddingAngle={2} cornerRadius={4} stroke="none">
+              {segments.map((s, i) => <Cell key={i} fill={s.color} />)}
+            </Pie>
+          </PieChart>
+        </ResponsiveContainer>
+        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+          <span className="text-2xl font-black" style={{ color: COLORS.midnight }}>{centerPct}%</span>
+          <span className="text-[10px] uppercase tracking-wide text-gray-400 mt-0.5">{centerLabel}</span>
+        </div>
+      </div>
+      <div className="space-y-2.5 text-sm">
+        {segments.map(s => (
+          <div key={s.name} className="flex items-center justify-between">
+            <span className="flex items-center gap-2 font-semibold" style={{ color: s.danger ? '#DC2626' : '#374151' }}>
+              <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: s.color }} />
+              {s.name}
+            </span>
+            <span className="text-right">
+              <span className="font-bold" style={{ color: s.danger ? '#DC2626' : '#111827' }}>{s.value}</span>
+              <span className="text-xs ml-1" style={{ color: s.danger ? '#F87171' : '#9CA3AF' }}>({s.pct}%)</span>
+            </span>
+          </div>
+        ))}
+      </div>
+      {(footerLeft || footerRight) && (
+        <div className="pt-3 border-t flex items-center justify-between text-[11px] text-gray-400">
+          <span>{footerLeft}</span>
+          <span className="font-semibold" style={{ color: COLORS.midnight }}>{footerRight}</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export function CommissionSplitCard({ total, tag, splitPct, agentLabel, agentValue, agentNote, companyLabel, companyValue, companyNote, footerItems }: {
+  total: string; tag?: string; splitPct: number;
+  agentLabel: string; agentValue: string; agentNote?: string;
+  companyLabel: string; companyValue: string; companyNote?: string;
+  footerItems?: Array<{ label: string; value: string }>;
+}) {
+  return (
+    <div className="space-y-5">
+      {tag && <div className="flex justify-end"><span className="text-[11px] px-2.5 py-1 rounded-md bg-gray-100 text-gray-600 font-bold">{tag}</span></div>}
+      <div>
+        <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">Total Recognized Commission</div>
+        <div className="text-3xl font-black" style={{ color: COLORS.midnight }}>{total}</div>
+        <div className="mt-3 h-4 w-full rounded-full bg-gray-100 flex overflow-hidden p-0.5 gap-0.5">
+          <div className="h-full rounded-l-full" style={{ width: `${splitPct}%`, backgroundColor: COLORS.midnight }} />
+          <div className="h-full rounded-r-full" style={{ width: `${100 - splitPct}%`, backgroundColor: COLORS.forest }} />
+        </div>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="p-3.5 rounded-xl" style={{ backgroundColor: `${COLORS.midnight}0d`, border: `1px solid ${COLORS.midnight}22` }}>
+          <div className="flex items-center gap-1.5 text-xs font-bold" style={{ color: COLORS.midnight }}>
+            <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: COLORS.midnight }} />
+            {agentLabel}
+          </div>
+          <div className="text-xl font-extrabold mt-1">{agentValue}</div>
+          {agentNote && <p className="text-[11px] text-gray-500 mt-0.5">{agentNote}</p>}
+        </div>
+        <div className="p-3.5 rounded-xl" style={{ backgroundColor: `${COLORS.forest}0d`, border: `1px solid ${COLORS.forest}22` }}>
+          <div className="flex items-center gap-1.5 text-xs font-bold" style={{ color: COLORS.forest }}>
+            <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: COLORS.forest }} />
+            {companyLabel}
+          </div>
+          <div className="text-xl font-extrabold mt-1">{companyValue}</div>
+          {companyNote && <p className="text-[11px] text-gray-500 mt-0.5">{companyNote}</p>}
+        </div>
+      </div>
+      {footerItems && (
+        <div className="pt-4 border-t flex flex-wrap items-center gap-x-6 gap-y-2 text-xs">
+          {footerItems.map(f => (
+            <div key={f.label} className="flex items-center gap-2">
+              <span className="font-bold text-gray-700">{f.label}:</span>
+              <span className="font-bold" style={{ color: COLORS.midnight }}>{f.value}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export function CommissionRulesTable({ rows, tag }: {
+  tag?: string;
+  rows: Array<{ role: string; note: string; split: string; active: boolean }>;
+}) {
+  return (
+    <div>
+      {tag && <div className="flex justify-end mb-2"><span className="text-xs text-gray-400 font-semibold">{tag}</span></div>}
+      <div className="divide-y text-sm">
+        {rows.map(r => (
+          <div key={r.role} className="py-3 flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <p className="font-bold text-gray-900 truncate">{r.role}</p>
+              <p className="text-xs text-gray-400 truncate">{r.note}</p>
+            </div>
+            <div className="flex items-center gap-2.5 shrink-0">
+              <span className="font-extrabold text-gray-800">{r.split}</span>
+              <span className={`px-2 py-0.5 rounded text-[10px] font-extrabold uppercase ${r.active ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-400'}`}>
+                {r.active ? 'Active' : 'Inactive'}
+              </span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export function OverdueList({ badge, items }: {
+  badge?: string;
+  items: Array<{ id: string | number; title: string; daysLabel: string; client: string; note: string; amount: string; buttonLabel: string }>;
+}) {
+  return (
+    <div className="space-y-3">
+      {badge && <div className="flex justify-end"><span className="text-xs px-2.5 py-1 rounded-full font-bold bg-red-100 text-red-700">{badge}</span></div>}
+      {items.map(it => (
+        <div key={it.id} className="p-3.5 rounded-xl border border-red-100 bg-red-50/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h4 className="font-extrabold text-sm truncate">{it.title}</h4>
+              <span className="px-2 py-0.5 bg-red-100 text-red-700 text-[10px] font-bold rounded">{it.daysLabel}</span>
+            </div>
+            <p className="text-xs text-gray-500 mt-0.5">Client: <span className="font-semibold text-gray-700">{it.client}</span> · {it.note}</p>
+            <p className="text-xs font-bold text-red-600 mt-1">Amount: {it.amount}</p>
+          </div>
+          <button className="shrink-0 px-3 py-1.5 bg-white border border-red-200 hover:bg-red-50 text-red-700 text-xs font-bold rounded-lg">{it.buttonLabel}</button>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export function UpcomingPaymentsList({ items }: {
+  items: Array<{ id: string | number; title: string; statusTag: string; statusTone: 'info' | 'warn' | 'neutral'; client: string; expected: string; amount: string; dueLabel: string }>;
+}) {
+  const toneClass = (t: string) => t === 'info' ? 'bg-blue-50 text-blue-700' : t === 'warn' ? 'bg-amber-50 text-amber-700' : 'bg-purple-50 text-purple-700';
+  return (
+    <div className="space-y-3">
+      {items.map(it => (
+        <div key={it.id} className="p-3.5 rounded-xl bg-gray-50 border flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h4 className="font-extrabold text-sm truncate">{it.title}</h4>
+              <span className={`px-2 py-0.5 text-[10px] font-bold rounded ${toneClass(it.statusTone)}`}>{it.statusTag}</span>
+            </div>
+            <p className="text-xs text-gray-500 mt-0.5">Client: <span className="font-semibold text-gray-700">{it.client}</span> · Expected: {it.expected}</p>
+            <p className="text-xs font-bold text-gray-900 mt-1">{it.amount}</p>
+          </div>
+          <span className="shrink-0 text-xs font-bold bg-gray-100 text-gray-600 px-2.5 py-1 rounded-lg">{it.dueLabel}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export function SettlementsLedgerTable({ rows }: {
+  rows: Array<{ id: string | number; initials: string; property: string; area: string; client: string; total: string; agentShare: string; companyShare: string; date: string; status: string; statusTone: 'success' | 'warn' }>;
+}) {
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full text-left border-collapse text-xs">
+        <thead>
+          <tr className="border-b text-gray-400 font-bold uppercase tracking-wider text-[10px]">
+            <th className="py-3 px-3">Property</th>
+            <th className="py-3 px-3">Client</th>
+            <th className="py-3 px-3">Total Commission</th>
+            <th className="py-3 px-3">Agent Share</th>
+            <th className="py-3 px-3">Company Share</th>
+            <th className="py-3 px-3">Payment Date</th>
+            <th className="py-3 px-3">Status</th>
+            <th className="py-3 px-3 text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y">
+          {rows.map(r => (
+            <tr key={r.id} className="hover:bg-gray-50">
+              <td className="py-3.5 px-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center font-bold shrink-0" style={{ backgroundColor: `${COLORS.midnight}15`, color: COLORS.midnight }}>{r.initials}</div>
+                  <div className="min-w-0">
+                    <p className="font-extrabold text-gray-900 truncate">{r.property}</p>
+                    <p className="text-[10px] text-gray-400 truncate">{r.area}</p>
+                  </div>
+                </div>
+              </td>
+              <td className="py-3.5 px-3 font-semibold text-gray-700">{r.client}</td>
+              <td className="py-3.5 px-3 font-extrabold text-gray-900">{r.total}</td>
+              <td className="py-3.5 px-3 font-bold" style={{ color: COLORS.midnight }}>{r.agentShare}</td>
+              <td className="py-3.5 px-3 font-bold" style={{ color: COLORS.forest }}>{r.companyShare}</td>
+              <td className="py-3.5 px-3 text-gray-500 font-medium">{r.date}</td>
+              <td className="py-3.5 px-3">
+                <span className={`px-2.5 py-1 rounded-full font-extrabold text-[10px] inline-flex items-center gap-1 ${r.statusTone === 'success' ? 'bg-green-50 text-green-700' : 'bg-amber-50 text-amber-700'}`}>
+                  <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: r.statusTone === 'success' ? COLORS.forest : COLORS.taupe }} />
+                  {r.status}
+                </span>
+              </td>
+              <td className="py-3.5 px-3 text-right">
+                <a href="#" className="font-bold hover:underline" style={{ color: COLORS.midnight }}>View Receipt</a>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
