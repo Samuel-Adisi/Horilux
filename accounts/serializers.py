@@ -1,13 +1,11 @@
 from rest_framework import serializers
-from accounts.models import User, Role, Department, UserRole
+from .models import User, Role, Department
 
 
 class RoleSerializer(serializers.ModelSerializer):
-    department_name = serializers.CharField(source="department.name", read_only=True)
-
     class Meta:
         model = Role
-        fields = ["id", "name", "description", "department", "department_name"]
+        fields = ["id", "name", "description", "department"]
 
 
 class DepartmentSerializer(serializers.ModelSerializer):
@@ -18,39 +16,40 @@ class DepartmentSerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     roles = RoleSerializer(many=True, read_only=True)
-    role_ids = serializers.PrimaryKeyRelatedField(
-        source="roles", queryset=Role.objects.all(), many=True, write_only=True, required=False
-    )
-    department_name = serializers.CharField(source="department.name", read_only=True)
-    password = serializers.CharField(write_only=True, required=False, min_length=8)
+    department = DepartmentSerializer(read_only=True)
+    full_name = serializers.SerializerMethodField()
 
     class Meta:
         model = User
         fields = [
-            "id", "email", "phone", "first_name", "last_name",
-            "department", "department_name", "roles", "role_ids",
-            "is_active", "is_staff", "date_joined", "password",
+            "id",
+            "email",
+            "first_name",
+            "last_name",
+            "full_name",
+            "phone",
+            "department",
+            "roles",
+            "is_active",
+            "is_staff",
+            "date_joined",
         ]
-        read_only_fields = ["id", "date_joined", "is_staff"]
+        read_only_fields = fields
 
-    def create(self, validated_data):
-        role_objs = validated_data.pop("roles", [])
-        password = validated_data.pop("password", None)
-        user = User.objects.create_user(password=password, **validated_data)
-        for role in role_objs:
-            UserRole.objects.get_or_create(user=user, role=role)
-        return user
+    def get_full_name(self, obj):
+        return f"{obj.first_name} {obj.last_name}".strip()
 
-    def update(self, instance, validated_data):
-        role_objs = validated_data.pop("roles", None)
-        password = validated_data.pop("password", None)
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
-        if password:
-            instance.set_password(password)
-        instance.save()
-        if role_objs is not None:
-            UserRole.objects.filter(user=instance).exclude(role__in=role_objs).delete()
-            for role in role_objs:
-                UserRole.objects.get_or_create(user=instance, role=role)
-        return instance
+
+class UserListItemSerializer(serializers.ModelSerializer):
+    """Minimal user shape for agent-picker dropdowns. Identity data only,
+    no RBAC gate needed since this is not a scoped business resource."""
+    full_name = serializers.SerializerMethodField()
+    department_name = serializers.CharField(source="department.name", default=None, read_only=True)
+
+    class Meta:
+        model = User
+        fields = ["id", "full_name", "email", "department_name"]
+        read_only_fields = fields
+
+    def get_full_name(self, obj):
+        return f"{obj.first_name} {obj.last_name}".strip()

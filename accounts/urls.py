@@ -1,13 +1,15 @@
 from django.urls import path
 from rest_framework.routers import DefaultRouter
 
-from accounts.views import UserViewSet, RoleViewSet, DepartmentViewSet
+from .views import MeView, UserListView
 
 app_name = "accounts"
 
 router = DefaultRouter()
-router.register(r"users", UserViewSet, basename="user")
-router.register(r"roles", RoleViewSet, basename="role")
-router.register(r"departments", DepartmentViewSet, basename="department")
+# TODO: register ViewSets here as they're built, e.g.:
+# router.register(r"properties", PropertyViewSet, basename="property")
 
-urlpatterns = router.urls
+urlpatterns = [
+    path("accounts/me/", MeView.as_view(), name="me"),
+    path("accounts/users/", UserListView.as_view(), name="user-list"),
+] + router.urls

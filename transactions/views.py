@@ -1,4 +1,3 @@
-from audit.mixins import AuditActorMixin
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -25,7 +24,7 @@ STATUS_ORDER = [
 ]
 
 
-class TransactionViewSet(AuditActorMixin, viewsets.ModelViewSet):
+class TransactionViewSet(viewsets.ModelViewSet):
     permission_classes = [RBACPermission]
     rbac_resource = "transaction"
     rbac_action_map = {
@@ -140,7 +139,7 @@ class CommissionViewSet(viewsets.ReadOnlyModelViewSet):
         )
 
 
-class CommissionRuleViewSet(AuditActorMixin, viewsets.ModelViewSet):
+class CommissionRuleViewSet(viewsets.ModelViewSet):
     """Manage per-role commission splits. Company-policy data -- CEO/Finance scope only."""
     serializer_class = CommissionRuleSerializer
     queryset = CommissionRule.objects.all()

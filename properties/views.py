@@ -1,4 +1,3 @@
-from audit.mixins import AuditActorMixin
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -25,7 +24,7 @@ class PropertyOwnerViewSet(viewsets.ModelViewSet):
     rbac_resource = "property"  # owners are managed as part of property onboarding
 
 
-class PropertyViewSet(AuditActorMixin, viewsets.ModelViewSet):
+class PropertyViewSet(viewsets.ModelViewSet):
     permission_classes = [RBACPermission]
     rbac_resource = "property"
     rbac_action_map = {

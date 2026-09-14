@@ -1,38 +1,26 @@
-from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
+from rest_framework import generics
+from django.shortcuts import render
+from .models import User
+from .serializers import UserSerializer, UserListItemSerializer
 
-from accounts.models import User, Role, Department
-from accounts.serializers import UserSerializer, RoleSerializer, DepartmentSerializer
-from accounts.permissions import RBACPermission, filter_queryset_for_user
+# Create your views here.
 
 
-class UserViewSet(viewsets.ModelViewSet):
+class MeView(generics.RetrieveAPIView):
+    """Return the currently authenticated user. No RBAC gate — identity only."""
     serializer_class = UserSerializer
-    permission_classes = [IsAuthenticated, RBACPermission]
-    rbac_resource = "user_management"
-    rbac_action_map = {
-        "list": "view", "retrieve": "view",
-        "create": "create", "update": "edit", "partial_update": "edit",
-        "destroy": "delete",
-    }
+    permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
-        qs = User.objects.select_related("department").prefetch_related("roles").order_by("last_name", "first_name")
-        return filter_queryset_for_user(self.request.user, "view", "user_management", qs, agent_field="department")
+    def get_object(self):
+        return self.request.user
 
 
-class RoleViewSet(viewsets.ReadOnlyModelViewSet):
-    """Read-only: roles are seeded via seed_rbac, not created ad hoc through the API."""
-    serializer_class = RoleSerializer
-    permission_classes = [IsAuthenticated, RBACPermission]
-    rbac_resource = "user_management"
-    rbac_action_map = {"list": "view", "retrieve": "view"}
-    queryset = Role.objects.select_related("department").order_by("name")
-
-
-class DepartmentViewSet(viewsets.ReadOnlyModelViewSet):
-    serializer_class = DepartmentSerializer
-    permission_classes = [IsAuthenticated, RBACPermission]
-    rbac_resource = "user_management"
-    rbac_action_map = {"list": "view", "retrieve": "view"}
-    queryset = Department.objects.all().order_by("name")
+class UserListView(generics.ListAPIView):
+    """Lightweight list of active users for agent-picker UI (e.g. Lead.assign).
+    Identity data only, no pagination, no RBAC gate — any authenticated user
+    can see who else is on the team."""
+    serializer_class = UserListItemSerializer
+    permission_classes = [IsAuthenticated]
+    pagination_class = None
+    queryset = User.objects.filter(is_active=True).order_by("first_name", "last_name")

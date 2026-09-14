@@ -32,9 +32,6 @@ class Transaction(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    class Meta:
-        ordering = ['-created_at']
-
 
 class Payment(models.Model):
     class Status(models.TextChoices):
@@ -63,7 +60,7 @@ class CommissionRule(models.Model):
     """
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     role = models.OneToOneField(
-        Role, on_delete=models.PROTECT, related_name="commission_rule",
+        Role, on_delete=models.CASCADE, related_name="commission_rule",
         null=True, blank=True,
         help_text="Leave blank for the default/fallback rule.",
     )
