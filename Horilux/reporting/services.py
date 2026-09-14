@@ -12,9 +12,10 @@ def listing_report(user=None):
     qs = Property.objects.all()
     if user is not None and user.department_id:
         qs = qs.filter(agent__department_id=user.department_id)
+    by_status = dict(qs.values_list("status").annotate(c=Count("id")).order_by())
     return {
-        "total_properties": qs.count(),
-        "by_status": dict(qs.values_list("status").annotate(c=Count("id")).order_by()),
+        "total_properties": sum(by_status.values()),
+        "by_status": by_status,
         "avg_completion_percent": qs.aggregate(avg=Avg("completion_percent"))["avg"] or 0,
     }
 
@@ -27,9 +28,10 @@ def sales_report(user=None):
         lead_qs = lead_qs.filter(assigned_agent=user)
         client_qs = client_qs.filter(assigned_agent=user)
         followup_filter["responsible_agent"] = user
+    leads_by_status = dict(lead_qs.values_list("status").annotate(c=Count("id")).order_by())
     return {
-        "total_leads": lead_qs.count(),
-        "leads_by_status": dict(lead_qs.values_list("status").annotate(c=Count("id")).order_by()),
+        "total_leads": sum(leads_by_status.values()),
+        "leads_by_status": leads_by_status,
         "total_clients": client_qs.count(),
         "overdue_followups": FollowUp.objects.filter(**followup_filter).count(),
     }
@@ -39,6 +41,7 @@ def marketing_report(user=None):
     qs = MarketingCampaign.objects.all()
     if user is not None:
         qs = qs.filter(created_by=user)
+    by_status = dict(qs.values_list("status").annotate(c=Count("id")).order_by())
     perf = CampaignPerformance.objects.filter(campaign__in=qs).aggregate(
         views=Sum("views"), enquiries=Sum("enquiries"),
         leads_generated=Sum("leads_generated"),
@@ -46,21 +49,22 @@ def marketing_report(user=None):
         conversions=Sum("conversions"),
     )
     return {
-        "total_campaigns": qs.count(),
-        "by_status": dict(qs.values_list("status").annotate(c=Count("id")).order_by()),
+        "total_campaigns": sum(by_status.values()),
+        "by_status": by_status,
         "performance": {k: v or 0 for k, v in perf.items()},
     }
 
 
 def finance_report(user=None):
     txn_qs = Transaction.objects.all()
+    by_status = dict(txn_qs.values_list("status").annotate(c=Count("id")).order_by())
     commission_totals = Commission.objects.filter(transaction__in=txn_qs).aggregate(
         expected=Sum("expected"), received=Sum("received"), outstanding=Sum("outstanding"),
         agent_share=Sum("agent_share"), company_share=Sum("company_share"),
     )
     return {
-        "total_transactions": txn_qs.count(),
-        "by_status": dict(txn_qs.values_list("status").annotate(c=Count("id")).order_by()),
+        "total_transactions": sum(by_status.values()),
+        "by_status": by_status,
         "commission": {k: v or 0 for k, v in commission_totals.items()},
     }
 
@@ -68,13 +72,148 @@ def finance_report(user=None):
 def operations_report(user=None):
     from operations.models import Task
     qs = Task.objects.all()
+    by_status = dict(qs.values_list("status").annotate(c=Count("id")).order_by())
     return {
-        "total_tasks": qs.count(),
-        "by_status": dict(qs.values_list("status").annotate(c=Count("id")).order_by()),
+        "total_tasks": sum(by_status.values()),
+        "by_status": by_status,
         "overdue_tasks": qs.filter(
             due_date__lt=timezone.now().date()
         ).exclude(status=Task.Status.DONE).count(),
     }
+
+
+
+
+def _month_label(dt):
+    return dt.strftime("%b")
+
+
+def ceo_kpis():
+    from django.db.models.functions import TruncMonth
+    from accounts.models import User
+
+    now = timezone.now()
+    year_start = now.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
+
+    txn_qs = Transaction.objects.filter(created_at__gte=year_start)
+    agg = txn_qs.aggregate(
+        gross_volume=Sum("price"),
+        avg_deal_size=Avg("price"),
+    )
+
+    active_agents = User.objects.filter(is_active=True, department__isnull=False).count()
+
+    total_leads = Lead.objects.count()
+    closed_transactions = Transaction.objects.filter(status=Transaction.Status.CLOSED).count()
+    closed_yield = (closed_transactions / total_leads * 100) if total_leads else 0
+
+    active_mandates = Property.objects.exclude(
+        status__in=[Property.Status.SOLD_RENTED, Property.Status.ARCHIVED]
+    ).count()
+
+    return {
+        "gross_volume_ytd": agg["gross_volume"] or 0,
+        "avg_deal_size": agg["avg_deal_size"] or 0,
+        "active_agents": active_agents,
+        "active_mandates": active_mandates,
+        "closed_yield_percent": round(closed_yield, 1),
+    }
+
+
+def revenue_trend(months=6):
+    from django.db.models.functions import TruncMonth
+    from dateutil.relativedelta import relativedelta
+
+    now = timezone.now()
+    start = (now.replace(day=1) - relativedelta(months=months - 1))
+    prior_start = start - relativedelta(years=1)
+    prior_end = now - relativedelta(years=1)
+
+    current = (
+        Transaction.objects.filter(created_at__gte=start)
+        .annotate(m=TruncMonth("created_at"))
+        .values("m")
+        .annotate(total=Sum("price"))
+        .order_by("m")
+    )
+    prior = (
+        Transaction.objects.filter(created_at__gte=prior_start, created_at__lte=prior_end)
+        .annotate(m=TruncMonth("created_at"))
+        .values("m")
+        .annotate(total=Sum("price"))
+        .order_by("m")
+    )
+    prior_by_month = {p["m"].month: p["total"] or 0 for p in prior}
+
+    return [
+        {
+            "month": _month_label(row["m"]),
+            "current": float(row["total"] or 0),
+            "prior": float(prior_by_month.get(row["m"].month, 0)),
+        }
+        for row in current
+    ]
+
+
+def conversion_funnel():
+    order = [
+        Lead.Status.NEW, Lead.Status.CONTACTED, Lead.Status.QUALIFIED,
+        Lead.Status.PROPERTY_MATCHED, Lead.Status.VIEWING,
+        Lead.Status.NEGOTIATION, Lead.Status.CLOSED,
+    ]
+    counts = dict(Lead.objects.values_list("status").annotate(c=Count("id")).order_by())
+    total = Lead.objects.count() or 1
+    stages = []
+    for status in order:
+        c = counts.get(status, 0)
+        stages.append({
+            "label": Lead.Status(status).label,
+            "count": c,
+            "pct": round(c / total * 100, 1),
+        })
+    return stages
+
+
+def department_performance():
+    rows = (
+        Transaction.objects.exclude(agent__department__isnull=True)
+        .values("agent__department__name")
+        .annotate(total=Sum("price"), count=Count("id"))
+        .order_by("-total")
+    )
+    grand_total = sum(r["total"] or 0 for r in rows) or 1
+    return [
+        {
+            "name": r["agent__department__name"],
+            "value": float(r["total"] or 0),
+            "count": r["count"],
+            "pct": round(float(r["total"] or 0) / float(grand_total) * 100, 1),
+        }
+        for r in rows
+    ]
+
+
+def agent_leaderboard(limit=5):
+    rows = (
+        Transaction.objects.filter(status=Transaction.Status.CLOSED)
+        .exclude(agent__isnull=True)
+        .values("agent__id", "agent__first_name", "agent__last_name", "agent__department__name")
+        .annotate(deals=Count("id"), volume=Sum("price"))
+        .order_by("-volume")[:limit]
+    )
+    result = []
+    for i, r in enumerate(rows, start=1):
+        agent_leads = Lead.objects.filter(assigned_agent_id=r["agent__id"]).count()
+        yield_pct = (r["deals"] / agent_leads * 100) if agent_leads else 0
+        result.append({
+            "rank": i,
+            "name": f"{r['agent__first_name']} {r['agent__last_name']}",
+            "division": r["agent__department__name"] or "—",
+            "deals": r["deals"],
+            "volume": float(r["volume"] or 0),
+            "yield_percent": round(yield_pct, 1),
+        })
+    return result
 
 
 def ceo_dashboard():
@@ -84,4 +223,9 @@ def ceo_dashboard():
         "marketing": marketing_report(),
         "finance": finance_report(),
         "operations": operations_report(),
+        "kpis": ceo_kpis(),
+        "revenue_trend": revenue_trend(),
+        "conversion_funnel": conversion_funnel(),
+        "departments": department_performance(),
+        "leaderboard": agent_leaderboard(),
     }
