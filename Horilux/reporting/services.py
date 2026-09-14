@@ -1,3 +1,4 @@
+from django.core.cache import cache
 from django.db.models import Count, Sum, Avg
 from django.utils import timezone
 
@@ -181,7 +182,9 @@ def department_performance():
         .annotate(total=Sum("price"), count=Count("id"))
         .order_by("-total")
     )
-    grand_total = sum(r["total"] or 0 for r in rows) or 1
+    grand_total = sum(r["total"] or 0 for r in rows)
+    if not grand_total:
+        return []
     return [
         {
             "name": r["agent__department__name"],
@@ -194,6 +197,9 @@ def department_performance():
 
 
 def agent_leaderboard(limit=5):
+    # limit=5 is an intentional design choice: the dashboard card shows a
+    # top-5 snapshot, not a full roster. A "view all agents" page would need
+    # its own paginated endpoint -- not built yet, tracked as a future item.
     rows = (
         Transaction.objects.filter(status=Transaction.Status.CLOSED)
         .exclude(agent__isnull=True)
@@ -201,9 +207,16 @@ def agent_leaderboard(limit=5):
         .annotate(deals=Count("id"), volume=Sum("price"))
         .order_by("-volume")[:limit]
     )
+    agent_ids = [r["agent__id"] for r in rows]
+    leads_by_agent = dict(
+        Lead.objects.filter(assigned_agent_id__in=agent_ids)
+        .values_list("assigned_agent_id")
+        .annotate(c=Count("id"))
+        .order_by()
+    )
     result = []
     for i, r in enumerate(rows, start=1):
-        agent_leads = Lead.objects.filter(assigned_agent_id=r["agent__id"]).count()
+        agent_leads = leads_by_agent.get(r["agent__id"], 0)
         yield_pct = (r["deals"] / agent_leads * 100) if agent_leads else 0
         result.append({
             "rank": i,
@@ -216,8 +229,16 @@ def agent_leaderboard(limit=5):
     return result
 
 
+CEO_DASHBOARD_CACHE_KEY = "ceo_dashboard_v1"
+CEO_DASHBOARD_CACHE_TTL = 120  # seconds
+
+
 def ceo_dashboard():
-    return {
+    cached = cache.get(CEO_DASHBOARD_CACHE_KEY)
+    if cached is not None:
+        return cached
+
+    data = {
         "listing": listing_report(),
         "sales": sales_report(),
         "marketing": marketing_report(),
@@ -229,3 +250,5 @@ def ceo_dashboard():
         "departments": department_performance(),
         "leaderboard": agent_leaderboard(),
     }
+    cache.set(CEO_DASHBOARD_CACHE_KEY, data, CEO_DASHBOARD_CACHE_TTL)
+    return data
