@@ -4,6 +4,7 @@ import { CeoDashboardPage } from "./CeoDashboardPage";
 import { SalesDashboardPage } from "./SalesDashboardPage";
 import { MarketingDashboardPage } from "./MarketingDashboardPage";
 import { FinanceDashboardPage } from "./FinanceDashboardPage";
+import { OperationsDashboardPage } from "./OperationsDashboardPage";
 
 export function DashboardRouter() {
   const user = useAuthStore((s) => s.user);
@@ -13,5 +14,6 @@ export function DashboardRouter() {
   if (roleNames.includes("Sales")) return <SalesDashboardPage />;
   if (roleNames.includes("Marketing")) return <MarketingDashboardPage />;
   if (roleNames.includes("Finance")) return <FinanceDashboardPage />;
+  if (roleNames.includes("Operations")) return <OperationsDashboardPage />;
   return <DashboardPage />;
 }

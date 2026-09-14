@@ -1154,3 +1154,93 @@ export function SettlementsLedgerTable({ rows }: {
     </div>
   );
 }
+
+export function OwnerStackedBars({ owners }: {
+  owners: Array<{ initials: string; name: string; total: number; open: number; inProgress: number; done: number }>;
+}) {
+  return (
+    <div className="space-y-4">
+      {owners.map(o => (
+        <div key={o.name} className="space-y-1.5">
+          <div className="flex items-center justify-between text-sm">
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white" style={{ backgroundColor: COLORS.midnight }}>{o.initials}</div>
+              <span className="font-semibold text-gray-700">{o.name}</span>
+            </div>
+            <span className="text-xs text-gray-400">{o.total} tasks</span>
+          </div>
+          <div className="w-full h-2.5 rounded-full bg-gray-100 flex overflow-hidden">
+            <div className="h-full" style={{ width: `${(o.open / o.total) * 100}%`, backgroundColor: COLORS.taupe }} />
+            <div className="h-full" style={{ width: `${(o.inProgress / o.total) * 100}%`, backgroundColor: COLORS.midnight }} />
+            <div className="h-full" style={{ width: `${(o.done / o.total) * 100}%`, backgroundColor: COLORS.forest }} />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export function TaskOverdueList({ badge, items }: {
+  badge?: string;
+  items: Array<{ id: string | number; title: string; owner: string; entityTag: string; dueLabel: string; statusLabel: string; urgent?: boolean }>;
+}) {
+  return (
+    <div className="space-y-3">
+      {badge && <div className="flex justify-end"><span className="text-xs px-2.5 py-1 rounded-full font-bold bg-red-100 text-red-700">{badge}</span></div>}
+      {items.map(it => (
+        <div key={it.id} className={`p-3.5 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${it.urgent ? 'border-red-100 bg-red-50/40' : 'border-amber-100 bg-amber-50/40'}`}>
+          <div className="min-w-0">
+            <h4 className="font-extrabold text-sm truncate">{it.title}</h4>
+            <p className="text-xs text-gray-500 mt-0.5">{it.owner} · <span className="px-1.5 py-0.5 bg-white rounded text-[10px] font-semibold text-gray-500">{it.entityTag}</span> · {it.dueLabel}</p>
+          </div>
+          <span className={`shrink-0 px-2.5 py-1 rounded-lg text-xs font-bold ${it.urgent ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}`}>{it.statusLabel}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export function TaskBoard({ columns }: {
+  columns: Array<{
+    key: string; title: string; color: string; count: number;
+    cards: Array<{ id: string | number; tag: string; title: string; note?: string; dateLabel: string; ownerInitials: string; done?: boolean; priority?: 'High' | 'Medium' | 'Low' }>;
+  }>;
+}) {
+  const priorityColor = (p?: string) => p === 'High' ? '#dc2626' : p === 'Medium' ? COLORS.taupe : '#9ca3af';
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {columns.map(col => (
+        <div key={col.key} className="rounded-2xl bg-gray-50 p-4 space-y-3">
+          <div className="flex items-center justify-between px-1">
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: col.color }} />
+              <span className="text-sm font-bold" style={{ color: COLORS.midnight }}>{col.title}</span>
+            </div>
+            <span className="text-xs px-2 py-0.5 rounded-full bg-white text-gray-500 font-semibold">{col.count}</span>
+          </div>
+          <div className="space-y-3">
+            {col.cards.map(c => (
+              <div key={c.id} className={`p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-shadow space-y-2.5 ${c.done ? 'opacity-80' : ''}`}>
+                <div className="flex items-start justify-between gap-2">
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-gray-100 text-gray-600">{c.tag}</span>
+                  {c.priority && (
+                    <span className="flex items-center gap-1 text-xs font-semibold" style={{ color: priorityColor(c.priority) }}>
+                      <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: priorityColor(c.priority) }} />
+                      {c.priority}
+                    </span>
+                  )}
+                </div>
+                <h3 className={`text-sm font-semibold ${c.done ? 'line-through text-gray-400' : 'text-gray-800'}`}>{c.title}</h3>
+                {c.note && <p className="text-xs text-gray-400 line-clamp-2">{c.note}</p>}
+                <div className="flex items-center justify-between pt-1">
+                  <span className="text-xs text-gray-400">{c.dateLabel}</span>
+                  <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white" style={{ backgroundColor: COLORS.midnight }}>{c.ownerInitials}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
