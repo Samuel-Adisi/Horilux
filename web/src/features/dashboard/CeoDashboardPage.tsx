@@ -12,51 +12,16 @@ import {
   MilestoneFeed,
   COLORS,
 } from './components/DashboardSections';
+import { useCeoDashboard } from './hooks/use-ceo-dashboard';
 
-const MOCK_REVENUE = [
-  { month: 'Jan', current: 48, prior: 40 },
-  { month: 'Mar', current: 61, prior: 50 },
-  { month: 'May', current: 74, prior: 58 },
-  { month: 'Jul', current: 98.4, prior: 72 },
-  { month: 'Sep', current: 88, prior: 80 },
-  { month: 'Oct', current: 96, prior: 84 },
-];
-
-const MOCK_FUNNEL = [
-  { label: 'Inbound Leads', count: 94240, pct: 100 },
-  { label: 'Contact Verified', count: 68324, pct: 72.5 },
-  { label: 'Private Viewing', count: 26952, pct: 28.6 },
-  { label: 'Written LOI / Offer', count: 9330, pct: 9.9 },
-  { label: 'Executed Escrow', count: 4994, pct: 5.3 },
-];
-
-const MOCK_DEPARTMENTS = [
-  { name: 'Sales & Brokerage', tag: 'Core', value: '$520.4M', delta: '+18.2%', pct: 62, footnoteLeft: '61.7% of total', footnoteRight: 'Quota: 108.4%' },
-  { name: 'Listings & Mandate Advisory', tag: 'Mandates', value: '$184.2M', delta: '+14.0%', pct: 22, footnoteLeft: '21.9% advisory share', footnoteRight: '92 exclusive mandates' },
-  { name: 'Private Wealth Syndications', tag: 'Private', value: '$92.5M', delta: '+32.1%', pct: 11, footnoteLeft: '11.0% capital deployed', footnoteRight: 'Fastest growing' },
-];
-
+// TODO: no backend source yet for these three — Property has no region field,
+// and there's no risk/audit-feed model wired up. Kept as mock until those exist.
 const MOCK_REGIONS = [
   { label: 'California Coast', value: '$348.5M (41.4%)', pct: 41.4 },
   { label: 'South Florida', value: '$224.8M (26.7%)', pct: 26.7 },
   { label: 'Texas Luxury', value: '$138.2M (16.4%)', pct: 16.4 },
   { label: 'Pacific Northwest', value: '$82.4M (9.8%)', pct: 9.8 },
   { label: 'International', value: '$48.6M (5.7%)', pct: 5.7 },
-];
-
-const MOCK_LEADERBOARD = [
-  { rank: 1, name: 'Elena Vance', title: 'Tier 1 Elite Partner', division: 'Ultra-Luxury / Bel-Air', deals: 42, volume: '$148.2M', yield: '64.2%' },
-  { rank: 2, name: 'Marcus Vance', title: 'Private Wealth Partner', division: 'Star Island / Florida', deals: 31, volume: '$112.5M', yield: '58.0%' },
-  { rank: 3, name: 'David Sterling', title: 'Managing Director', division: 'Texas Luxury / Austin', deals: 28, volume: '$86.4M', yield: '54.1%' },
-  { rank: 4, name: 'Alastair Wright', title: 'Family Office Principal', division: 'Pacific NW / Aspen', deals: 22, volume: '$79.8M', yield: '49.5%' },
-  { rank: 5, name: 'Sophia Laurent', title: 'Coastal Acquisitions', division: 'Monaco & Newport Desk', deals: 19, volume: '$68.1M', yield: '51.2%' },
-];
-
-const MOCK_STATUS = [
-  { name: 'Available for Sale', value: 642, color: COLORS.midnight },
-  { name: 'Under Contract / Escrow', value: 371, color: COLORS.forest },
-  { name: 'Pending Closing', value: 228, color: COLORS.taupe },
-  { name: 'Off-Market Pocket', value: 187, color: '#9CA3AF' },
 ];
 
 const MOCK_RISKS = [
@@ -72,7 +37,89 @@ const MOCK_MILESTONES = [
   { title: 'Institutional Audit Complete', subtitle: 'Q3 FinCEN & escrow certification — 100% compliance pass', time: 'Yesterday' },
 ];
 
+function fmtMoney(n: number): string {
+  if (n >= 1_000_000_000) return `$${(n / 1_000_000_000).toFixed(2)}B`;
+  if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(2)}M`;
+  if (n >= 1_000) return `$${(n / 1_000).toFixed(1)}K`;
+  return `$${n.toFixed(0)}`;
+}
+
+const DEPARTMENT_COLORS = [COLORS.midnight, COLORS.forest, COLORS.taupe, '#9CA3AF', '#6D28D9'];
+const STATUS_LABELS: Record<string, string> = {
+  draft: 'Draft', onboarding: 'Onboarding', pending_verification: 'Pending Verification',
+  verified: 'Verified', pending_approval: 'Pending Approval', marketing_ready: 'Marketing Ready',
+  published: 'Available for Sale', under_offer: 'Under Contract / Escrow',
+  sold_rented: 'Sold/Rented', archived: 'Archived',
+};
+
 export function CeoDashboardPage() {
+  const { data, isLoading, isError, error, refetch } = useCeoDashboard();
+
+  if (isLoading) {
+    return (
+      <div className="p-6 space-y-6">
+        <div className="h-8 w-64 bg-gray-100 rounded animate-pulse" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="h-28 bg-gray-100 rounded-2xl animate-pulse" />
+          ))}
+        </div>
+        <div className="h-72 bg-gray-100 rounded-2xl animate-pulse" />
+      </div>
+    );
+  }
+
+  if (isError || !data) {
+    return (
+      <div className="p-6">
+        <div className="bg-white rounded-2xl p-8 shadow-sm text-center space-y-3">
+          <h2 className="font-semibold text-lg text-gray-800">Couldn't load the executive dashboard</h2>
+          <p className="text-sm text-gray-500">{(error as Error)?.message || 'Something went wrong fetching CEO report data.'}</p>
+          <button
+            onClick={() => refetch()}
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-white text-sm font-medium"
+            style={{ backgroundColor: COLORS.midnight }}
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const { kpis, revenue_trend, conversion_funnel, departments, leaderboard, listing, finance } = data;
+
+  const statusSegments = Object.entries(listing.by_status).map(([key, value], i) => ({
+    name: STATUS_LABELS[key] || key,
+    value,
+    color: DEPARTMENT_COLORS[i % DEPARTMENT_COLORS.length],
+  }));
+
+  const departmentBars = departments.map((d) => ({
+    name: d.name,
+    tag: undefined,
+    value: fmtMoney(d.value),
+    delta: '',
+    pct: d.pct,
+    footnoteLeft: `${d.pct}% of total`,
+    footnoteRight: `${d.count} deals`,
+  }));
+
+  const leaderboardRows = leaderboard.map((b) => ({
+    rank: b.rank,
+    name: b.name,
+    title: '',
+    division: b.division,
+    deals: b.deals,
+    volume: fmtMoney(b.volume),
+    yield: `${b.yield_percent}%`,
+  }));
+
+  const peakMonth = revenue_trend.reduce(
+    (max, row) => (row.current > (max?.current ?? -Infinity) ? row : max),
+    revenue_trend[0]
+  );
+
   return (
     <div className="space-y-6 p-4 sm:p-6">
       <div className="flex flex-col xl:flex-row items-start xl:items-center justify-between gap-4">
@@ -103,44 +150,49 @@ export function CeoDashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        <KpiCard label="Gross Volume (YTD)" value="$842.52M" delta="+24.8%" deltaDirection="up" subtext="vs $675M benchmark"
-          icon={<DollarSign size={18} />} sparkline={[675, 720, 760, 800, 820, 835, 842]} />
-        <KpiCard label="Active Mandates" value="1,428" delta="+12.4%" deltaDirection="up" subtext="$3.18B aggregate valuation"
-          icon={<Building2 size={18} />} sparkline={[1200, 1250, 1300, 1350, 1390, 1410, 1428]} />
-        <KpiCard label="Licensed Agents" value="184 Reps" subtext="98.4% FINRA active"
-          icon={<Users size={18} />} sparkline={[160, 165, 170, 175, 178, 182, 184]} />
-        <KpiCard label="Closed Yield" value="52.9%" delta="+4.1%" deltaDirection="up" subtext="Offer-to-escrow velocity"
-          icon={<Percent size={18} />} sparkline={[45, 47, 48, 50, 51, 52, 52.9]} />
-        <KpiCard label="Avg Deal Size" value="$3.45M" delta="+8.5%" deltaDirection="up" subtext="Ultra-prime tier: 38 units"
-          icon={<TrendingUp size={18} />} sparkline={[2.8, 2.95, 3.05, 3.2, 3.3, 3.4, 3.45]} />
+        <KpiCard label="Gross Volume (YTD)" value={fmtMoney(kpis.gross_volume_ytd)}
+          subtext="Year to date, closed + open transactions" icon={<DollarSign size={18} />} />
+        <KpiCard label="Active Mandates" value={kpis.active_mandates.toLocaleString()}
+          subtext="Excludes sold/rented & archived" icon={<Building2 size={18} />} />
+        <KpiCard label="Licensed Agents" value={`${kpis.active_agents} Reps`}
+          subtext="Active, department-assigned" icon={<Users size={18} />} />
+        <KpiCard label="Closed Yield" value={`${kpis.closed_yield_percent}%`}
+          subtext="Closed transactions / total leads" icon={<Percent size={18} />} />
+        <KpiCard label="Avg Deal Size" value={fmtMoney(kpis.avg_deal_size)}
+          subtext="Average transaction price, YTD" icon={<TrendingUp size={18} />} />
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
         <div className="xl:col-span-8 bg-white rounded-2xl p-6 shadow-sm">
           <h2 className="font-semibold text-lg mb-1">Brokerage Revenue Performance</h2>
-          <p className="text-sm text-gray-400 mb-3">Closed transaction volume vs prior fiscal baseline</p>
-          <RevenueTrendChart data={MOCK_REVENUE} />
+          <p className="text-sm text-gray-400 mb-3">Closed transaction volume vs prior-year baseline</p>
+          <RevenueTrendChart data={revenue_trend} />
           <MetricCallouts items={[
-            { label: 'All-Time Peak Month', value: '$98.4M (July)', subtext: 'Driven by Malibu portfolio' },
-            { label: 'Projected Q4 Close', value: '$240.0M', subtext: '+14.2% over Q3', positive: true },
-            { label: 'Gross Margin', value: '18.6%', subtext: 'Net retained advisory fee' },
+            { label: 'Peak Month', value: peakMonth ? `${fmtMoney(peakMonth.current)} (${peakMonth.month})` : '—' },
+            { label: 'Outstanding Commission', value: fmtMoney(finance.commission.outstanding || 0), positive: false },
+            { label: 'Commission Received', value: fmtMoney(finance.commission.received || 0), positive: true },
           ]} />
         </div>
         <div className="xl:col-span-4 bg-white rounded-2xl p-6 shadow-sm">
           <h2 className="font-semibold text-lg mb-1">Conversion Funnel</h2>
           <p className="text-sm text-gray-400 mb-3">Full pipeline throughput, org-wide</p>
-          <ConversionFunnel stages={MOCK_FUNNEL} />
+          <ConversionFunnel stages={conversion_funnel} />
         </div>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
         <div className="xl:col-span-7 bg-white rounded-2xl p-6 shadow-sm">
           <h2 className="font-semibold text-lg mb-1">Departmental Performance</h2>
-          <p className="text-sm text-gray-400 mb-3">Ranked by revenue generation and unit economics</p>
-          <DepartmentBars departments={MOCK_DEPARTMENTS} />
+          <p className="text-sm text-gray-400 mb-3">Ranked by closed + open transaction volume</p>
+          {departmentBars.length > 0
+            ? <DepartmentBars departments={departmentBars} />
+            : <p className="text-sm text-gray-400 py-6 text-center">No department-attributed transactions yet.</p>}
         </div>
         <div className="xl:col-span-5 bg-white rounded-2xl p-6 shadow-sm">
-          <h2 className="font-semibold text-lg mb-1">Regional Markets</h2>
+          <div className="flex items-center justify-between mb-1">
+            <h2 className="font-semibold text-lg">Regional Markets</h2>
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-400 font-medium">Sample data</span>
+          </div>
           <p className="text-sm text-gray-400 mb-3">Capital concentration by geography</p>
           <RegionalBars regions={MOCK_REGIONS} />
         </div>
@@ -149,26 +201,35 @@ export function CeoDashboardPage() {
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
         <div className="xl:col-span-8 bg-white rounded-2xl p-6 shadow-sm">
           <div className="flex items-center justify-between mb-1">
-            <h2 className="font-semibold text-lg">Top Managing Brokers Leaderboard</h2>
-            <a href="#" className="text-sm font-medium" style={{ color: COLORS.midnight }}>View Complete Roster →</a>
+            <h2 className="font-semibold text-lg">Top Brokers Leaderboard</h2>
           </div>
-          <p className="text-sm text-gray-400 mb-3">Ranked by closed commission gross and conversion yield</p>
-          <LeaderboardTable brokers={MOCK_LEADERBOARD} />
+          <p className="text-sm text-gray-400 mb-3">Ranked by closed commission gross</p>
+          {leaderboardRows.length > 0
+            ? <LeaderboardTable brokers={leaderboardRows} />
+            : <p className="text-sm text-gray-400 py-6 text-center">No closed deals attributed to agents yet.</p>}
         </div>
         <div className="xl:col-span-4 bg-white rounded-2xl p-6 shadow-sm">
           <h2 className="font-semibold text-lg mb-3">Book Composition</h2>
-          <StatusDonut segments={MOCK_STATUS} />
+          {statusSegments.length > 0
+            ? <StatusDonut segments={statusSegments} />
+            : <p className="text-sm text-gray-400 py-6 text-center">No properties yet.</p>}
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
         <div className="bg-white rounded-2xl p-6 shadow-sm">
-          <h2 className="font-semibold text-lg mb-1">Executive Risk Radar</h2>
+          <div className="flex items-center justify-between mb-1">
+            <h2 className="font-semibold text-lg">Executive Risk Radar</h2>
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-400 font-medium">Sample data</span>
+          </div>
           <p className="text-sm text-gray-400 mb-3">High-priority items requiring CEO review</p>
           <RiskRadar items={MOCK_RISKS} />
         </div>
         <div className="bg-white rounded-2xl p-6 shadow-sm">
-          <h2 className="font-semibold text-lg mb-1">Company-Wide Milestones</h2>
+          <div className="flex items-center justify-between mb-1">
+            <h2 className="font-semibold text-lg">Company-Wide Milestones</h2>
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-400 font-medium">Sample data</span>
+          </div>
           <p className="text-sm text-gray-400 mb-3">Live institutional event feed</p>
           <MilestoneFeed events={MOCK_MILESTONES} />
         </div>
