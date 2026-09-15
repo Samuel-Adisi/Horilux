@@ -12,6 +12,10 @@ def get_current_user():
     return getattr(_thread_locals, "user", None)
 
 
+def set_current_user(user):
+    _thread_locals.user = user if user and getattr(user, "is_authenticated", False) else None
+
+
 class AuditActorMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
