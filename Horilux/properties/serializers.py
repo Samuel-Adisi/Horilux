@@ -54,14 +54,21 @@ class PropertyListSerializer(serializers.ModelSerializer):
 
     sqft = serializers.DecimalField(source="building_size", max_digits=10, decimal_places=2, read_only=True)
     image_url = serializers.SerializerMethodField()
+    agent_name = serializers.SerializerMethodField()
+    status_label = serializers.CharField(source="get_status_display", read_only=True)
 
     class Meta:
         model = Property
         fields = [
             "id", "title", "property_type", "listing_type", "price", "currency",
-            "location", "region", "bedrooms", "bathrooms", "status", "completion_percent",
-            "agent", "created_at", "amenities", "rental_period", "sqft", "image_url",
+            "location", "region", "bedrooms", "bathrooms", "status", "status_label", "completion_percent",
+            "agent", "agent_name", "created_at", "amenities", "rental_period", "sqft", "image_url",
         ]
+
+    def get_agent_name(self, obj):
+        if not obj.agent_id:
+            return None
+        return f"{obj.agent.first_name} {obj.agent.last_name}".strip() or obj.agent.username
 
     def get_image_url(self, obj):
         first_photo = obj.media.filter(media_type="photo").order_by("order").first()

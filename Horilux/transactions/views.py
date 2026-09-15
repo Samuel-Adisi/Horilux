@@ -33,13 +33,24 @@ class TransactionViewSet(viewsets.ModelViewSet):
         "advance": "edit", "record_payment": "edit",
     }
 
+    filterset_fields = ["status"]
+
     def get_serializer_class(self):
         return TransactionDetailSerializer if self.action == "retrieve" else TransactionListSerializer
 
     def get_queryset(self):
-        return filter_queryset_for_user(
+        qs = filter_queryset_for_user(
             self.request.user, "view", "transaction", Transaction.objects.all(), agent_field="agent"
-        )
+        ).select_related("property", "client", "agent")
+
+        search = self.request.query_params.get("search")
+        if search:
+            from django.db.models import Q
+            qs = qs.filter(
+                Q(property__title__icontains=search) | Q(client__name__icontains=search)
+            )
+
+        return qs.order_by("-created_at")
 
     def perform_create(self, serializer):
         price = serializer.validated_data.get("price")

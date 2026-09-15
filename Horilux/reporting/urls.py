@@ -10,4 +10,7 @@ urlpatterns = [
     path("reports/finance/", views.FinanceReportView.as_view(), name="report-finance"),
     path("reports/operations/", views.OperationsReportView.as_view(), name="report-operations"),
     path("reports/ceo-dashboard/", views.CEODashboardView.as_view(), name="report-ceo-dashboard"),
+    path("reports/finance-detail/", views.FinanceDetailReportView.as_view(), name="report-finance-detail"),
+    path("reports/sales-pipeline/", views.SalesPipelineReportView.as_view(), name="report-sales-pipeline"),
+    path("reports/agents-roster/", views.AgentsRosterReportView.as_view(), name="report-agents-roster"),
 ]

@@ -39,10 +39,19 @@ class PropertyViewSet(viewsets.ModelViewSet):
         "publish": "publish",
     }
 
+    filterset_fields = ["status", "property_type", "listing_type"]
+
     def get_queryset(self):
-        return filter_queryset_for_user(
+        qs = filter_queryset_for_user(
             self.request.user, "view", "property", Property.objects.all(), agent_field="agent"
-        )
+        ).select_related("agent")
+
+        search = self.request.query_params.get("search")
+        if search:
+            from django.db.models import Q
+            qs = qs.filter(Q(title__icontains=search) | Q(location__icontains=search) | Q(region__icontains=search))
+
+        return qs
 
     def get_serializer_class(self):
         if self.action == "list":

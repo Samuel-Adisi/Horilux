@@ -229,6 +229,218 @@ def agent_leaderboard(limit=5):
     return result
 
 
+def agents_roster_report():
+    """
+    Real per-agent performance roster for the CEO Agents Roster page.
+    Extends agent_leaderboard() beyond its intentional top-5 limit -- this
+    is the "own paginated endpoint" flagged as a future item in that
+    function's comment. Every active, department-assigned user is included,
+    not just top performers, so the CEO can see the full team.
+    """
+    from accounts.models import User
+
+    agents = User.objects.filter(is_active=True, department__isnull=False).exclude(
+        department__name="ceo"
+    ).select_related("department")
+
+    closed_by_agent = dict(
+        Transaction.objects.filter(status=Transaction.Status.CLOSED)
+        .exclude(agent__isnull=True)
+        .values_list("agent_id")
+        .annotate(c=Count("id"))
+        .order_by()
+    )
+    volume_by_agent = dict(
+        Transaction.objects.filter(status=Transaction.Status.CLOSED)
+        .exclude(agent__isnull=True)
+        .values_list("agent_id")
+        .annotate(v=Sum("price"))
+        .order_by()
+    )
+    active_deals_by_agent = dict(
+        Transaction.objects.exclude(status=Transaction.Status.CLOSED)
+        .exclude(agent__isnull=True)
+        .values_list("agent_id")
+        .annotate(c=Count("id"))
+        .order_by()
+    )
+    leads_by_agent = dict(
+        Lead.objects.exclude(assigned_agent__isnull=True)
+        .values_list("assigned_agent_id")
+        .annotate(c=Count("id"))
+        .order_by()
+    )
+
+    roster = []
+    for agent in agents:
+        deals_closed = closed_by_agent.get(agent.id, 0)
+        volume = float(volume_by_agent.get(agent.id, 0) or 0)
+        active_deals = active_deals_by_agent.get(agent.id, 0)
+        leads_assigned = leads_by_agent.get(agent.id, 0)
+        conversion_pct = round(deals_closed / leads_assigned * 100, 1) if leads_assigned else 0
+        roster.append({
+            "id": str(agent.id),
+            "name": f"{agent.first_name} {agent.last_name}".strip() or agent.email,
+            "email": agent.email,
+            "department": agent.department.get_name_display() if agent.department else "—",
+            "date_joined": agent.date_joined.isoformat(),
+            "deals_closed": deals_closed,
+            "volume": volume,
+            "active_deals": active_deals,
+            "leads_assigned": leads_assigned,
+            "conversion_percent": conversion_pct,
+        })
+
+    roster.sort(key=lambda a: a["volume"], reverse=True)
+
+    return {
+        "agents": roster,
+        "total_agents": len(roster),
+    }
+
+
+def finance_detail_report(months=6):
+    """
+    Real revenue/commission detail for the CEO Revenue page.
+    Everything here comes from Transaction/Commission -- no invented fields.
+    """
+    from django.db.models.functions import TruncMonth
+    from dateutil.relativedelta import relativedelta
+
+    now = timezone.now()
+    year_start = now.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
+    month_start = (now.replace(day=1) - relativedelta(months=months - 1))
+
+    ytd_txns = Transaction.objects.filter(created_at__gte=year_start)
+    gross_volume_ytd = ytd_txns.aggregate(total=Sum("price"))["total"] or 0
+    txn_count_ytd = ytd_txns.count()
+
+    commission_agg = Commission.objects.filter(transaction__created_at__gte=year_start).aggregate(
+        received=Sum("received"),
+        outstanding=Sum("outstanding"),
+        agent_share=Sum("agent_share"),
+        company_share=Sum("company_share"),
+    )
+    net_commission_income = commission_agg["received"] or 0
+    outstanding_commission = commission_agg["outstanding"] or 0
+    agent_payouts = commission_agg["agent_share"] or 0
+    company_retention = commission_agg["company_share"] or 0
+    effective_commission_pct = (
+        round(float(net_commission_income) / float(gross_volume_ytd) * 100, 2)
+        if gross_volume_ytd else 0
+    )
+    agent_payout_pct = (
+        round(float(agent_payouts) / float(net_commission_income) * 100, 1)
+        if net_commission_income else 0
+    )
+
+    monthly_txns = (
+        Transaction.objects.filter(created_at__gte=month_start)
+        .annotate(m=TruncMonth("created_at"))
+        .values("m")
+        .annotate(gross_volume=Sum("price"))
+        .order_by("m")
+    )
+    monthly_commission = (
+        Commission.objects.filter(transaction__created_at__gte=month_start)
+        .annotate(m=TruncMonth("transaction__created_at"))
+        .values("m")
+        .annotate(
+            commission_income=Sum("received"),
+            agent_payouts=Sum("agent_share"),
+            company_retention=Sum("company_share"),
+        )
+        .order_by("m")
+    )
+    commission_by_month = {row["m"]: row for row in monthly_commission}
+
+    ledger = []
+    for row in monthly_txns:
+        c = commission_by_month.get(row["m"], {})
+        ledger.append({
+            "month": row["m"].strftime("%B %Y"),
+            "gross_volume": float(row["gross_volume"] or 0),
+            "commission_income": float(c.get("commission_income") or 0),
+            "agent_payouts": float(c.get("agent_payouts") or 0),
+            "company_retention": float(c.get("company_retention") or 0),
+        })
+    ledger.reverse()  # most recent month first
+
+    return {
+        "gross_volume_ytd": float(gross_volume_ytd),
+        "transaction_count_ytd": txn_count_ytd,
+        "net_commission_income": float(net_commission_income),
+        "effective_commission_percent": effective_commission_pct,
+        "outstanding_commission": float(outstanding_commission),
+        "agent_payouts": float(agent_payouts),
+        "agent_payout_percent": agent_payout_pct,
+        "company_retention": float(company_retention),
+        "monthly_ledger": ledger,
+    }
+
+
+def sales_pipeline_report():
+    """
+    Real sales pipeline for the CEO Sales Pipeline page.
+    Stage cards use the actual Lead.Status choices -- no invented stage names.
+    "Deals in flight" uses real Transaction rows not yet closed.
+    """
+    from crm.models import Lead
+
+    stage_order = [
+        Lead.Status.NEW,
+        Lead.Status.CONTACTED,
+        Lead.Status.QUALIFIED,
+        Lead.Status.PROPERTY_MATCHED,
+        Lead.Status.VIEWING,
+        Lead.Status.NEGOTIATION,
+        Lead.Status.CLOSED,
+    ]
+    counts = dict(Lead.objects.values_list("status").annotate(c=Count("id")).order_by())
+    values = dict(
+        Lead.objects.values_list("status")
+        .annotate(v=Sum("budget"))
+        .order_by()
+    )
+
+    stages = [
+        {
+            "status": status.value,
+            "label": Lead.Status(status).label,
+            "deal_count": counts.get(status, 0),
+            "value": float(values.get(status, 0) or 0),
+        }
+        for status in stage_order
+    ]
+
+    in_flight = (
+        Transaction.objects.exclude(status=Transaction.Status.CLOSED)
+        .select_related("property", "client", "agent")
+        .order_by("-price")[:10]
+    )
+    deals_in_flight = [
+        {
+            "id": str(t.id),
+            "property_title": t.property.title if t.property_id else "—",
+            "client_name": t.client.name if t.client_id else "—",
+            "agent_name": f"{t.agent.first_name} {t.agent.last_name}" if t.agent_id else "Unassigned",
+            "price": float(t.price),
+            "status": t.status,
+            "status_label": Transaction.Status(t.status).label,
+        }
+        for t in in_flight
+    ]
+
+    lost_count = counts.get(Lead.Status.LOST, 0)
+
+    return {
+        "stages": stages,
+        "deals_in_flight": deals_in_flight,
+        "lost_count": lost_count,
+        "total_leads": sum(counts.values()),
+    }
+
+
 CEO_DASHBOARD_CACHE_KEY = "ceo_dashboard_v1"
 CEO_DASHBOARD_CACHE_TTL = 120  # seconds
 

@@ -30,14 +30,25 @@ class CommissionRuleSerializer(serializers.ModelSerializer):
 
 
 class TransactionListSerializer(serializers.ModelSerializer):
+    property_title = serializers.CharField(source="property.title", read_only=True, default=None)
+    client_name = serializers.CharField(source="client.name", read_only=True, default=None)
+    agent_name = serializers.SerializerMethodField()
+    status_label = serializers.CharField(source="get_status_display", read_only=True)
+
     class Meta:
         model = Transaction
         fields = [
-            "id", "property", "client", "owner", "agent", "price",
+            "id", "property", "property_title", "client", "client_name",
+            "owner", "agent", "agent_name", "price",
             "commission_percent", "expected_commission", "amount_received",
-            "outstanding_amount", "status", "created_at",
+            "outstanding_amount", "status", "status_label", "created_at",
         ]
         read_only_fields = ["id", "expected_commission", "amount_received", "outstanding_amount", "created_at"]
+
+    def get_agent_name(self, obj):
+        if not obj.agent_id:
+            return None
+        return f"{obj.agent.first_name} {obj.agent.last_name}".strip() or obj.agent.username
 
 
 class TransactionDetailSerializer(serializers.ModelSerializer):
