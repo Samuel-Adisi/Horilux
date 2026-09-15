@@ -56,3 +56,42 @@ class Client(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class Interaction(models.Model):
+    class InteractionType(models.TextChoices):
+        CALL = "call", "Call"
+        EMAIL = "email", "Email"
+        MEETING = "meeting", "Meeting"
+        WHATSAPP = "whatsapp", "WhatsApp"
+        SITE_VISIT = "site_visit", "Site Visit"
+        SMS = "sms", "SMS"
+        OTHER = "other", "Other"
+
+    class Direction(models.TextChoices):
+        INBOUND = "inbound", "Inbound"
+        OUTBOUND = "outbound", "Outbound"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    lead = models.ForeignKey(Lead, on_delete=models.CASCADE, null=True, blank=True, related_name="interactions")
+    client = models.ForeignKey(Client, on_delete=models.CASCADE, null=True, blank=True, related_name="interactions")
+    agent = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name="crm_interactions")
+    type = models.CharField(max_length=20, choices=InteractionType.choices)
+    direction = models.CharField(max_length=10, choices=Direction.choices, default=Direction.OUTBOUND)
+    summary = models.CharField(max_length=255)
+    notes = models.TextField(blank=True)
+    occurred_at = models.DateTimeField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-occurred_at"]
+        constraints = [
+            models.CheckConstraint(
+                check=models.Q(lead__isnull=False) | models.Q(client__isnull=False),
+                name="interaction_has_lead_or_client",
+            )
+        ]
+
+    def __str__(self):
+        who = self.client.name if self.client else (self.lead.name if self.lead else "Unknown")
+        return f"{self.get_type_display()} with {who}"

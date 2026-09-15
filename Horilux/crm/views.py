@@ -7,8 +7,8 @@ from rest_framework.exceptions import ValidationError
 from accounts.models import User
 from accounts.permissions import RBACPermission, filter_queryset_for_user
 
-from .models import Lead, Client
-from .serializers import LeadSerializer, ClientSerializer
+from .models import Lead, Client, Interaction
+from .serializers import LeadSerializer, ClientSerializer, InteractionSerializer
 
 
 class LeadViewSet(viewsets.ModelViewSet):
@@ -100,3 +100,40 @@ class ClientViewSet(viewsets.ModelViewSet):
         return filter_queryset_for_user(
             self.request.user, "view", "client", Client.objects.all(), agent_field="assigned_agent"
         )
+
+
+class InteractionViewSet(viewsets.ModelViewSet):
+    serializer_class = InteractionSerializer
+    permission_classes = [RBACPermission]
+    rbac_resource = "interaction"
+
+    def get_queryset(self):
+        qs = filter_queryset_for_user(
+            self.request.user, "view", "interaction", Interaction.objects.all(), agent_field="agent"
+        ).select_related("lead", "client", "agent")
+
+        lead_id = self.request.query_params.get("lead")
+        if lead_id:
+            qs = qs.filter(lead_id=lead_id)
+
+        client_id = self.request.query_params.get("client")
+        if client_id:
+            qs = qs.filter(client_id=client_id)
+
+        type_filter = self.request.query_params.get("type")
+        if type_filter:
+            qs = qs.filter(type=type_filter)
+
+        search = self.request.query_params.get("search")
+        if search:
+            from django.db.models import Q
+            qs = qs.filter(
+                Q(summary__icontains=search)
+                | Q(lead__name__icontains=search)
+                | Q(client__name__icontains=search)
+            )
+
+        return qs
+
+    def perform_create(self, serializer):
+        serializer.save(agent=serializer.validated_data.get("agent") or self.request.user)
