@@ -6,12 +6,14 @@ import type {
   PropertyOwner,
   CreatePropertyPayload,
   CreateOwnerPayload,
+  PropertiesQuery,
 } from "../types";
 
-export async function fetchProperties(page: number = 1): Promise<PaginatedResponse<Property>> {
-  const { data } = await apiClient.get<PaginatedResponse<Property>>("/properties/", {
-    params: { page },
-  });
+export async function fetchProperties(query: PropertiesQuery = {}): Promise<PaginatedResponse<Property>> {
+  const params: Record<string, string | number> = { page: query.page ?? 1 };
+  if (query.status) params.status = query.status;
+  if (query.search) params.search = query.search;
+  const { data } = await apiClient.get<PaginatedResponse<Property>>("/properties/", { params });
   return data;
 }
 

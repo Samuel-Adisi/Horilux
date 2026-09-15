@@ -48,10 +48,18 @@ export interface Property {
   bedrooms: number | null;
   bathrooms: number | null;
   status: PropertyStatus;
+  status_label?: string;
   completion_percent: number;
   agent: string; // user id
+  agent_name?: string | null;
   created_at: string;
   image_url?: string | null;
+}
+
+export interface PropertiesQuery {
+  status?: string;
+  search?: string;
+  page?: number;
 }
 
 export interface PropertyDetail extends Property {

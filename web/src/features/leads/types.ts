@@ -24,11 +24,19 @@ export interface Lead {
   bedrooms_preference: number | null;
   purpose: LeadPurpose | null;
   assigned_agent: string;
+  assigned_agent_name?: string | null;
   status: LeadStatus;
+  status_label?: string;
   last_contact: string | null;
   next_follow_up: string | null;
   notes: string;
   created_at: string;
+}
+
+export interface LeadsQuery {
+  status?: string;
+  search?: string;
+  page?: number;
 }
 
 export interface Client {

@@ -1,10 +1,12 @@
 import { apiClient } from "@/lib/api-client";
-import type { PaginatedResponse, Lead, Client, CreateLeadPayload } from "../types";
+import type { PaginatedResponse, Lead, Client, CreateLeadPayload, LeadsQuery } from "../types";
 
-export async function fetchLeads(page: number = 1): Promise<PaginatedResponse<Lead>> {
-  const { data } = await apiClient.get<PaginatedResponse<Lead>>("/leads/", {
-    params: { page },
-  });
+export async function fetchLeads(query: LeadsQuery | number = 1): Promise<PaginatedResponse<Lead>> {
+  const normalized: LeadsQuery = typeof query === "number" ? { page: query } : query;
+  const params: Record<string, string | number> = { page: normalized.page ?? 1 };
+  if (normalized.status) params.status = normalized.status;
+  if (normalized.search) params.search = normalized.search;
+  const { data } = await apiClient.get<PaginatedResponse<Lead>>("/leads/", { params });
   return data;
 }
 

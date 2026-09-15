@@ -1,0 +1,633 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useCeoDashboard } from "@/features/dashboard/hooks/use-ceo-dashboard";
+
+// Sections below have no backend model yet — governance action center,
+// top assets, territory geo, marketing ROAS by channel, rental/occupancy,
+// milestone tracker, AI diagnostic, forecast, activity feed, platform
+// health. Swap for real data once those endpoints/models exist (see
+// chat notes for the model list).
+const MOCK = {
+  governance: [
+    {
+      id: 1,
+      severity: "CRITICAL · 3 DEALS",
+      due: "Due: 2h",
+      severityColor: "rose",
+      title: "3 Escrow Authorizations Awaiting CEO Signature",
+      detail: "Total capital release: $1.40M for Cantonments & East Legon transactions.",
+      cta: "Review & Sign Escrow",
+      ctaStyle: "solid",
+    },
+    {
+      id: 2,
+      severity: "HIGH · CRM LAG",
+      due: ">48h idle",
+      severityColor: "amber",
+      title: "4 UHNW Buyer Leads Unassigned",
+      detail: "High ticket tier: $2.5M+ individual acquisition power from UK/Diaspora fund.",
+      cta: "Assign Senior Partner",
+      ctaStyle: "outline",
+    },
+    {
+      id: 3,
+      severity: "COMPLIANCE",
+      due: "Verification",
+      severityColor: "amber",
+      title: "2 Broker Agencies Pending License Check",
+      detail: "Gold Coast Realty & WestBridge affiliate packs require executive regulatory signoff.",
+      cta: "Inspect Credentials",
+      ctaStyle: "outline",
+    },
+    {
+      id: 4,
+      severity: "LIEN HOLD",
+      due: "$320K Hold",
+      severityColor: "amber",
+      title: "Developer Milestone Dispute: Cantonments",
+      detail: "Structural audit phase 3 variance claims reported by independent architect team.",
+      cta: "Review Audit Report",
+      ctaStyle: "outline",
+    },
+  ],
+  topAssets: [
+    { name: "The Grand Pavilions", area: "East Legon", price: 850000, offers: "7 Active Offers", offersColor: "emerald", views: "14.2K views", leads: "182 qualified leads", yieldPct: "Yield 9.4%", priceColor: "white", image: "https://images.unsplash.com/photo-1613977257363-707ba9348227?w=200&h=200&fit=crop" },
+    { name: "Skyline Heights Penthouse", area: "Cantonments", price: 1200000, offers: "3 Active Offers", offersColor: "emerald", views: "9.8K views", leads: "94 qualified leads", yieldPct: "Yield 8.2%", priceColor: "white", image: "https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?w=200&h=200&fit=crop" },
+    { name: "Airport Residential Executive Villa", area: "Airport Residential", price: 920000, offers: "Under Contract", offersColor: "amber", views: "8.1K views", leads: "76 qualified leads", yieldPct: "Closing Friday", priceColor: "amber", image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=200&h=200&fit=crop" },
+  ],
+  portfolioStats: { active: "1,284 Active", sold: "48 Sold", totalRecords: 4820 },
+  hotCorridorGtv: "$12.5M Hot Corridor GTV",
+  corridors: [
+    { name: "East Legon", gtv: "$4.2M", avg: "$520K Avg", yieldPct: "9.8% Yield", x: 38, y: 22, dot: "bg-indigo-400" },
+    { name: "Cantonments", gtv: "$3.8M", avg: "$740K Avg", yieldPct: "8.5% Yield", x: 58, y: 48, dot: "bg-amber-400" },
+    { name: "Airport Res", gtv: "$2.6M", avg: "$690K Avg", yieldPct: "8.9% Yield", x: 34, y: 68, dot: "bg-violet-400" },
+    { name: "Labone", gtv: "$1.9M", avg: "$480K Avg", yieldPct: "7.8% Yield", x: 62, y: 58, dot: "bg-slate-300" },
+  ],
+  roasSummary: { blended: "Blended 18.6x ROAS", totalSpend: "$28,000", directAttributed: "$520,000", avgResponse: "14 mins" },
+  roas: [
+    { channel: "Google Search Ads & Intent", spend: "$16,000 spend · CPL $21.40", value: "23.3x ROAS", note: "Best Producer", icon: "search", iconBg: "bg-blue-900/60", iconColor: "text-blue-400", valueColor: "text-emerald-400" },
+    { channel: "WhatsApp Concierge Direct", spend: "Organic & VIP Referral", value: "12.4x ROAS", note: "4.2m Avg Speed", icon: "chat", iconBg: "bg-emerald-900/50", iconColor: "text-emerald-400", valueColor: "text-emerald-400" },
+    { channel: "Instagram Showcase & Video", spend: "$12,000 spend · CPL $32.10", value: "8.8x ROAS", note: "High Awareness", icon: "camera", iconBg: "bg-amber-900/50", iconColor: "text-amber-400", valueColor: "text-amber-400" },
+  ],
+  rental: { monthlyRevenue: "$184K /mo", leased: 78, vacant: 14, flip: 8, renewalsDue: 12, avgYield: "9.1% ARR", delinquency: "0.8%", unitsTenanted: 112 },
+  milestones: { revenueTarget: "$1.65M / $2.00M", revenuePct: 82.5, closings: "48 / 60 Units", closingsPct: 80, leads: "418 / 500", leadsPct: 83.6, daysLeft: 18 },
+  aiInsight:
+    "Gross transaction volume is pacing +18% MoM driven by East Legon luxury villas. However, mobile inquiry-to-viewing conversion dipped 4.8% due to evening response lag.",
+  aiActions: [
+    { label: "Reallocate 3 evening agents to VIP WhatsApp queue", cta: "Apply", style: "solid" },
+    { label: "Fast-track Cantonments developer escrow release", cta: "Review", style: "outline" },
+  ],
+  forecast: { expRevenue: "$420K", escrowCloses: "37 units", newInquiries: "1,240", confidence: "89% Conf." },
+  activity: [
+    { label: "Escrow Released: $380,000", detail: "East Legon Villa • 12 mins ago", color: "emerald" },
+    { label: "New UHNW Lead: London Sovereign Fund", detail: "Portfolio inquiry $4.5M • 34 mins ago", color: "blue" },
+    { label: "Contract Submitted: Skyline Penthouse", detail: "Agent Michael Mensah • 1h ago", color: "amber" },
+    { label: "Tenancy Renewal Executed", detail: "Airport Res Apt 4B • 2h ago", color: "slate" },
+  ],
+  platformHealth: { uptime: "99.98%", amlFlags: 0, listingDiscrepancies: 2 },
+};
+
+const RANGE_OPTIONS = ["W", "M", "Q", "Y"] as const;
+
+export default function CeoOverviewPage() {
+  const navigate = useNavigate();
+  const { data, isLoading, error } = useCeoDashboard();
+  const [range, setRange] = useState<(typeof RANGE_OPTIONS)[number]>("Q");
+  const [leaderboardView, setLeaderboardView] = useState<"deals" | "volume" | "conversion">("deals");
+
+  if (isLoading) return <div className="text-slate-400 text-sm p-6">Loading executive data…</div>;
+  if (error || !data) return <div className="text-rose-400 text-sm p-6">Failed to load dashboard data.</div>;
+
+  const { kpis, listing, sales, finance, revenue_trend, conversion_funnel, leaderboard } = data;
+
+  const maxRevenue = Math.max(1, ...revenue_trend.flatMap((m) => [m.current, m.prior]));
+  const latestMonth = revenue_trend[revenue_trend.length - 1];
+  const priorMonth = revenue_trend[revenue_trend.length - 2];
+  const momGrowthPct =
+    priorMonth && priorMonth.current > 0
+      ? (((latestMonth?.current ?? 0) - priorMonth.current) / priorMonth.current) * 100
+      : 0;
+  const totalFunnelCount = conversion_funnel[0]?.count ?? 0;
+
+  return (
+    <div className="space-y-6">
+      {/* Greeting header */}
+      <div className="bg-[#131926] border border-white/10 rounded-2xl p-6">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-3">
+              <h1 className="text-2xl font-bold text-white">Good morning, Kwame Mensah</h1>
+              <span className="px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-400 text-xs font-semibold flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                Portfolio On Track ({momGrowthPct >= 0 ? "+" : ""}{momGrowthPct.toFixed(1)}% MoM)
+              </span>
+            </div>
+            <p className="text-xs text-slate-400 mt-1">
+              Executive Command Brief for Horilux Estates · Node Accra Core Alpha
+            </p>
+          </div>
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <button className="px-3.5 py-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-slate-200 text-xs font-semibold transition-colors">
+              Export Board Pack PDF
+            </button>
+            <button className="px-3.5 py-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-slate-200 text-xs font-semibold transition-colors">
+              Schedule Exec Briefing
+            </button>
+            <button
+              onClick={() => navigate("/ceo/ai-insights")}
+              className="px-3.5 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition-colors"
+            >
+              AI Strategic Memo
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* 8 KPI cards — matching AURA reference layout */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <KpiCard
+          onClick={() => navigate("/ceo/revenue")}
+          label="Total Revenue"
+          badge="QTD"
+          value={`$${kpis.gross_volume_ytd.toLocaleString()}`}
+          sub="Cumulative closed volume"
+          trendBadge={`${momGrowthPct >= 0 ? "+" : ""}${momGrowthPct.toFixed(1)}%`}
+          trendUp={momGrowthPct >= 0}
+          sparkline={revenue_trend.map((m) => m.current)}
+          link="Revenue & Finance →"
+          hover="hover:border-blue-500"
+        />
+        <KpiCard
+          onClick={() => navigate("/ceo/revenue")}
+          label="Net Profit"
+          badge="Sample data"
+          value="—"
+          sub="No P&L model wired yet"
+          trendBadge=""
+          trendUp
+          sparkline={[]}
+          link="Finance View →"
+          hover="hover:border-emerald-500"
+        />
+        <KpiCard
+          onClick={() => navigate("/ceo/properties")}
+          label="Active Properties"
+          badge="Portfolio"
+          value={listing.total_properties.toLocaleString()}
+          sub={`${kpis.active_mandates} active mandates`}
+          trendBadge={`${listing.avg_completion_percent.toFixed(0)}%`}
+          trendUp
+          sparkline={[listing.total_properties * 0.7, listing.total_properties * 0.8, listing.total_properties * 0.85, listing.total_properties * 0.95, listing.total_properties]}
+          link="All Properties →"
+          hover="hover:border-cyan-500"
+        />
+        <KpiCard
+          onClick={() => navigate("/ceo/sales")}
+          label="Properties Sold"
+          badge="Sample data"
+          value="—"
+          sub="No sold-count field wired yet"
+          trendBadge=""
+          trendUp
+          sparkline={[]}
+          link="Sales Analytics →"
+          hover="hover:border-purple-500"
+        />
+        <KpiCard
+          onClick={() => navigate("/ceo/leads")}
+          label="Total Leads"
+          badge="Inbound"
+          value={sales.total_leads.toLocaleString()}
+          sub={`${sales.total_clients.toLocaleString()} clients`}
+          trendBadge={`${sales.overdue_followups} overdue`}
+          trendUp={sales.overdue_followups === 0}
+          sparkline={[sales.total_leads * 0.6, sales.total_leads * 0.75, sales.total_leads * 0.85, sales.total_leads * 0.92, sales.total_leads]}
+          link="Lead Flow →"
+          hover="hover:border-teal-500"
+        />
+        <KpiCard
+          onClick={() => navigate("/ceo/sales")}
+          label="Conversion Rate"
+          badge={kpis.closed_yield_percent < 15 ? "Lag Warning" : "On Target"}
+          badgeWarn={kpis.closed_yield_percent < 15}
+          value={`${kpis.closed_yield_percent.toFixed(1)}%`}
+          sub="Target: 15.0% Min"
+          trendBadge=""
+          trendUp={kpis.closed_yield_percent >= 15}
+          sparkline={conversion_funnel.map((s) => s.pct)}
+          link="CRM Diagnostics →"
+          hover="hover:border-amber-500"
+        />
+        <KpiCard
+          onClick={() => navigate("/ceo/agents")}
+          label="Active Agents"
+          badge="Headcount"
+          value={`${kpis.active_agents} staff`}
+          sub="Active producers"
+          trendBadge=""
+          trendUp
+          sparkline={leaderboard.map((a) => a.deals)}
+          link="Agent Roster →"
+          hover="hover:border-pink-500"
+        />
+        <KpiCard
+          onClick={() => navigate("/ceo/transactions")}
+          label="Gross Volume"
+          badge="GTV"
+          value={`$${kpis.gross_volume_ytd.toLocaleString()}`}
+          sub={`${finance.total_transactions} settled transactions`}
+          trendBadge={`${momGrowthPct >= 0 ? "+" : ""}${momGrowthPct.toFixed(1)}%`}
+          trendUp={momGrowthPct >= 0}
+          sparkline={revenue_trend.map((m) => m.current)}
+          link="Transactions →"
+          hover="hover:border-indigo-500"
+        />
+      </div>
+
+      {/* Revenue Realization vs Target + Sales Pipeline */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="executive-card p-5 rounded-2xl bg-[#131926] border border-white/10 lg:col-span-2">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <p className="text-[10px] font-mono text-slate-500 uppercase tracking-wide">Executive Performance Analysis</p>
+              <h3 className="font-bold text-white text-base mt-0.5">Revenue Realization vs Target Trajectory</h3>
+            </div>
+            <div className="flex items-center gap-1 bg-white/5 rounded-lg p-1">
+              {RANGE_OPTIONS.map((r) => (
+                <button
+                  key={r}
+                  onClick={() => setRange(r)}
+                  className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-colors ${
+                    range === r ? "bg-blue-600 text-white" : "text-slate-400 hover:text-white"
+                  }`}
+                >
+                  {r}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-3 gap-4 mb-4 pb-4 border-b border-white/5">
+            <div>
+              <p className="text-[10px] font-mono text-slate-500 uppercase">Recorded Revenue</p>
+              <p className="text-lg font-bold text-white font-mono mt-1">${kpis.gross_volume_ytd.toLocaleString()}</p>
+              <p className="text-[11px] text-emerald-400 mt-0.5">{momGrowthPct >= 0 ? "+" : ""}{momGrowthPct.toFixed(1)}% MoM</p>
+            </div>
+            <div>
+              <p className="text-[10px] font-mono text-slate-500 uppercase">Conversion Funnel Top</p>
+              <p className="text-lg font-bold text-white font-mono mt-1">{totalFunnelCount.toLocaleString()}</p>
+              <p className="text-[11px] text-slate-400 mt-0.5">Entry stage volume</p>
+            </div>
+            <div>
+              <p className="text-[10px] font-mono text-slate-500 uppercase">Closed Yield</p>
+              <p className="text-lg font-bold text-emerald-400 font-mono mt-1">{kpis.closed_yield_percent.toFixed(1)}%</p>
+              <p className="text-[11px] text-slate-400 mt-0.5">Effective rate</p>
+            </div>
+          </div>
+
+          <div className="h-48 flex items-end justify-center gap-6">
+            {revenue_trend.map((m) => (
+              <div key={m.month} className="w-16 shrink-0 flex flex-col items-center gap-1">
+                <div className="w-full flex items-end justify-center gap-1 h-36">
+                  <div className="w-1/2 rounded-t bg-white/15" style={{ height: `${Math.max((m.prior / maxRevenue) * 100, m.prior > 0 ? 2 : 0)}%` }} />
+                  <div className="w-1/2 rounded-t bg-blue-600/85" style={{ height: `${Math.max((m.current / maxRevenue) * 100, m.current > 0 ? 2 : 0)}%` }} />
+                </div>
+                <span className="text-[11px] text-slate-400">{m.month}</span>
+              </div>
+            ))}
+            {!revenue_trend.length && <p className="text-xs text-slate-500">No revenue trend data yet.</p>}
+          </div>
+
+          <div className="mt-4 pt-3 border-t border-white/5 flex items-center justify-between text-xs">
+            <span className="flex items-center gap-3 text-slate-400">
+              <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded bg-blue-600" /> Current</span>
+              <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded bg-white/15" /> Prior</span>
+            </span>
+            <button onClick={() => navigate("/ceo/revenue")} className="text-blue-400 hover:text-blue-300 font-semibold">
+              View Revenue & Finance Hub →
+            </button>
+          </div>
+        </div>
+
+        <div className="executive-card p-5 rounded-2xl bg-[#131926] border border-white/10 flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-[10px] font-mono text-slate-500 uppercase tracking-wide">Deal Conversion Velocity</p>
+                <h3 className="font-bold text-white text-base mt-0.5">End-to-End Sales Pipeline</h3>
+              </div>
+            </div>
+          </div>
+          <div className="space-y-3.5 my-4">
+            {conversion_funnel.map((stage) => (
+              <div key={stage.label}>
+                <div className="flex justify-between text-xs mb-1">
+                  <span className="text-slate-300">{stage.label} {stage.pct > 0 && `(${stage.pct}%)`}</span>
+                  <span className="font-mono text-white font-bold">{stage.count.toLocaleString()}</span>
+                </div>
+                <div className="w-full bg-white/5 rounded-full h-2 overflow-hidden">
+                  <div className="bg-blue-500 h-full rounded-full" style={{ width: `${stage.pct}%` }} />
+                </div>
+              </div>
+            ))}
+            {!conversion_funnel.length && <p className="text-xs text-slate-500">No pipeline data yet.</p>}
+          </div>
+          <div className="pt-3 border-t border-white/5 flex items-center justify-between text-xs">
+            <span className="text-slate-400">Avg Ticket: <strong className="text-white">${kpis.avg_deal_size.toLocaleString()}</strong></span>
+            <button onClick={() => navigate("/ceo/sales")} className="text-blue-400 hover:text-blue-300 font-semibold">
+              View Sales Dashboard →
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* CEO Governance Action Center — sample */}
+      <div className="executive-card p-5 rounded-2xl bg-[#131926] border border-white/10">
+        <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+          <div className="flex items-center gap-2">
+            <span className="text-rose-400">⚠</span>
+            <div>
+              <h3 className="font-bold text-white text-base">CEO Governance Action Center</h3>
+              <p className="text-[11px] text-slate-500">Executive approvals & unassigned high-value risks</p>
+            </div>
+            <span className="text-[10px] px-1.5 py-0.5 rounded bg-white/5 text-slate-500 font-mono ml-2">Sample data</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="px-2.5 py-1 rounded-full bg-rose-500/15 text-rose-400 text-xs font-semibold">
+              {MOCK.governance.length} Items Require Signature / Action
+            </span>
+            <button onClick={() => navigate("/ceo/approvals")} className="text-xs text-blue-400 hover:underline">Operations Hub →</button>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {MOCK.governance.map((g) => (
+            <div key={g.id} className="p-4 rounded-xl bg-white/[0.02] border border-white/5 flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded bg-${g.severityColor}-500/15 text-${g.severityColor}-400 font-semibold`}>
+                    {g.severity}
+                  </span>
+                  <span className="text-[10px] text-slate-500">{g.due}</span>
+                </div>
+                <h4 className="text-xs font-bold text-white leading-snug">{g.title}</h4>
+                <p className="text-[11px] text-slate-400 mt-1.5 leading-relaxed">{g.detail}</p>
+              </div>
+              <button
+                className={`mt-3 w-full py-2 rounded-lg text-xs font-semibold transition-colors ${
+                  g.ctaStyle === "solid"
+                    ? "bg-blue-600 hover:bg-blue-500 text-white"
+                    : "bg-white/5 hover:bg-white/10 text-slate-200 border border-white/10"
+                }`}
+              >
+                {g.cta}
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Top Assets + Agent Leaderboard */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="executive-card p-5 rounded-2xl bg-[#131926] border border-white/10">
+          <div className="flex items-center justify-between mb-1">
+            <p className="text-[10px] font-mono text-slate-500 uppercase tracking-wide">Real Estate Portfolio Highlights</p>
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] px-2 py-0.5 rounded bg-white/5 text-slate-300 font-semibold">{MOCK.portfolioStats.active}</span>
+              <span className="text-[11px] px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-400 font-semibold">{MOCK.portfolioStats.sold}</span>
+            </div>
+          </div>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="font-bold text-white text-base">Top Performing Prime Assets</h3>
+            <span className="text-[10px] px-1.5 py-0.5 rounded bg-white/5 text-slate-500 font-mono">Sample data</span>
+          </div>
+          <div className="space-y-3">
+            {MOCK.topAssets.map((a) => (
+              <div key={a.name} className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.02] border border-white/5">
+                <img src={a.image} alt={a.name} className="w-14 h-14 rounded-lg object-cover shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-bold text-white truncate">{a.name}</p>
+                  <p className="text-[11px] text-slate-400 truncate">{a.area} · <span className={`text-${a.offersColor}-400`}>{a.offers}</span></p>
+                  <p className="text-[10px] text-slate-500 mt-0.5 truncate">{a.views} · {a.leads} · <span className={a.offersColor === "amber" ? "text-blue-300 font-semibold" : "text-emerald-400 font-semibold"}>{a.yieldPct}</span></p>
+                </div>
+                <span className={`font-mono text-sm font-bold shrink-0 ${a.priceColor === "amber" ? "text-amber-400" : "text-white"}`}>${a.price.toLocaleString()}</span>
+              </div>
+            ))}
+          </div>
+          <div className="mt-4 pt-3 border-t border-white/5 flex items-center justify-between text-[11px]">
+            <span className="text-slate-500">Showing {MOCK.topAssets.length} of {MOCK.portfolioStats.totalRecords.toLocaleString()} records</span>
+            <button onClick={() => navigate("/ceo/properties")} className="text-blue-400 hover:text-blue-300 font-semibold">
+              View Property Performance →
+            </button>
+          </div>
+        </div>
+
+        <div className="executive-card p-5 rounded-2xl bg-[#131926] border border-white/10">
+          <div className="flex items-center justify-between mb-1 flex-wrap gap-2">
+            <div>
+              <p className="text-[10px] font-mono text-slate-500 uppercase tracking-wide">Human Capital & Production</p>
+              <h3 className="font-bold text-white text-base mt-0.5">Top Agent Leaderboard</h3>
+            </div>
+            <div className="flex items-center gap-1 bg-white/5 rounded-lg p-1">
+              {(["deals", "volume", "conversion"] as const).map((v) => (
+                <button
+                  key={v}
+                  onClick={() => setLeaderboardView(v)}
+                  className={`px-2.5 py-1 rounded-md text-xs font-semibold capitalize transition-colors ${
+                    leaderboardView === v ? "bg-blue-600 text-white" : "text-slate-400 hover:text-white"
+                  }`}
+                >
+                  {v}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="space-y-3 mt-3">
+            {leaderboard.map((agent) => {
+              const initials = agent.name
+                .split(" ")
+                .map((n) => n[0])
+                .slice(0, 2)
+                .join("")
+                .toUpperCase();
+              const avatarColors = ["bg-blue-600", "bg-amber-700", "bg-slate-700", "bg-slate-700", "bg-slate-700"];
+              const metricValue =
+                leaderboardView === "deals"
+                  ? `${agent.deals} deals`
+                  : leaderboardView === "volume"
+                  ? `$${agent.volume.toLocaleString()}`
+                  : `${agent.yield_percent.toFixed(1)}%`;
+              return (
+                <div key={agent.rank} className="flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-[11px] text-slate-500 font-mono w-6 shrink-0">#{agent.rank}</span>
+                    <div className={`w-9 h-9 rounded-full ${avatarColors[agent.rank - 1] ?? "bg-slate-700"} text-white font-bold text-xs flex items-center justify-center shrink-0`}>
+                      {initials}
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-white">{agent.name}</p>
+                      <p className="text-[10px] text-slate-500">{agent.division} · {agent.deals} closed deals · {agent.yield_percent.toFixed(1)}% conv</p>
+                    </div>
+                  </div>
+                  <div className="text-right shrink-0 ml-2">
+                    <p className="font-mono text-xs font-bold text-white">${agent.volume.toLocaleString()} <span className="text-slate-500 font-normal">GTV</span></p>
+                    <p className="text-[10px] text-emerald-400 font-semibold mt-0.5">{metricValue}</p>
+                  </div>
+                </div>
+              );
+            })}
+            {!leaderboard.length && <p className="text-xs text-slate-500">No closed deals yet.</p>}
+          </div>
+          <div className="mt-4 pt-3 border-t border-white/5 flex items-center justify-between text-[11px]">
+            <span className="text-emerald-400 font-semibold">94% Active Broker Quota Hit <span className="text-slate-500 font-mono font-normal ml-1">(sample)</span></span>
+            <button onClick={() => navigate("/ceo/agents")} className="text-blue-400 hover:text-blue-300 font-semibold">
+              View Agent Performance →
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Territory Intelligence + Recent Activity */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="executive-card p-5 rounded-2xl bg-[#131926] border border-white/10">
+          <div className="flex items-center justify-between mb-1 flex-wrap gap-2">
+            <p className="text-[10px] font-mono text-slate-500 uppercase tracking-wide">Territory Intelligence</p>
+            <span className="text-[11px] px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-400 font-mono font-semibold">{MOCK.hotCorridorGtv}</span>
+          </div>
+          <h3 className="font-bold text-white text-base mb-3">Greater Accra Metro Corridors</h3>
+
+          <div className="relative h-40 rounded-xl bg-[#0b0f18] border border-white/5 overflow-hidden mb-3">
+            <div
+              className="absolute inset-0 opacity-[0.07]"
+              style={{
+                backgroundImage:
+                  "linear-gradient(to right, white 1px, transparent 1px), linear-gradient(to bottom, white 1px, transparent 1px)",
+                backgroundSize: "24px 24px",
+              }}
+            />
+            {MOCK.corridors.map((c) => (
+              <div key={c.name} className="absolute -translate-x-1/2 -translate-y-1/2" style={{ left: `${c.x}%`, top: `${c.y}%` }}>
+                <span className={`block w-2.5 h-2.5 rounded-full ${c.dot} ring-4 ring-white/5`} />
+                <div className="absolute top-3.5 left-1/2 -translate-x-1/2 whitespace-nowrap px-2 py-1 rounded-md bg-[#131926]/95 border border-white/10 text-[10px] text-slate-200 font-semibold shadow-lg">
+                  {c.name} · <span className="text-emerald-400">{c.gtv}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-4 gap-2 text-center">
+            {MOCK.corridors.map((c) => (
+              <div key={c.name} className="p-2 rounded-lg bg-white/[0.02] border border-white/5">
+                <p className="text-[9px] text-slate-500 uppercase tracking-wide truncate">{c.name}</p>
+                <p className="text-[11px] text-white font-mono font-semibold mt-0.5">{c.avg}</p>
+                <p className="text-[10px] text-emerald-400 mt-0.5">{c.yieldPct}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-4 pt-3 border-t border-white/5 flex items-center justify-between text-[11px]">
+            <span className="text-slate-500">Sample data — geo aggregation not wired yet</span>
+            <button onClick={() => navigate("/ceo/locations")} className="text-blue-400 hover:text-blue-300 font-semibold">
+              View Location Analytics →
+            </button>
+          </div>
+        </div>
+
+        <div className="executive-card p-5 rounded-2xl bg-[#131926] border border-white/10">
+          <div className="flex items-center justify-between mb-1">
+            <p className="text-[10px] font-mono text-slate-500 uppercase tracking-wide">Audited Ledger Feed</p>
+            <span className="text-[10px] px-1.5 py-0.5 rounded bg-white/5 text-slate-500 font-mono">Sample data</span>
+          </div>
+          <h3 className="font-bold text-white text-base mb-3">Recent Activity</h3>
+          <div className="space-y-3">
+            {MOCK.activity.map((a) => (
+              <div key={a.label} className="flex items-start gap-2.5">
+                <span className={`w-1.5 h-1.5 rounded-full bg-${a.color}-400 mt-1.5 shrink-0`} />
+                <div>
+                  <p className="text-xs text-white font-semibold leading-snug">{a.label}</p>
+                  <p className="text-[10px] text-slate-500">{a.detail}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="mt-4 pt-3 border-t border-white/5 flex justify-between text-[11px]">
+            <span className="text-slate-500">Live Immutable Trail</span>
+            <button onClick={() => navigate("/ceo/audit")} className="text-blue-400 hover:text-blue-300 font-semibold">Audit Logs →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Sparkline({ data, up }: { data: number[]; up: boolean }) {
+  if (data.length < 2) return <div className="h-8 w-20" />;
+  const max = Math.max(...data);
+  const min = Math.min(...data);
+  const range = max - min || 1;
+  const points = data
+    .map((d, i) => {
+      const x = (i / (data.length - 1)) * 76 + 2;
+      const y = 28 - ((d - min) / range) * 24 - 2;
+      return `${x},${y}`;
+    })
+    .join(" ");
+  return (
+    <svg viewBox="0 0 80 32" className="h-8 w-20" preserveAspectRatio="none">
+      <polyline points={points} fill="none" stroke={up ? "#34d399" : "#fb7185"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function KpiCard({
+  onClick,
+  label,
+  badge,
+  badgeWarn,
+  value,
+  sub,
+  trendBadge,
+  trendUp,
+  sparkline,
+  link,
+  hover,
+}: {
+  onClick: () => void;
+  label: string;
+  badge: string;
+  badgeWarn?: boolean;
+  value: string;
+  sub: string;
+  trendBadge: string;
+  trendUp: boolean;
+  sparkline: number[];
+  link: string;
+  hover: string;
+}) {
+  return (
+    <div onClick={onClick} className={`executive-card bg-[#131926] border border-white/10 p-4 rounded-xl cursor-pointer transition-all group ${hover}`}>
+      <div className="flex justify-between items-start">
+        <span className="text-xs font-mono text-slate-400 uppercase">{label}</span>
+        {badge && (
+          <span className={`text-[11px] font-mono px-1.5 py-0.5 rounded font-semibold ${badgeWarn ? "bg-rose-500/15 text-rose-400" : "bg-white/5 text-slate-300"}`}>
+            {badge}
+          </span>
+        )}
+      </div>
+      <div className="mt-3 flex items-end justify-between gap-2">
+        <h3 className="text-2xl font-extrabold text-white font-mono">{value}</h3>
+        <div className="flex flex-col items-end gap-1">
+          {trendBadge && (
+            <span className={`text-[11px] font-mono px-1.5 py-0.5 rounded font-semibold ${trendUp ? "bg-emerald-500/10 text-emerald-400" : "bg-rose-500/10 text-rose-400"}`}>
+              {trendUp ? "↑" : "↓"} {trendBadge}
+            </span>
+          )}
+          <Sparkline data={sparkline} up={trendUp} />
+        </div>
+      </div>
+      <div className="mt-2 flex items-center justify-between text-[11px] text-slate-400 border-t border-white/5 pt-2">
+        <span>{sub}</span>
+        <span className="text-blue-400 group-hover:underline">{link}</span>
+      </div>
+    </div>
+  );
+}

@@ -4,10 +4,15 @@ import type {
   Transaction,
   CreateTransactionPayload,
   RecordPaymentPayload,
+  TransactionsQuery,
 } from "../types";
 
-export async function fetchTransactions(): Promise<PaginatedResponse<Transaction>> {
-  const { data } = await apiClient.get<PaginatedResponse<Transaction>>("/transactions/");
+export async function fetchTransactions(query: TransactionsQuery = {}): Promise<PaginatedResponse<Transaction>> {
+  const params: Record<string, string | number> = {};
+  if (query.status) params.status = query.status;
+  if (query.search) params.search = query.search;
+  if (query.page) params.page = query.page;
+  const { data } = await apiClient.get<PaginatedResponse<Transaction>>("/transactions/", { params });
   return data;
 }
 
