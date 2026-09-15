@@ -44,6 +44,22 @@ class OperationsReportView(BaseReportView):
     service_fn = staticmethod(services.operations_report)
 
 
+class MarketingCampaignDetailReportView(APIView):
+    """
+    Campaign directory detail for the CEO Campaigns page.
+    Gated on report_marketing + company scope, matching MarketingReportView's resource.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        if not has_permission(request.user, "view", "report_marketing"):
+            return Response({"detail": "Not permitted."}, status=403)
+        scopes = get_user_scopes(request.user, "view", "report_marketing")
+        if "company" not in scopes and not request.user.is_superuser:
+            return Response({"detail": "Not permitted."}, status=403)
+        return Response(services.marketing_campaign_detail_report())
+
+
 class SalesPipelineReportView(APIView):
     """
     Sales pipeline detail for the CEO Sales Pipeline page.
@@ -111,3 +127,23 @@ class CEODashboardView(APIView):
             if "company" not in scopes:
                 return Response({"detail": "Not permitted."}, status=403)
         return Response(services.ceo_dashboard())
+
+
+class StaffDirectoryReportView(APIView):
+    """
+    Staff directory for the CEO Staff Directory page.
+    Gated on user_management:view -- per the seeded RBAC matrix, only CEO
+    and Operations roles hold this permission, both at company scope, so
+    this view intentionally returns full-company data or 403, with no
+    department/team-scoped branch (none exists in the matrix yet).
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        if not has_permission(request.user, "view", "user_management"):
+            return Response({"detail": "Not permitted."}, status=403)
+        scopes = get_user_scopes(request.user, "view", "user_management")
+        if "company" not in scopes and not request.user.is_superuser:
+            return Response({"detail": "Not permitted."}, status=403)
+        return Response(services.staff_directory_report())
+

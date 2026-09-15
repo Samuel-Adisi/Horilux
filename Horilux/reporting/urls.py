@@ -12,5 +12,7 @@ urlpatterns = [
     path("reports/ceo-dashboard/", views.CEODashboardView.as_view(), name="report-ceo-dashboard"),
     path("reports/finance-detail/", views.FinanceDetailReportView.as_view(), name="report-finance-detail"),
     path("reports/sales-pipeline/", views.SalesPipelineReportView.as_view(), name="report-sales-pipeline"),
+    path("reports/marketing-campaigns/", views.MarketingCampaignDetailReportView.as_view(), name="report-marketing-campaigns"),
     path("reports/agents-roster/", views.AgentsRosterReportView.as_view(), name="report-agents-roster"),
+    path("reports/staff-directory/", views.StaffDirectoryReportView.as_view(), name="report-staff-directory"),
 ]

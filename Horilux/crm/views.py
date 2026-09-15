@@ -21,10 +21,19 @@ class LeadViewSet(viewsets.ModelViewSet):
         "assign": "assign", "qualify": "edit", "convert_to_client": "edit",
     }
 
+    filterset_fields = ["status"]
+
     def get_queryset(self):
-        return filter_queryset_for_user(
+        qs = filter_queryset_for_user(
             self.request.user, "view", "lead", Lead.objects.all(), agent_field="assigned_agent"
-        )
+        ).select_related("assigned_agent")
+
+        search = self.request.query_params.get("search")
+        if search:
+            from django.db.models import Q
+            qs = qs.filter(Q(name__icontains=search) | Q(location_preference__icontains=search))
+
+        return qs
 
     def perform_create(self, serializer):
         # Website enquiries and manual entries both land here; default status is 'new'.

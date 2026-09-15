@@ -1,8 +1,9 @@
 from django.core.cache import cache
-from django.db.models import Count, Sum, Avg
+from django.db.models import Count, Sum, Prefetch, Avg
 from django.utils import timezone
 
 from properties.models import Property
+from properties.models import PropertyMedia
 from crm.models import Lead, Client
 from viewings.models import FollowUp
 from transactions.models import Transaction, Commission
@@ -53,6 +54,70 @@ def marketing_report(user=None):
         "total_campaigns": sum(by_status.values()),
         "by_status": by_status,
         "performance": {k: v or 0 for k, v in perf.items()},
+    }
+
+
+def marketing_campaign_detail_report():
+    """
+    Company-wide campaign directory for the CEO Campaigns page.
+    Read-only: CEO has view+export on marketing_campaign at company scope.
+    """
+    qs = MarketingCampaign.objects.select_related("property", "created_by").prefetch_related(
+        Prefetch(
+            "property__media",
+            queryset=PropertyMedia.objects.order_by("order"),
+            to_attr="prefetched_media",
+        )
+    ).all()
+
+    by_status = dict(qs.values_list("status").annotate(c=Count("id")).order_by())
+    status_counts = {
+        "draft": by_status.get(MarketingCampaign.Status.DRAFT, 0),
+        "in_review": by_status.get(MarketingCampaign.Status.IN_REVIEW, 0),
+        "scheduled": by_status.get(MarketingCampaign.Status.SCHEDULED, 0),
+        "published": by_status.get(MarketingCampaign.Status.PUBLISHED, 0),
+    }
+
+    totals = CampaignPerformance.objects.filter(campaign__in=qs).aggregate(
+        views=Sum("views"), enquiries=Sum("enquiries"),
+        leads_generated=Sum("leads_generated"),
+        viewings_booked=Sum("viewings_booked"),
+        conversions=Sum("conversions"),
+    )
+    totals = {k: v or 0 for k, v in totals.items()}
+
+    campaigns = []
+    for c in qs.order_by("-created_at"):
+        perf = c.performance_records.aggregate(
+            views=Sum("views"), enquiries=Sum("enquiries"),
+            leads_generated=Sum("leads_generated"),
+            viewings_booked=Sum("viewings_booked"),
+            conversions=Sum("conversions"),
+        )
+        has_perf = any(v is not None for v in perf.values())
+        prefetched_media = getattr(c.property, "prefetched_media", [])
+        image_url = prefetched_media[0].file.url if prefetched_media else None
+        campaigns.append({
+            "id": str(c.id),
+            "property_id": c.property_id,
+            "property_title": str(c.property),
+            "property_image_url": image_url,
+            "status": c.status,
+            "status_label": c.get_status_display(),
+            "headline": (c.content or {}).get("headline", ""),
+            "created_by_name": f"{c.created_by.first_name} {c.created_by.last_name}".strip() if c.created_by else "—",
+            "created_at": c.created_at,
+            "scheduled_date": c.scheduled_date,
+            "published_date": c.published_date,
+            "has_performance": has_perf,
+            "performance": {k: (v or 0) for k, v in perf.items()},
+        })
+
+    return {
+        "total_campaigns": sum(status_counts.values()),
+        "status_counts": status_counts,
+        "totals": totals,
+        "campaigns": campaigns,
     }
 
 
@@ -464,3 +529,39 @@ def ceo_dashboard():
     }
     cache.set(CEO_DASHBOARD_CACHE_KEY, data, CEO_DASHBOARD_CACHE_TTL)
     return data
+
+
+def staff_directory_report():
+    """
+    Real staff directory for the CEO Staff Directory page.
+    Sources: accounts.models.User, Department, Role, UserRole.
+    No invented fields -- name, email, phone, department, role, active
+    status, and join date are the only fields that exist on the real model.
+    """
+    from accounts.models import User
+
+    users = (
+        User.objects.select_related("department")
+        .prefetch_related("user_roles__role")
+        .order_by("first_name", "last_name")
+    )
+
+    staff = []
+    for user in users:
+        role_names = [ur.role.name for ur in user.user_roles.all()]
+        staff.append({
+            "id": str(user.id),
+            "name": f"{user.first_name} {user.last_name}".strip(),
+            "email": user.email,
+            "phone": user.phone,
+            "department": user.department.get_name_display() if user.department else None,
+            "roles": role_names,
+            "is_active": user.is_active,
+            "date_joined": user.date_joined.isoformat(),
+        })
+
+    return {
+        "total_staff": len(staff),
+        "active_count": sum(1 for s in staff if s["is_active"]),
+        "staff": staff,
+    }
