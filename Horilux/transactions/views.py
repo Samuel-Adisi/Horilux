@@ -1,12 +1,14 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, generics
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
 
-from accounts.permissions import RBACPermission, filter_queryset_for_user
+from accounts.permissions import RBACPermission, filter_queryset_for_user, has_permission
+from rest_framework.exceptions import PermissionDenied
 
-from .models import Transaction, Payment, Commission, CommissionRule
+from .models import Transaction, Payment, Commission, CommissionRule, ApprovalThreshold
 from .serializers import (
+    ApprovalThresholdSerializer,
     TransactionListSerializer, TransactionDetailSerializer,
     PaymentSerializer, CommissionSerializer, CommissionRuleSerializer,
 )
@@ -160,3 +162,21 @@ class CommissionRuleViewSet(viewsets.ModelViewSet):
         "list": "view", "retrieve": "view", "create": "edit",
         "update": "edit", "partial_update": "edit", "destroy": "edit",
     }
+
+
+class ApprovalThresholdView(generics.RetrieveUpdateAPIView):
+    """
+    Singleton — GET returns the current threshold, PATCH/PUT updates it.
+    Gated under company_settings (CEO-only), same as CompanyProfileView.
+    """
+    serializer_class = ApprovalThresholdSerializer
+
+    def get_object(self):
+        method_to_action = {"GET": "view", "PUT": "edit", "PATCH": "edit"}
+        action = method_to_action.get(self.request.method)
+        if not action or not has_permission(self.request.user, action, "company_settings"):
+            raise PermissionDenied("You do not have permission to access approval settings.")
+        return ApprovalThreshold.get_solo()
+
+    def perform_update(self, serializer):
+        serializer.save(updated_by=self.request.user)

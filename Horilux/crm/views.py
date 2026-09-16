@@ -137,3 +137,48 @@ class InteractionViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(agent=serializer.validated_data.get("agent") or self.request.user)
+
+
+from django.db.models import Count, Q as DjangoQ
+
+
+class LeadSourceStatsViewSet(viewsets.ViewSet):
+    """Read-only aggregation: lead volume + conversion rate per source. Real data only, no spend/ROAS."""
+    permission_classes = [RBACPermission]
+    rbac_resource = "lead_source_stats"
+
+    def list(self, request):
+        # Normalize casing/whitespace so "Referral" and "referral" merge into one row,
+        # while keeping a readable display label (first-seen original casing per group).
+        raw_leads = Lead.objects.values("id", "source", "status", "client__id")
+        groups = {}
+        for row in raw_leads:
+            raw_source = (row["source"] or "").strip()
+            key = raw_source.lower() or "unknown"
+            display = raw_source or "Unknown"
+
+            g = groups.setdefault(key, {
+                "source": display,
+                "total_leads": 0,
+                "converted": 0,
+                "lost": 0,
+                "qualified": 0,
+            })
+            g["total_leads"] += 1
+            if row["status"] == Lead.Status.CLOSED or row["client__id"] is not None:
+                g["converted"] += 1
+            if row["status"] == Lead.Status.LOST:
+                g["lost"] += 1
+            if row["status"] == Lead.Status.QUALIFIED:
+                g["qualified"] += 1
+
+        results = []
+        for g in groups.values():
+            total = g["total_leads"]
+            converted = g["converted"]
+            results.append({
+                **g,
+                "conversion_rate": round((converted / total) * 100, 1) if total else 0,
+            })
+        results.sort(key=lambda r: r["total_leads"], reverse=True)
+        return Response({"results": results})

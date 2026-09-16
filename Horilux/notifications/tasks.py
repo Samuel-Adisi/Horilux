@@ -7,6 +7,12 @@ from notifications.models import Notification
 def create_notification(recipient, type_, message, related_obj=None):
     if recipient is None:
         return None
+
+    from notifications.models import NotificationPreference
+    pref = NotificationPreference.objects.filter(user=recipient, event_type=type_).first()
+    if pref is not None and not pref.enabled:
+        return None
+
     content_type = None
     object_id = None
     if related_obj is not None:

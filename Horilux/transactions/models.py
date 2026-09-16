@@ -96,3 +96,29 @@ class Commission(models.Model):
     company_share = models.DecimalField(max_digits=14, decimal_places=2, default=0)
     payment_date = models.DateField(null=True, blank=True)
     payment_status = models.CharField(max_length=10, choices=Payment.Status.choices, default=Payment.Status.PENDING)
+
+
+class ApprovalThreshold(models.Model):
+    """
+    Singleton — one active threshold value.
+    Properties with a price >= this value require CEO approval;
+    below it, any role with property.approve permission can approve.
+    """
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    ceo_approval_min_price = models.DecimalField(max_digits=14, decimal_places=2, default=0)
+    updated_at = models.DateTimeField(auto_now=True)
+    updated_by = models.ForeignKey(
+        "accounts.User", on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+    )
+
+    def save(self, *args, **kwargs):
+        self.pk = self.pk or uuid.UUID(int=0)
+        super().save(*args, **kwargs)
+
+    @classmethod
+    def get_solo(cls):
+        obj, _ = cls.objects.get_or_create(pk=uuid.UUID(int=0))
+        return obj
+
+    def __str__(self):
+        return f"CEO approval required over GHS {self.ceo_approval_min_price}"

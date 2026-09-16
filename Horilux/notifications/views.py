@@ -31,3 +31,23 @@ class NotificationViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, view
     @action(detail=False, methods=["get"], url_path="unread-count")
     def unread_count(self, request):
         return Response({"unread_count": self.get_queryset().filter(read=False).count()})
+
+
+class NotificationPreferenceViewSet(mixins.ListModelMixin, mixins.UpdateModelMixin, viewsets.GenericViewSet):
+    from notifications.models import NotificationPreference
+    from notifications.serializers import NotificationPreferenceSerializer
+    serializer_class = NotificationPreferenceSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        from notifications.models import NotificationPreference
+        user = self.request.user
+        existing_types = set(
+            NotificationPreference.objects.filter(user=user).values_list("event_type", flat=True)
+        )
+        missing = [et for et, _ in NotificationPreference.EventType.choices if et not in existing_types]
+        if missing:
+            NotificationPreference.objects.bulk_create(
+                [NotificationPreference(user=user, event_type=et, enabled=True) for et in missing]
+            )
+        return NotificationPreference.objects.filter(user=user).order_by("event_type")

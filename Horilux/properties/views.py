@@ -84,6 +84,17 @@ class PropertyViewSet(viewsets.ModelViewSet):
         if not checklist or not checklist.is_complete():
             raise ValidationError("Verification checklist is incomplete.")
 
+        from accounts.permissions import get_user_scopes
+        from transactions.models import ApprovalThreshold
+        threshold = ApprovalThreshold.get_solo()
+        if property_obj.price >= threshold.ceo_approval_min_price:
+            scopes = get_user_scopes(request.user, "approve", "property")
+            if "company" not in scopes:
+                raise ValidationError(
+                    f"Properties priced at or above GHS {threshold.ceo_approval_min_price} "
+                    "require CEO approval."
+                )
+
         checklist.manager_approved = True
         checklist.approved_by = request.user
         from django.utils import timezone

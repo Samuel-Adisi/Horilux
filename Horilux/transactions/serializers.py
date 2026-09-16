@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Transaction, Payment, Commission, CommissionRule
+from .models import Transaction, Payment, Commission, CommissionRule, ApprovalThreshold
 
 
 class PaymentSerializer(serializers.ModelSerializer):
@@ -64,3 +64,10 @@ class TransactionDetailSerializer(serializers.ModelSerializer):
             "payments", "commission",
         ]
         read_only_fields = ["id", "expected_commission", "amount_received", "outstanding_amount", "created_at", "updated_at"]
+
+
+class ApprovalThresholdSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ApprovalThreshold
+        fields = ["id", "ceo_approval_min_price", "updated_at", "updated_by"]
+        read_only_fields = ["id", "updated_at", "updated_by"]
