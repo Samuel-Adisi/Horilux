@@ -89,13 +89,17 @@ const MOCK = {
 
 const RANGE_OPTIONS = ["W", "M", "Q", "Y"] as const;
 
+function formatGHS(value: number): string {
+  return `GH₵${Math.round(value).toLocaleString()}`;
+}
+
 export default function CeoOverviewPage() {
   const navigate = useNavigate();
   const { data, isLoading, error } = useCeoDashboard();
   const [range, setRange] = useState<(typeof RANGE_OPTIONS)[number]>("Q");
   const [leaderboardView, setLeaderboardView] = useState<"deals" | "volume" | "conversion">("deals");
 
-  if (isLoading) return <div className="text-slate-400 text-sm p-6">Loading executive data…</div>;
+  if (isLoading) return <OverviewSkeleton />;
   if (error || !data) return <div className="text-rose-400 text-sm p-6">Failed to load dashboard data.</div>;
 
   const { kpis, listing, sales, finance, revenue_trend, conversion_funnel, leaderboard } = data;
@@ -149,7 +153,7 @@ export default function CeoOverviewPage() {
           onClick={() => navigate("/ceo/revenue")}
           label="Total Revenue"
           badge="QTD"
-          value={`$${kpis.gross_volume_ytd.toLocaleString()}`}
+          value={formatGHS(kpis.gross_volume_ytd)}
           sub="Cumulative closed volume"
           trendBadge={`${momGrowthPct >= 0 ? "+" : ""}${momGrowthPct.toFixed(1)}%`}
           trendUp={momGrowthPct >= 0}
@@ -234,7 +238,7 @@ export default function CeoOverviewPage() {
           onClick={() => navigate("/ceo/transactions")}
           label="Gross Volume"
           badge="GTV"
-          value={`$${kpis.gross_volume_ytd.toLocaleString()}`}
+          value={formatGHS(kpis.gross_volume_ytd)}
           sub={`${finance.total_transactions} settled transactions`}
           trendBadge={`${momGrowthPct >= 0 ? "+" : ""}${momGrowthPct.toFixed(1)}%`}
           trendUp={momGrowthPct >= 0}
@@ -270,7 +274,7 @@ export default function CeoOverviewPage() {
           <div className="grid grid-cols-3 gap-4 mb-4 pb-4 border-b border-white/5">
             <div>
               <p className="text-[10px] font-mono text-slate-500 uppercase">Recorded Revenue</p>
-              <p className="text-lg font-bold text-white font-mono mt-1">${kpis.gross_volume_ytd.toLocaleString()}</p>
+              <p className="text-lg font-bold text-white font-mono mt-1">{formatGHS(kpis.gross_volume_ytd)}</p>
               <p className="text-[11px] text-emerald-400 mt-0.5">{momGrowthPct >= 0 ? "+" : ""}{momGrowthPct.toFixed(1)}% MoM</p>
             </div>
             <div>
@@ -333,7 +337,7 @@ export default function CeoOverviewPage() {
             {!conversion_funnel.length && <p className="text-xs text-slate-500">No pipeline data yet.</p>}
           </div>
           <div className="pt-3 border-t border-white/5 flex items-center justify-between text-xs">
-            <span className="text-slate-400">Avg Ticket: <strong className="text-white">${kpis.avg_deal_size.toLocaleString()}</strong></span>
+            <span className="text-slate-400">Avg Ticket: <strong className="text-white">{formatGHS(kpis.avg_deal_size)}</strong></span>
             <button onClick={() => navigate("/ceo/sales")} className="text-blue-400 hover:text-blue-300 font-semibold">
               View Sales Dashboard →
             </button>
@@ -454,7 +458,7 @@ export default function CeoOverviewPage() {
                 leaderboardView === "deals"
                   ? `${agent.deals} deals`
                   : leaderboardView === "volume"
-                  ? `$${agent.volume.toLocaleString()}`
+                  ? formatGHS(agent.volume)
                   : `${agent.yield_percent.toFixed(1)}%`;
               return (
                 <div key={agent.rank} className="flex items-center justify-between">
@@ -469,7 +473,7 @@ export default function CeoOverviewPage() {
                     </div>
                   </div>
                   <div className="text-right shrink-0 ml-2">
-                    <p className="font-mono text-xs font-bold text-white">${agent.volume.toLocaleString()} <span className="text-slate-500 font-normal">GTV</span></p>
+                    <p className="font-mono text-xs font-bold text-white">{formatGHS(agent.volume)} <span className="text-slate-500 font-normal">GTV</span></p>
                     <p className="text-[10px] text-emerald-400 font-semibold mt-0.5">{metricValue}</p>
                   </div>
                 </div>
@@ -554,6 +558,23 @@ export default function CeoOverviewPage() {
             <button onClick={() => navigate("/ceo/audit")} className="text-blue-400 hover:text-blue-300 font-semibold">Audit Logs →</button>
           </div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+function OverviewSkeleton() {
+  return (
+    <div className="space-y-6 animate-pulse">
+      <div className="bg-[#131926] border border-white/10 rounded-2xl p-6 h-28" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {Array.from({ length: 8 }).map((_, i) => (
+          <div key={i} className="bg-[#131926] border border-white/10 rounded-xl h-36" />
+        ))}
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="bg-[#131926] border border-white/10 rounded-2xl h-80 lg:col-span-2" />
+        <div className="bg-[#131926] border border-white/10 rounded-2xl h-80" />
       </div>
     </div>
   );
