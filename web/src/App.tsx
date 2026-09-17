@@ -27,6 +27,13 @@ import CeoCampaignsPage from "@/features/ceo/pages/CeoCampaignsPage";
 import CeoComingSoonPage from "@/features/ceo/pages/CeoComingSoonPage";
 import CeoStaffDirectoryPage from "@/features/ceo/pages/CeoStaffDirectoryPage";
 import CeoLeadsPage from "@/features/ceo/pages/CeoLeadsPage";
+import CeoCustomersPage from "@/features/ceo/pages/CeoCustomersPage";
+import CeoCrmPage from "@/features/ceo/pages/CeoCrmPage";
+import CeoLeadSourcesPage from "@/features/ceo/pages/CeoLeadSourcesPage";
+import CeoApprovalsPage from "@/features/ceo/pages/CeoApprovalsPage";
+import CeoAuditLogsPage from "@/features/ceo/pages/CeoAuditLogsPage";
+import CeoPropertyPerformancePage from "@/features/ceo/pages/CeoPropertyPerformancePage";
+import CeoSettingsPage from "@/features/ceo/pages/CeoSettingsPage";
 
 function App() {
   return (
@@ -60,27 +67,27 @@ function App() {
             <Route path="forecasting" element={<CeoComingSoonPage />} />
             <Route path="properties" element={<CeoPropertiesPage />} />
             <Route path="properties/:id" element={<CeoPropertyDetailPage />} />
-            <Route path="properties/performance" element={<CeoComingSoonPage />} />
+            <Route path="properties/performance" element={<CeoPropertyPerformancePage />} />
             <Route path="locations" element={<CeoComingSoonPage />} />
             <Route path="developers" element={<CeoComingSoonPage />} />
             <Route path="leads" element={<CeoLeadsPage />} />
-            <Route path="customers" element={<CeoComingSoonPage />} />
-            <Route path="crm" element={<CeoComingSoonPage />} />
+            <Route path="customers" element={<CeoCustomersPage />} />
+            <Route path="crm" element={<CeoCrmPage />} />
             <Route path="agents" element={<CeoAgentsRosterPage />} />
             <Route path="agencies" element={<CeoComingSoonPage />} />
             <Route path="landlords" element={<CeoComingSoonPage />} />
             <Route path="staff" element={<CeoStaffDirectoryPage />} />
             <Route path="campaigns" element={<CeoCampaignsPage />} />
-            <Route path="lead-sources" element={<CeoComingSoonPage />} />
+            <Route path="lead-sources" element={<CeoLeadSourcesPage />} />
             <Route path="advertising" element={<CeoComingSoonPage />} />
             <Route path="rentals/performance" element={<CeoComingSoonPage />} />
             <Route path="rentals/occupancy" element={<CeoComingSoonPage />} />
             <Route path="rentals/tenancies" element={<CeoComingSoonPage />} />
-            <Route path="approvals" element={<CeoComingSoonPage />} />
-            <Route path="audit-logs" element={<CeoComingSoonPage />} />
+            <Route path="approvals" element={<CeoApprovalsPage />} />
+            <Route path="audit-logs" element={<CeoAuditLogsPage />} />
             <Route path="risk" element={<CeoComingSoonPage />} />
             <Route path="ai-insights" element={<CeoComingSoonPage />} />
-            <Route path="settings" element={<CeoComingSoonPage />} />
+            <Route path="settings" element={<CeoSettingsPage />} />
           </Route>
         </Route>
 

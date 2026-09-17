@@ -51,9 +51,6 @@ function CompanyProfileTab() {
         license_number: data.license_number,
         default_currency: data.default_currency,
         timezone: data.timezone,
-        theme_primary_color: data.theme_primary_color,
-        theme_secondary_color: data.theme_secondary_color,
-        theme_accent_color: data.theme_accent_color,
       });
     }
   }, [data]);
@@ -84,30 +81,6 @@ function CompanyProfileTab() {
         {field("default_currency", "Default currency")}
         {field("timezone", "Timezone")}
         <div className="md:col-span-2">{field("registered_address", "Registered address")}</div>
-      </div>
-
-      <div className="mt-6 pt-6 border-t border-white/10">
-        <p className="text-[13px] font-medium text-white mb-4">Brand colors</p>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          {(["theme_primary_color", "theme_secondary_color", "theme_accent_color"] as const).map((key) => (
-            <div key={key}>
-              <label className={labelClass}>
-                {key === "theme_primary_color" ? "Primary" : key === "theme_secondary_color" ? "Secondary" : "Accent"}
-              </label>
-              <div className="flex items-center gap-2">
-                <span
-                  className="w-9 h-9 rounded-lg border border-white/10 shrink-0"
-                  style={{ backgroundColor: (form[key] as string) || "#000000" }}
-                />
-                <input
-                  className={inputClass}
-                  value={(form[key] as string) ?? ""}
-                  onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))}
-                />
-              </div>
-            </div>
-          ))}
-        </div>
       </div>
 
       <div className="mt-6 flex justify-end">

@@ -147,3 +147,19 @@ class StaffDirectoryReportView(APIView):
             return Response({"detail": "Not permitted."}, status=403)
         return Response(services.staff_directory_report())
 
+
+class PropertyPerformanceReportView(APIView):
+    """
+    Property performance for the CEO Property Performance page.
+    Gated on property:view -- restricted to company scope only (CEO-level
+    aggregate across all properties, same pattern as StaffDirectoryReportView).
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        if not has_permission(request.user, "view", "property"):
+            return Response({"detail": "Not permitted."}, status=403)
+        scopes = get_user_scopes(request.user, "view", "property")
+        if "company" not in scopes and not request.user.is_superuser:
+            return Response({"detail": "Not permitted."}, status=403)
+        return Response(services.property_performance())

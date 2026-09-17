@@ -111,8 +111,10 @@ class PropertyViewSet(viewsets.ModelViewSet):
         property_obj = self.get_object()
         if property_obj.status != Property.Status.MARKETING_READY:
             raise ValidationError(f"Property must be Marketing Ready to publish, currently '{property_obj.status}'.")
+        from django.utils import timezone
         property_obj.status = Property.Status.PUBLISHED
-        property_obj.save(update_fields=["status", "updated_at"])
+        property_obj.published_at = timezone.now()
+        property_obj.save(update_fields=["status", "published_at", "updated_at"])
         return Response(PropertyDetailSerializer(property_obj).data)
 
 

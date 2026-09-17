@@ -62,6 +62,22 @@ export interface PropertiesQuery {
   page?: number;
 }
 
+export interface VerificationChecklist {
+  id: string;
+  property: string;
+  owner_info_ok: boolean;
+  price_ok: boolean;
+  location_ok: boolean;
+  details_ok: boolean;
+  photos_ok: boolean;
+  documents_ok: boolean;
+  commission_agreement_ok: boolean;
+  manager_approved: boolean;
+  approved_by: string | null;
+  approved_at: string | null;
+  is_complete: boolean;
+}
+
 export interface PropertyDetail extends Property {
   address: string;
   land_size: string | null;
@@ -71,6 +87,7 @@ export interface PropertyDetail extends Property {
   owner_detail: PropertyOwner;
   updated_at: string;
   media: PropertyMedia[];
+  verification: VerificationChecklist | null;
 }
 
 export interface CreatePropertyPayload {

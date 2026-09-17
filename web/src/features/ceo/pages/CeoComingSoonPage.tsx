@@ -1,17 +1,21 @@
-import { useLocation } from "react-router-dom";
+import { Construction } from "lucide-react";
 
-export default function CeoComingSoonPage() {
-  const location = useLocation();
-  const title = location.pathname
-    .split("/")
-    .filter(Boolean)
-    .slice(1)
-    .join(" / ") || "Page";
+interface CeoComingSoonPageProps {
+  title?: string;
+  description?: string;
+}
 
+export default function CeoComingSoonPage({
+  title = "Coming Soon",
+  description = "This feature is on our roadmap and will be available in a future update.",
+}: CeoComingSoonPageProps) {
   return (
-    <div className="executive-card bg-[#131926] border border-white/10 p-6 rounded-2xl">
-      <h2 className="text-xl font-bold text-white capitalize">{title.replace(/-/g, " ")}</h2>
-      <p className="text-xs text-slate-400 mt-2">This page is being built next.</p>
+    <div className="flex flex-col items-center justify-center min-h-[60vh] px-6 text-center">
+      <div className="w-14 h-14 rounded-full bg-blue-500/10 border border-blue-500/20 flex items-center justify-center mb-5">
+        <Construction className="w-6 h-6 text-blue-400" />
+      </div>
+      <h2 className="text-lg font-semibold text-white mb-2">{title}</h2>
+      <p className="text-sm text-slate-400 max-w-sm leading-relaxed">{description}</p>
     </div>
   );
 }

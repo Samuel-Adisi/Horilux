@@ -63,6 +63,9 @@ class Property(models.Model):
     agent = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name="listed_properties")
     status = models.CharField(max_length=25, choices=Status.choices, default=Status.DRAFT)
     completion_percent = models.PositiveSmallIntegerField(default=0)
+    views_count = models.PositiveIntegerField(default=0)
+    inquiries_count = models.PositiveIntegerField(default=0)
+    published_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

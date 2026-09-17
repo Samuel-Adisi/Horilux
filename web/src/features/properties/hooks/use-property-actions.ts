@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { submitForVerification, publishProperty } from "../api/properties";
+import { submitForVerification, publishProperty, approveProperty } from "../api/properties";
 
 export function useSubmitForVerification() {
   const queryClient = useQueryClient();
@@ -15,6 +15,16 @@ export function usePublishProperty() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: publishProperty,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["properties"] });
+    },
+  });
+}
+
+export function useApproveProperty() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: approveProperty,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["properties"] });
     },

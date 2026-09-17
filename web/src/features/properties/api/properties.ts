@@ -41,3 +41,8 @@ export async function publishProperty(id: string): Promise<PropertyDetail> {
   const { data } = await apiClient.post<PropertyDetail>(`/properties/${id}/publish/`);
   return data;
 }
+
+export async function approveProperty(id: string): Promise<PropertyDetail> {
+  const { data } = await apiClient.post<PropertyDetail>(`/properties/${id}/approve/`);
+  return data;
+}

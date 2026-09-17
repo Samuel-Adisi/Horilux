@@ -565,3 +565,94 @@ def staff_directory_report():
         "active_count": sum(1 for s in staff if s["is_active"]),
         "staff": staff,
     }
+
+
+def property_performance():
+    from django.db.models import Count, Avg, Q
+    from django.utils import timezone
+    from properties.models import Property
+    from viewings.models import Viewing
+    from transactions.models import Transaction
+
+    properties = Property.objects.all()
+    now = timezone.now()
+
+    total_properties = properties.count()
+    total_views = sum(p.views_count for p in properties)
+    total_inquiries = sum(p.inquiries_count for p in properties)
+
+    viewing_counts = {
+        v["property_id"]: v
+        for v in Viewing.objects.values("property_id").annotate(
+            total=Count("id"),
+            hot=Count("id", filter=Q(outcome="hot")),
+            warm=Count("id", filter=Q(outcome="warm")),
+            cold=Count("id", filter=Q(outcome="cold")),
+        )
+    }
+
+    closed_property_ids = set(
+        Transaction.objects.filter(status="closed").values_list("property_id", flat=True)
+    )
+
+    region_avg_price = {
+        r["region"]: r["avg_price"]
+        for r in properties.values("region").annotate(avg_price=Avg("price"))
+    }
+
+    rows = []
+    for p in properties:
+        vc = viewing_counts.get(p.id, {"total": 0, "hot": 0, "warm": 0, "cold": 0})
+        end_date = p.published_at if p.status in ["sold_rented", "archived"] and p.published_at else now
+        days_on_market = max((end_date - p.created_at).days, 0)
+        region_avg = region_avg_price.get(p.region)
+
+        rows.append({
+            "id": str(p.id),
+            "title": getattr(p, "title", None) or f"{p.property_type} — {p.region}",
+            "status": p.status,
+            "region": p.region,
+            "property_type": p.property_type,
+            "price": float(p.price) if p.price is not None else None,
+            "price_vs_region_avg_pct": (
+                round(((float(p.price) - float(region_avg)) / float(region_avg)) * 100, 1)
+                if p.price is not None and region_avg else None
+            ),
+            "days_on_market": days_on_market,
+            "views_count": p.views_count,
+            "inquiries_count": p.inquiries_count,
+            "viewings_total": vc["total"],
+            "viewings_hot": vc["hot"],
+            "viewings_warm": vc["warm"],
+            "viewings_cold": vc["cold"],
+            "converted_to_transaction": p.id in closed_property_ids,
+            "conversion_rate_pct": (
+                round((1 if p.id in closed_property_ids else 0) / vc["total"] * 100, 1)
+                if vc["total"] else None
+            ),
+        })
+
+    status_funnel = {}
+    for p in properties.values("status").annotate(count=Count("id")):
+        status_funnel[p["status"]] = p["count"]
+
+    top_performers = sorted(rows, key=lambda r: (r["views_count"], r["viewings_total"]), reverse=True)[:5]
+    stale_listings = sorted(
+        [r for r in rows if r["status"] in ["published", "marketing_ready", "under_offer"]],
+        key=lambda r: (-r["days_on_market"], r["views_count"]),
+    )[:5]
+
+    return {
+        "summary": {
+            "total_properties": total_properties,
+            "total_views": total_views,
+            "total_inquiries": total_inquiries,
+            "avg_days_on_market": (
+                round(sum(r["days_on_market"] for r in rows) / len(rows), 1) if rows else 0
+            ),
+        },
+        "status_funnel": status_funnel,
+        "top_performers": top_performers,
+        "stale_listings": stale_listings,
+        "properties": rows,
+    }

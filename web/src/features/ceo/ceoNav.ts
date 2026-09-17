@@ -8,23 +8,16 @@ import {
   Building2,
   BarChart3,
   MapPin,
-  Briefcase,
   UserPlus,
   Users,
   MessageSquare,
   CircleUserRound,
-  Building,
-  Landmark,
   UsersRound,
   Megaphone,
   Target,
   Radio,
-  DoorOpen,
-  FileSignature,
   ShieldCheck,
   ScrollText,
-  AlertTriangle,
-  Sparkles,
   Settings,
 } from "lucide-react";
 
@@ -58,7 +51,6 @@ export const CEO_NAV: NavGroup[] = [
       { id: "properties", label: "All Properties", to: "/ceo/properties", icon: Building2, color: "text-cyan-400" },
       { id: "property-performance", label: "Performance Metrics", to: "/ceo/properties/performance", icon: BarChart3, color: "text-indigo-400" },
       { id: "locations", label: "Metro Locations", to: "/ceo/locations", icon: MapPin, color: "text-rose-400" },
-      { id: "developers", label: "Developers & JV", to: "/ceo/developers", icon: Briefcase, color: "text-amber-400" },
     ],
   },
   {
@@ -73,8 +65,6 @@ export const CEO_NAV: NavGroup[] = [
     label: "People",
     items: [
       { id: "agents", label: "Agents Roster", to: "/ceo/agents", icon: CircleUserRound, color: "text-emerald-400" },
-      { id: "agencies", label: "Agencies", to: "/ceo/agencies", icon: Building, color: "text-slate-300" },
-      { id: "landlords", label: "Landlords", to: "/ceo/landlords", icon: Landmark, color: "text-indigo-400" },
       { id: "staff", label: "Staff Directory", to: "/ceo/staff", icon: UsersRound, color: "text-orange-400" },
     ],
   },
@@ -82,16 +72,8 @@ export const CEO_NAV: NavGroup[] = [
     label: "Marketing",
     items: [
       { id: "campaigns", label: "Campaigns", to: "/ceo/campaigns", icon: Megaphone, color: "text-pink-400" },
-      { id: "lead-sources", label: "Lead Sources (ROAS)", to: "/ceo/lead-sources", icon: Target, color: "text-cyan-400" },
+      { id: "lead-sources", label: "Lead Sources", to: "/ceo/lead-sources", icon: Target, color: "text-cyan-400" },
       { id: "advertising", label: "Advertising", to: "/ceo/advertising", icon: Radio, color: "text-yellow-400" },
-    ],
-  },
-  {
-    label: "Rentals",
-    items: [
-      { id: "rental-performance", label: "Rental Performance", to: "/ceo/rentals/performance", icon: Home, color: "text-emerald-400" },
-      { id: "occupancy", label: "Occupancy Tracker", to: "/ceo/rentals/occupancy", icon: DoorOpen, color: "text-sky-400" },
-      { id: "tenancies", label: "Tenancies & Renewals", to: "/ceo/rentals/tenancies", icon: FileSignature, color: "text-violet-400" },
     ],
   },
   {
@@ -99,8 +81,6 @@ export const CEO_NAV: NavGroup[] = [
     items: [
       { id: "approvals", label: "CEO Approvals", to: "/ceo/approvals", badge: 3, icon: ShieldCheck, color: "text-amber-400" },
       { id: "audit-logs", label: "Audit & Compliance", to: "/ceo/audit-logs", icon: ScrollText, color: "text-slate-300" },
-      { id: "risk", label: "Risk Assessment", to: "/ceo/risk", icon: AlertTriangle, color: "text-red-400" },
-      { id: "ai-insights", label: "AI Strategic Hub", to: "/ceo/ai-insights", icon: Sparkles, color: "text-violet-400" },
       { id: "settings", label: "System Settings", to: "/ceo/settings", icon: Settings, color: "text-slate-400" },
     ],
   },
