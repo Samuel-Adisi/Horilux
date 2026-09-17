@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { useProperties } from "@/features/properties/hooks/use-properties";
 import type { Property } from "@/features/properties/types";
@@ -80,8 +81,10 @@ function PropertyRow({ property }: { property: Property }) {
 
 export default function CeoPropertiesPage() {
   const [status, setStatus] = useState<string>("");
-  const [search, setSearch] = useState("");
-  const [searchInput, setSearchInput] = useState("");
+  const [searchParams] = useSearchParams();
+  const initialSearch = searchParams.get("search") ?? "";
+  const [search, setSearch] = useState(initialSearch);
+  const [searchInput, setSearchInput] = useState(initialSearch);
   const [page, setPage] = useState(1);
 
   const { data, isLoading, isError } = useProperties({ status: status || undefined, search: search || undefined, page });

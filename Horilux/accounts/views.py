@@ -50,6 +50,18 @@ class StaffViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all().select_related("department").prefetch_related("user_roles__role")
     pagination_class = None
 
+    def get_queryset(self):
+        qs = super().get_queryset()
+        search = self.request.query_params.get("search")
+        if search:
+            from django.db.models import Q
+            qs = qs.filter(
+                Q(first_name__icontains=search)
+                | Q(last_name__icontains=search)
+                | Q(email__icontains=search)
+            )
+        return qs
+
     def get_serializer_class(self):
         if self.action in ("create", "update", "partial_update"):
             return StaffWriteSerializer

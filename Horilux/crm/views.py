@@ -97,9 +97,16 @@ class ClientViewSet(viewsets.ModelViewSet):
     rbac_resource = "client"
 
     def get_queryset(self):
-        return filter_queryset_for_user(
+        qs = filter_queryset_for_user(
             self.request.user, "view", "client", Client.objects.all(), agent_field="assigned_agent"
         )
+
+        search = self.request.query_params.get("search")
+        if search:
+            from django.db.models import Q
+            qs = qs.filter(Q(name__icontains=search) | Q(email__icontains=search) | Q(phone__icontains=search))
+
+        return qs
 
 
 class InteractionViewSet(viewsets.ModelViewSet):

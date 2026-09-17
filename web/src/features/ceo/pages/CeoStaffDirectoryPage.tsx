@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useStaffDirectory } from "@/features/dashboard/hooks/use-staff-directory";
 import {
   useDepartments,
@@ -317,7 +318,8 @@ function StaffRow({
 }
 
 export default function CeoStaffDirectoryPage() {
-  const [search, setSearch] = useState("");
+  const [searchParams] = useSearchParams();
+  const [search, setSearch] = useState(searchParams.get("search") ?? "");
   const [modal, setModal] = useState<{ mode: "create" | "edit"; staffId: string | null } | null>(null);
   const { data, isLoading, isError, error } = useStaffDirectory();
 

@@ -4,6 +4,7 @@ import { Search, Settings, LogOut, ChevronDown } from "lucide-react";
 import { useAuthStore } from "@/features/accounts/store/auth-store";
 import { useToast } from "@/components/ui/use-toast";
 import { CEO_NAV } from "./ceoNav";
+import { useGlobalSearch, type GlobalSearchResult } from "./hooks/use-global-search";
 
 const KEYWORD_ROUTES: { match: (t: string) => boolean; to: string }[] = [
   { match: (t) => /rev|fin/.test(t), to: "/ceo/revenue" },
@@ -41,14 +42,49 @@ export default function CeoLayout() {
     navigate("/login");
   }
 
+  const [searchOpen, setSearchOpen] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
+  const { data: searchResults, isFetching: isSearching } = useGlobalSearch(search);
+
+  useEffect(() => {
+    function handleClickOutsideSearch(e: MouseEvent) {
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
+        setSearchOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutsideSearch);
+    return () => document.removeEventListener("mousedown", handleClickOutsideSearch);
+  }, []);
+
+  function goToResult(result: GlobalSearchResult) {
+    navigate(result.path);
+    setSearch("");
+    setSearchOpen(false);
+  }
+
   function handleSearch(term: string) {
     if (!term.trim()) return;
     const lower = term.toLowerCase();
     const hit = KEYWORD_ROUTES.find((r) => r.match(lower));
-    navigate(hit ? hit.to : "/ceo/properties");
-    if (!hit) toast({ title: `Searching enterprise records for "${term}"` });
+    if (hit) {
+      navigate(hit.to);
+      setSearch("");
+      setSearchOpen(false);
+      return;
+    }
+    navigate(`/ceo/properties?search=${encodeURIComponent(term)}`);
     setSearch("");
+    setSearchOpen(false);
   }
+
+  const groupedResults: { label: string; items: GlobalSearchResult[] }[] = searchResults
+    ? [
+        { label: "Properties", items: searchResults.properties },
+        { label: "Leads", items: searchResults.leads },
+        { label: "Clients", items: searchResults.clients },
+        { label: "Staff", items: searchResults.staff },
+      ].filter((g) => g.items.length > 0)
+    : [];
 
   return (
     <div className="h-full flex overflow-hidden font-sans text-sm bg-[#0b0f19] text-slate-200 dark">
@@ -107,11 +143,15 @@ export default function CeoLayout() {
       <div className="flex-1 flex flex-col h-full overflow-hidden bg-[#0b0f19]">
         <header className="h-16 flex-shrink-0 border-b border-white/10 bg-[#0e1320] px-6 flex items-center justify-between z-20">
           <div className="flex items-center gap-6">
-            <div className="relative w-80 group">
+            <div className="relative w-80 group" ref={searchRef}>
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-cyan-400 transition-colors" />
               <input
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setSearchOpen(true);
+                }}
+                onFocus={() => search.trim() && setSearchOpen(true)}
                 onKeyDown={(e) => e.key === "Enter" && handleSearch(search)}
                 placeholder="Search metrics, escrow, 'East Legon', 'Agents'..."
                 className="w-full h-9 bg-[#141a29] border border-white/10 focus:border-cyan-500/60 rounded-lg pl-9 pr-10 text-xs text-slate-200 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 transition-all"
@@ -120,6 +160,35 @@ export default function CeoLayout() {
                 <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] font-mono text-slate-400 bg-white/5 px-1.5 py-0.5 rounded border border-white/10">
                   ↵
                 </span>
+              ) : null}
+
+              {searchOpen && search.trim().length > 1 ? (
+                <div className="absolute left-0 top-full mt-2 w-[420px] max-h-96 overflow-y-auto bg-[#141a29] border border-white/10 rounded-lg shadow-xl z-40">
+                  {isSearching && groupedResults.length === 0 ? (
+                    <p className="px-4 py-3 text-xs text-slate-400">Searching…</p>
+                  ) : groupedResults.length === 0 ? (
+                    <p className="px-4 py-3 text-xs text-slate-400">No matches. Press Enter to search properties.</p>
+                  ) : (
+                    groupedResults.map((group) => (
+                      <div key={group.label} className="py-1.5">
+                        <p className="px-4 py-1 text-[10px] font-mono uppercase tracking-wider text-slate-500">
+                          {group.label}
+                        </p>
+                        {group.items.map((item) => (
+                          <button
+                            key={`${item.type}-${item.id}`}
+                            type="button"
+                            onClick={() => goToResult(item)}
+                            className="w-full flex flex-col items-start px-4 py-2 text-left hover:bg-white/5 transition-colors"
+                          >
+                            <span className="text-xs font-semibold text-white">{item.title}</span>
+                            <span className="text-[11px] text-slate-400">{item.subtitle}</span>
+                          </button>
+                        ))}
+                      </div>
+                    ))
+                  )}
+                </div>
               ) : null}
             </div>
           </div>

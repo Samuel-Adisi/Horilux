@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useLeads } from "@/features/leads/hooks/use-leads";
 import type { Lead } from "@/features/leads/types";
 
@@ -80,8 +81,10 @@ function LeadRow({ lead }: { lead: Lead }) {
 
 export default function CeoLeadsPage() {
   const [status, setStatus] = useState<string>("");
-  const [search, setSearch] = useState("");
-  const [searchInput, setSearchInput] = useState("");
+  const [searchParams] = useSearchParams();
+  const initialSearch = searchParams.get("search") ?? "";
+  const [search, setSearch] = useState(initialSearch);
+  const [searchInput, setSearchInput] = useState(initialSearch);
   const [page, setPage] = useState(1);
 
   const { data, isLoading, isError } = useLeads({ status: status || undefined, search: search || undefined, page });

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useAgentsRoster } from "@/features/dashboard/hooks/use-agents-roster";
 import type { RosterAgent } from "@/features/dashboard/api/agents-roster";
 
@@ -87,6 +88,8 @@ const SORT_OPTIONS: { key: SortKey; label: string }[] = [
 
 export default function CeoAgentsRosterPage() {
   const { data, isLoading, isError } = useAgentsRoster();
+  const [searchParams] = useSearchParams();
+  const [search] = useState(searchParams.get("search") ?? "");
   const [sortKey, setSortKey] = useState<SortKey>("volume");
 
   if (isLoading) {
@@ -106,7 +109,18 @@ export default function CeoAgentsRosterPage() {
   const totalDealsClosed = data.agents.reduce((sum, a) => sum + a.deals_closed, 0);
   const totalActiveDeals = data.agents.reduce((sum, a) => sum + a.active_deals, 0);
 
-  const sortedAgents = [...data.agents].sort((a, b) => b[sortKey] - a[sortKey]);
+  const filteredAgents = search.trim()
+    ? data.agents.filter((a) => {
+        const q = search.trim().toLowerCase();
+        return (
+          a.name.toLowerCase().includes(q) ||
+          a.email.toLowerCase().includes(q) ||
+          a.department.toLowerCase().includes(q)
+        );
+      })
+    : data.agents;
+
+  const sortedAgents = [...filteredAgents].sort((a, b) => b[sortKey] - a[sortKey]);
 
   return (
     <div className="space-y-6">
