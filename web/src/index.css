@@ -1,27 +1,57 @@
+@import "@fontsource-variable/manrope";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
-  :root {
-    --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 240 5.9% 10%;
-    --radius: 0.5rem;
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+  body {
+    @apply bg-canvas font-sans text-base text-ink;
+    font-feature-settings: "ss01", "cv11";
+  }
+  * {
+    @apply border-line;
+  }
+  ::selection {
+    @apply bg-brand-100 text-brand-900;
+  }
+  :focus-visible {
+    @apply outline-none ring-2 ring-brand/40 ring-offset-1 ring-offset-white;
+  }
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type="number"] {
+    -moz-appearance: textfield;
   }
 }
 
-@layer base {
-  * {
-    @apply border-border;
+@layer utilities {
+  .num {
+    font-variant-numeric: tabular-nums;
   }
-  html, body, #root {
-    height: 100%;
-    margin: 0;
+  /* Brand motif: the slanted parallel bars from the Horilux mark. */
+  .motif-slant {
+    background-image: repeating-linear-gradient(
+      -37deg,
+      currentColor 0 1px,
+      transparent 1px 14px
+    );
   }
-  body {
-    @apply bg-background text-foreground;
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: #d4d0c6 transparent;
   }
 }

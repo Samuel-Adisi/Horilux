@@ -24,10 +24,14 @@ class MarketingCampaignViewSet(viewsets.ModelViewSet):
     }
 
     def get_queryset(self):
-        return filter_queryset_for_user(
+        qs = filter_queryset_for_user(
             self.request.user, "view", "marketing_campaign", MarketingCampaign.objects.all(),
             agent_field="created_by",
-        )
+        ).select_related("property", "created_by")
+        status_filter = self.request.query_params.get("status")
+        if status_filter:
+            qs = qs.filter(status=status_filter)
+        return qs.order_by("-created_at")
 
     def perform_create(self, serializer):
         prop = serializer.validated_data.get("property")
@@ -97,4 +101,4 @@ class CampaignPerformanceViewSet(viewsets.ModelViewSet):
         return filter_queryset_for_user(
             self.request.user, "view", "marketing_campaign", CampaignPerformance.objects.all(),
             agent_field="campaign__created_by",
-        )
+        ).order_by("-recorded_at")

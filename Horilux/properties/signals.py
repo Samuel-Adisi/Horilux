@@ -1,7 +1,7 @@
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-from properties.models import Property
+from properties.models import Property, VerificationChecklist
 from notifications.tasks import create_notification
 
 
@@ -54,3 +54,19 @@ def _create_task(instance, title):
         object_id=instance.pk,
         status=Task.Status.OPEN,
     )
+
+
+@receiver(post_save, sender=VerificationChecklist)
+def sync_completion_percent(sender, instance, **kwargs):
+    """Keep Property.completion_percent = round(100 * ticked flags / 7).
+
+    Uses queryset.update() so it doesn't re-fire Property post_save
+    (which would re-send status notifications / create duplicate tasks).
+    """
+    percent = instance.compute_completion_percent()
+    Property.objects.filter(pk=instance.property_id).exclude(
+        completion_percent=percent
+    ).update(completion_percent=percent)
+    cached = instance._state.fields_cache.get("property") if hasattr(instance._state, "fields_cache") else None
+    if cached is not None:
+        cached.completion_percent = percent

@@ -17,4 +17,4 @@ class AuditLogSerializer(serializers.ModelSerializer):
     def get_actor_name(self, obj):
         if not obj.actor_id:
             return "System"
-        return f"{obj.actor.first_name} {obj.actor.last_name}".strip() or obj.actor.username
+        return f"{obj.actor.first_name} {obj.actor.last_name}".strip() or obj.actor.email

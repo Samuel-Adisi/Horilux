@@ -6,8 +6,14 @@ export async function login(credentials: LoginCredentials): Promise<AuthTokens> 
   return data;
 }
 
-export async function logout(refresh: string): Promise<void> {
-  await apiClient.post("/auth/logout/", { refresh });
+/** Blacklists the refresh token server-side. Best effort — never blocks sign-out. */
+export async function logout(refresh: string | null): Promise<void> {
+  if (!refresh) return;
+  try {
+    await apiClient.post("/auth/logout/", { refresh });
+  } catch {
+    /* token may already be expired/blacklisted */
+  }
 }
 
 export async function fetchCurrentUser(): Promise<User> {

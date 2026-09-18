@@ -21,4 +21,4 @@ class NotificationPreferenceSerializer(serializers.ModelSerializer):
         from notifications.models import NotificationPreference
         model = NotificationPreference
         fields = ["id", "event_type", "event_type_display", "enabled"]
-        read_only_fields = ["id", "event_type_display"]
+        read_only_fields = ["id", "event_type", "event_type_display"]

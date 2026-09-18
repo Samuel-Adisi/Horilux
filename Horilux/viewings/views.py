@@ -1,3 +1,4 @@
+from django.utils.dateparse import parse_date
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -7,6 +8,19 @@ from accounts.permissions import RBACPermission, filter_queryset_for_user
 
 from .models import Viewing, FollowUp
 from .serializers import ViewingSerializer, FollowUpSerializer
+
+
+def _parse_date_param(params, name):
+    raw = params.get(name)
+    if not raw:
+        return None
+    try:
+        value = parse_date(raw)
+    except ValueError:
+        value = None
+    if value is None:
+        raise ValidationError(f"{name} must be a date in YYYY-MM-DD format.")
+    return value
 
 
 class ViewingViewSet(viewsets.ModelViewSet):
@@ -20,9 +34,23 @@ class ViewingViewSet(viewsets.ModelViewSet):
     }
 
     def get_queryset(self):
-        return filter_queryset_for_user(
+        qs = filter_queryset_for_user(
             self.request.user, "view", "viewing", Viewing.objects.all(), agent_field="agent"
-        )
+        ).select_related("client", "property", "agent")
+
+        params = self.request.query_params
+        status_filter = params.get("status")
+        if status_filter:
+            qs = qs.filter(status=status_filter)
+
+        date_from = _parse_date_param(params, "date_from")
+        if date_from:
+            qs = qs.filter(date__gte=date_from)
+        date_to = _parse_date_param(params, "date_to")
+        if date_to:
+            qs = qs.filter(date__lte=date_to)
+
+        return qs.order_by("-date", "-time")
 
     def perform_create(self, serializer):
         # Default agent to the creating user if not explicitly set -- otherwise
@@ -77,8 +105,12 @@ class ViewingViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=["post"])
     def cancel(self, request, pk=None):
         viewing = self.get_object()
+        if viewing.status in (Viewing.Status.COMPLETED, Viewing.Status.CANCELLED, Viewing.Status.NO_SHOW):
+            raise ValidationError(f"Cannot cancel a viewing in status '{viewing.status}'.")
         reason = request.data.get("reason", "")
         no_show = request.data.get("no_show", False)
+        if isinstance(no_show, str):
+            no_show = no_show.strip().lower() in ("true", "1", "yes")
         viewing.status = Viewing.Status.NO_SHOW if no_show else Viewing.Status.CANCELLED
         if reason:
             viewing.notes = f"{viewing.notes}\n{reason}".strip()
@@ -97,8 +129,21 @@ class FollowUpViewSet(viewsets.ModelViewSet):
     }
 
     def get_queryset(self):
-        return filter_queryset_for_user(
-            self.request.user, "view", "viewing", FollowUp.objects.all(), agent_field="responsible_agent"
+        qs = filter_queryset_for_user(
+            self.request.user, "view", "followup",
+            FollowUp.objects.select_related("lead", "client", "viewing__property", "responsible_agent"),
+            agent_field="responsible_agent"
+        )
+        completed = (self.request.query_params.get("completed") or "").lower()
+        if completed in ("true", "1", "yes"):
+            qs = qs.filter(completed=True)
+        elif completed in ("false", "0", "no"):
+            qs = qs.filter(completed=False)
+        return qs.order_by("due_date", "-created_at")
+
+    def perform_create(self, serializer):
+        serializer.save(
+            responsible_agent=serializer.validated_data.get("responsible_agent") or self.request.user
         )
 
     @action(detail=True, methods=["post"])

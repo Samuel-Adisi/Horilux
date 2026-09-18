@@ -1,3 +1,9 @@
+from datetime import date as date_cls
+from decimal import Decimal, InvalidOperation
+
+from django.db import transaction as db_transaction
+from django.utils import timezone
+from django.utils.dateparse import parse_date
 from rest_framework import viewsets, generics
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -12,7 +18,7 @@ from .serializers import (
     TransactionListSerializer, TransactionDetailSerializer,
     PaymentSerializer, CommissionSerializer, CommissionRuleSerializer,
 )
-from .services import calculate_commission, NoCommissionRuleError
+from .services import calculate_commission, NoCommissionRuleError, sync_commission_received
 
 STATUS_ORDER = [
     Transaction.Status.OFFER,
@@ -58,7 +64,9 @@ class TransactionViewSet(viewsets.ModelViewSet):
         price = serializer.validated_data.get("price")
         commission_percent = serializer.validated_data.get("commission_percent")
         expected_commission = (price * commission_percent / 100) if price and commission_percent else 0
-        serializer.save(status=Transaction.Status.OFFER, expected_commission=expected_commission)
+        # Default agent to the creator so Sales (assigned scope) can see it afterwards.
+        agent = serializer.validated_data.get("agent") or self.request.user
+        serializer.save(status=Transaction.Status.OFFER, expected_commission=expected_commission, agent=agent)
 
     @action(detail=True, methods=["post"])
     def advance(self, request, pk=None):
@@ -77,51 +85,67 @@ class TransactionViewSet(viewsets.ModelViewSet):
         if next_status == Transaction.Status.PAYMENT and (not txn.price or not txn.commission_percent):
             raise ValidationError("price and commission_percent must be set before entering the payment stage.")
 
-        txn.status = next_status
-        txn.save(update_fields=["status"])
-
-        if next_status == Transaction.Status.COMMISSION:
-            try:
-                calculate_commission(txn)
-            except NoCommissionRuleError as exc:
-                raise ValidationError(str(exc))
+        # Atomic: compute the commission BEFORE persisting the new status so a
+        # missing CommissionRule leaves the transaction exactly as it was.
+        try:
+            with db_transaction.atomic():
+                if next_status == Transaction.Status.COMMISSION:
+                    calculate_commission(txn)
+                txn.status = next_status
+                txn.save(update_fields=["status", "updated_at"])
+        except NoCommissionRuleError as exc:
+            txn.refresh_from_db()
+            raise ValidationError(str(exc))
 
         return Response(TransactionDetailSerializer(txn).data)
 
     @action(detail=True, methods=["post"])
     def record_payment(self, request, pk=None):
         """Log a payment against this transaction and keep received/outstanding totals in sync."""
-        from decimal import Decimal, InvalidOperation
-
         txn = self.get_object()
         raw_amount = request.data.get("amount")
-        if not raw_amount:
+        if raw_amount in (None, ""):
             raise ValidationError("amount is required.")
         try:
             amount = Decimal(str(raw_amount))
-        except InvalidOperation:
+        except (InvalidOperation, ValueError, TypeError):
+            raise ValidationError("amount must be a valid decimal number.")
+        if not amount.is_finite():
             raise ValidationError("amount must be a valid decimal number.")
         if amount <= 0:
             raise ValidationError("amount must be greater than zero.")
+        if amount >= Decimal("1000000000000"):
+            raise ValidationError("amount is too large.")
+        amount = amount.quantize(Decimal("0.01"))
+
+        raw_date = request.data.get("date")
+        if raw_date in (None, ""):
+            payment_date = timezone.localdate()
+        elif isinstance(raw_date, date_cls):
+            payment_date = raw_date
+        else:
+            try:
+                payment_date = parse_date(str(raw_date))
+            except ValueError:
+                payment_date = None
+            if payment_date is None:
+                raise ValidationError("date must be a date in YYYY-MM-DD format.")
 
         payment = Payment.objects.create(
             transaction=txn,
             amount=amount,
-            date=request.data.get("date"),
-            method=request.data.get("method", ""),
-            reference=request.data.get("reference", ""),
+            date=payment_date,
+            method=request.data.get("method", "") or "",
+            reference=request.data.get("reference", "") or "",
             status=Payment.Status.PAID,
         )
 
         txn.amount_received = (txn.amount_received or 0) + payment.amount
         txn.outstanding_amount = max(txn.price - txn.amount_received, 0)
-        txn.save(update_fields=["amount_received", "outstanding_amount"])
+        txn.save(update_fields=["amount_received", "outstanding_amount", "updated_at"])
 
         try:
-            commission = txn.commission
-            commission.received = (commission.received or 0) + payment.amount
-            commission.outstanding = max(commission.expected - commission.received, 0)
-            commission.save(update_fields=["received", "outstanding"])
+            sync_commission_received(txn, txn.commission)
         except Commission.DoesNotExist:
             pass
 
@@ -136,7 +160,7 @@ class PaymentViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         return filter_queryset_for_user(
             self.request.user, "view", "transaction", Payment.objects.all(), agent_field="transaction__agent"
-        )
+        ).order_by("-date", "id")
 
 
 class CommissionViewSet(viewsets.ReadOnlyModelViewSet):
@@ -149,13 +173,13 @@ class CommissionViewSet(viewsets.ReadOnlyModelViewSet):
         return filter_queryset_for_user(
             self.request.user, "view", "payment_commission", Commission.objects.all(),
             agent_field="transaction__agent",
-        )
+        ).order_by("-transaction__created_at")
 
 
 class CommissionRuleViewSet(viewsets.ModelViewSet):
     """Manage per-role commission splits. Company-policy data -- CEO/Finance scope only."""
     serializer_class = CommissionRuleSerializer
-    queryset = CommissionRule.objects.all()
+    queryset = CommissionRule.objects.select_related("role").order_by("role__name", "created_at")
     permission_classes = [RBACPermission]
     rbac_resource = "payment_commission"
     rbac_action_map = {

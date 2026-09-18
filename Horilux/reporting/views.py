@@ -9,6 +9,25 @@ from reporting import services
 from reporting.pdf_export import generate_board_pack_pdf
 
 
+REPORT_RESOURCES = ("report_listing", "report_sales", "report_marketing", "report_finance", "report_operations")
+
+
+def _has_company_property_oversight(user):
+    """
+    Gate for the company-wide property analytics (property-performance,
+    governance-actions, territory-intelligence): company-scope property:view
+    AND company scope on at least one report_* resource. The second clause
+    keeps Sales/Marketing out -- they now hold company-scope property:view
+    only for browsing the catalogue -- while CEO, Finance and Operations keep
+    the access they had before.
+    """
+    if user.is_superuser:
+        return True
+    if "company" not in get_user_scopes(user, "view", "property"):
+        return False
+    return any("company" in get_user_scopes(user, "view", r) for r in REPORT_RESOURCES)
+
+
 class BaseReportView(APIView):
     permission_classes = [IsAuthenticated]
     report_resource = None
@@ -110,7 +129,12 @@ class FinanceDetailReportView(APIView):
         scopes = get_user_scopes(request.user, "view", "report_finance")
         if "company" not in scopes and not request.user.is_superuser:
             return Response({"detail": "Not permitted."}, status=403)
-        months = int(request.query_params.get("months", 6))
+        try:
+            months = int(request.query_params.get("months", 6))
+        except (TypeError, ValueError):
+            months = 6
+        if months < 1 or months > 120:
+            months = 6
         return Response(services.finance_detail_report(months=months))
 
 
@@ -211,10 +235,7 @@ class PropertyPerformanceReportView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        if not has_permission(request.user, "view", "property"):
-            return Response({"detail": "Not permitted."}, status=403)
-        scopes = get_user_scopes(request.user, "view", "property")
-        if "company" not in scopes and not request.user.is_superuser:
+        if not _has_company_property_oversight(request.user):
             return Response({"detail": "Not permitted."}, status=403)
         return Response(services.property_performance())
 
@@ -244,10 +265,7 @@ class GovernanceActionsReportView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        if not has_permission(request.user, "view", "property"):
-            return Response({"detail": "Not permitted."}, status=403)
-        scopes = get_user_scopes(request.user, "view", "property")
-        if "company" not in scopes and not request.user.is_superuser:
+        if not _has_company_property_oversight(request.user):
             return Response({"detail": "Not permitted."}, status=403)
         return Response(services.governance_actions())
 
@@ -260,9 +278,6 @@ class TerritoryIntelligenceReportView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        if not has_permission(request.user, "view", "property"):
-            return Response({"detail": "Not permitted."}, status=403)
-        scopes = get_user_scopes(request.user, "view", "property")
-        if "company" not in scopes and not request.user.is_superuser:
+        if not _has_company_property_oversight(request.user):
             return Response({"detail": "Not permitted."}, status=403)
         return Response(services.territory_intelligence())

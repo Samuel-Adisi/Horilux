@@ -1,5 +1,12 @@
 from rest_framework import serializers
 
+def user_display_name(user):
+    """Full name, falling back to email (User has no username field)."""
+    if user is None:
+        return None
+    return f"{user.first_name} {user.last_name}".strip() or user.email
+
+
 from .models import (
     PropertyOwner,
     Property,
@@ -43,7 +50,7 @@ class VerificationChecklistSerializer(serializers.ModelSerializer):
             "photos_ok", "documents_ok", "commission_agreement_ok",
             "manager_approved", "approved_by", "approved_at", "is_complete",
         ]
-        read_only_fields = ["id", "manager_approved", "approved_by", "approved_at"]
+        read_only_fields = ["id", "property", "manager_approved", "approved_by", "approved_at"]
 
     def get_is_complete(self, obj):
         return obj.is_complete()
@@ -68,7 +75,7 @@ class PropertyListSerializer(serializers.ModelSerializer):
     def get_agent_name(self, obj):
         if not obj.agent_id:
             return None
-        return f"{obj.agent.first_name} {obj.agent.last_name}".strip() or obj.agent.username
+        return user_display_name(obj.agent)
 
     def get_image_url(self, obj):
         first_photo = obj.media.filter(media_type="photo").order_by("order").first()
@@ -86,14 +93,26 @@ class PropertyDetailSerializer(serializers.ModelSerializer):
     documents = PropertyDocumentSerializer(many=True, read_only=True)
     verification = VerificationChecklistSerializer(read_only=True)
     owner_detail = PropertyOwnerSerializer(source="owner", read_only=True)
+    status_label = serializers.CharField(source="get_status_display", read_only=True)
+    agent_name = serializers.SerializerMethodField()
 
     class Meta:
         model = Property
         fields = [
             "id", "title", "property_type", "listing_type", "price", "currency",
             "location", "region", "address", "bedrooms", "bathrooms", "land_size", "building_size",
-            "amenities", "rental_period", "description", "owner", "owner_detail", "agent", "status",
-            "completion_percent", "media", "documents", "verification",
+            "amenities", "rental_period", "description", "owner", "owner_detail", "agent", "agent_name",
+            "status", "status_label",
+            "completion_percent", "published_at", "views_count", "inquiries_count",
+            "media", "documents", "verification",
             "created_at", "updated_at",
         ]
-        read_only_fields = ["id", "status", "completion_percent", "created_at", "updated_at"]
+        read_only_fields = [
+            "id", "status", "completion_percent", "published_at", "views_count", "inquiries_count",
+            "created_at", "updated_at",
+        ]
+
+    def get_agent_name(self, obj):
+        if not obj.agent_id:
+            return None
+        return user_display_name(obj.agent)

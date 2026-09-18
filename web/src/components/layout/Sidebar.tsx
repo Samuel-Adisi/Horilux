@@ -1,123 +1,105 @@
-import { useEffect, useRef, useState } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink } from "react-router-dom";
+import { LogOut, Settings } from "lucide-react";
+import { visibleNav } from "@/config/navigation";
 import { useAuthStore } from "@/features/accounts/store/auth-store";
-import { getVisibleNavItems } from "@/config/navigation";
+import { DEPARTMENT_LABELS } from "@/features/accounts/types";
+import { Avatar } from "@/components/ui/display";
+import { Menu, MenuItem } from "@/components/ui/overlay";
+import { cn } from "@/lib/utils";
+import { useSignOut } from "./use-sign-out";
 
-function Icon({ d, ...props }: { d: string } & React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <path d={d} />
-    </svg>
-  );
-}
-
-const DASHBOARD_ICON = "M4 4h7v7H4V4Zm9 0h7v4h-7V4ZM4 13h7v7H4v-7Zm9-2h7v9h-7v-9Z";
-const PROPERTIES_ICON = "M4 21V9l8-6 8 6v12h-5v-7H9v7H4Z";
-const REPORTS_ICON = "M4 20V10m6 10V4m6 16v-7";
-const DEFAULT_ICON = "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Z";
-
-const ICON_BY_LABEL: Record<string, string> = {
-  Dashboard: DASHBOARD_ICON,
-  Properties: PROPERTIES_ICON,
-  Reports: REPORTS_ICON,
-};
-
-export function Sidebar() {
+export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const user = useAuthStore((s) => s.user);
-  const clearAuth = useAuthStore((s) => s.clearAuth);
-  const navigate = useNavigate();
-  const items = getVisibleNavItems(user?.department?.name);
-  const initial = user?.full_name?.[0]?.toUpperCase() ?? "?";
-
-  const [menuOpen, setMenuOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setMenuOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  function handleSignOut() {
-    clearAuth();
-    navigate("/login");
-  }
+  const groups = visibleNav(user);
+  const signOut = useSignOut();
+  const roleLabel = user?.roles.map((r) => r.name).join(", ") || (user?.is_staff ? "Administrator" : "");
+  const deptLabel = user?.department ? DEPARTMENT_LABELS[user.department.name] ?? user.department.name : null;
 
   return (
-    <aside className="hidden md:flex w-60 shrink-0 flex-col border-r border-[#EFEDE6] bg-white h-screen sticky top-0">
-      <div className="flex items-center gap-2.5 px-5 py-5">
-        <img src="/logo1.png" alt="Horilux" className="h-9 w-9 shrink-0 object-contain" />
-        <div className="flex min-w-0 flex-col">
-          <span className="truncate text-[15px] font-semibold leading-tight tracking-tight text-[#17131F]">
-            Horilux Estates
-          </span>
-          <span className="truncate text-[9.5px] font-medium uppercase leading-tight tracking-wider text-[#8A8578]">
-            Private Wealth &amp; Realty
-          </span>
+    <div className="flex h-full flex-col bg-surface">
+      <div className="flex h-14 shrink-0 items-center gap-2.5 border-b border-line px-4">
+        <img src="/brand-mark.png" alt="" className="size-7" />
+        <div className="leading-none">
+          <p className="text-sm font-extrabold tracking-tight text-brand">Horilux</p>
+          <p className="mt-0.5 text-2xs font-medium text-ink-subtle">Estates</p>
         </div>
       </div>
 
-      <nav className="flex-1 overflow-y-auto px-3 py-2 space-y-0.5">
-        {items.map((item) => (
-          <NavLink
-            key={item.path}
-            to={item.path}
-            className={({ isActive }) =>
-              `group relative flex items-center gap-2.5 rounded-[6px] px-3 py-2 text-[13.5px] font-medium transition-colors ${
-                isActive
-                  ? "bg-[#240270]/[0.07] text-[#240270]"
-                  : "text-[#5C5747] hover:bg-[#FAF9F6] hover:text-[#17131F]"
-              }`
-            }
-          >
-            {({ isActive }) => (
-              <>
-                <span
-                  className={`absolute left-0 top-1/2 h-4 w-[2.5px] -translate-y-1/2 rounded-full bg-[#240270] transition-opacity ${
-                    isActive ? "opacity-100" : "opacity-0"
-                  }`}
-                />
-                <Icon
-                  d={ICON_BY_LABEL[item.label] ?? DEFAULT_ICON}
-                  width={16}
-                  height={16}
-                  className={isActive ? "text-[#240270]" : "text-[#B5AF9E] group-hover:text-[#8A8578]"}
-                />
-                {item.label}
-              </>
-            )}
-          </NavLink>
+      <nav className="scrollbar-thin flex-1 overflow-y-auto px-2.5 py-3" aria-label="Main">
+        {groups.map((group, gi) => (
+          <div key={group.label ?? gi} className={cn(gi > 0 && "mt-5")}>
+            {group.label && <p className="mb-1 px-2.5 text-2xs font-bold uppercase tracking-[0.08em] text-ink-faint">{group.label}</p>}
+            <ul className="space-y-px">
+              {group.items.map((item) => (
+                <li key={item.path}>
+                  <NavLink
+                    to={item.path}
+                    end={item.end}
+                    onClick={onNavigate}
+                    className={({ isActive }) =>
+                      cn(
+                        "group relative flex h-8 items-center gap-2.5 rounded px-2.5 text-sm font-semibold transition-colors",
+                        isActive ? "bg-brand-50 text-brand" : "text-ink-muted hover:bg-surface-hover hover:text-ink",
+                      )
+                    }
+                  >
+                    {({ isActive }) => (
+                      <>
+                        {isActive && <span className="absolute inset-y-1.5 left-0 w-0.5 rounded-full bg-brand" aria-hidden />}
+                        <item.icon className={cn("size-4 shrink-0", isActive ? "text-brand" : "text-ink-subtle group-hover:text-ink-muted")} />
+                        {item.label}
+                      </>
+                    )}
+                  </NavLink>
+                </li>
+              ))}
+            </ul>
+          </div>
         ))}
       </nav>
 
-      <div className="relative border-t border-[#EFEDE6] px-4 py-4" ref={menuRef}>
-        {menuOpen && (
-          <div className="absolute bottom-full left-4 right-4 mb-1 rounded-[6px] border border-[#EFEDE6] bg-white py-1 shadow-md">
+      <div className="shrink-0 border-t border-line p-2.5">
+        <Menu
+          side="top"
+          align="start"
+          className="w-[calc(100%)]"
+          trigger={(p) => (
             <button
-              onClick={handleSignOut}
-              className="flex w-full items-center gap-2 px-3 py-2 text-left text-[13px] text-[#5C5747] hover:bg-[#FAF9F6] hover:text-[#17131F]"
+              type="button"
+              {...p}
+              className="flex w-full items-center gap-2.5 rounded p-1.5 text-left transition-colors hover:bg-surface-hover"
             >
-              Sign out
+              <Avatar name={user?.full_name} />
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-sm font-semibold text-ink">{user?.full_name || user?.email}</span>
+                <span className="block truncate text-xs text-ink-subtle">{[roleLabel, deptLabel !== roleLabel ? deptLabel : null].filter(Boolean).join(" · ")}</span>
+              </span>
             </button>
-          </div>
-        )}
-        <button
-          onClick={() => setMenuOpen((o) => !o)}
-          className="flex w-full items-center gap-2.5 rounded-[6px] text-left hover:bg-[#FAF9F6]"
+          )}
         >
-          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#240270] text-[11.5px] font-semibold text-white">
-            {initial}
-          </div>
-          <div className="min-w-0">
-            <p className="truncate text-[12.5px] font-medium text-[#17131F]">{user?.full_name ?? "—"}</p>
-            <p className="truncate text-[11.5px] text-[#8A8578]">{user?.department?.name ?? ""}</p>
-          </div>
-        </button>
+          {(close) => (
+            <>
+              <div className="border-b border-line px-3 pb-2 pt-1.5">
+                <p className="truncate text-xs text-ink-subtle">{user?.email}</p>
+              </div>
+              <NavLink
+                to="/settings"
+                onClick={() => {
+                  close();
+                  onNavigate?.();
+                }}
+                className="flex items-center gap-2 px-3 py-1.5 text-sm text-ink hover:bg-surface-hover"
+              >
+                <Settings className="size-4 text-ink-subtle" />
+                Settings
+              </NavLink>
+              <MenuItem icon={<LogOut />} onClick={signOut}>
+                Sign out
+              </MenuItem>
+            </>
+          )}
+        </Menu>
       </div>
-    </aside>
+    </div>
   );
 }

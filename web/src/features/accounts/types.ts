@@ -1,14 +1,17 @@
+export type DepartmentKey = "ceo" | "listing" | "sales" | "marketing" | "transactions" | "operations";
+export type RoleName = "CEO" | "Listing" | "Sales" | "Marketing" | "Finance" | "Operations";
+
 export interface Department {
   id: string;
-  name: string;
+  name: DepartmentKey | string;
   description: string;
 }
 
 export interface Role {
   id: string;
-  name: string;
+  name: RoleName | string;
   description: string;
-  department: string; // department id
+  department: string | null;
 }
 
 export interface User {
@@ -18,7 +21,7 @@ export interface User {
   last_name: string;
   full_name: string;
   phone: string;
-  department: Department;
+  department: Department | null;
   roles: Role[];
   is_active: boolean;
   is_staff: boolean;
@@ -35,9 +38,19 @@ export interface AuthTokens {
   refresh: string;
 }
 
+/** Lightweight user row from GET accounts/users/ (active users only). */
 export interface UserListItem {
   id: string;
   full_name: string;
   email: string;
-  department_name: string | null;
+  department_name: DepartmentKey | null;
 }
+
+export const DEPARTMENT_LABELS: Record<string, string> = {
+  ceo: "Executive",
+  listing: "Listing",
+  sales: "Sales",
+  marketing: "Marketing",
+  transactions: "Finance",
+  operations: "Operations",
+};

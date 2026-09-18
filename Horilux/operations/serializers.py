@@ -4,11 +4,12 @@ from .models import Task
 
 class TaskSerializer(serializers.ModelSerializer):
     owner_name = serializers.SerializerMethodField()
+    status_label = serializers.CharField(source="get_status_display", read_only=True)
 
     class Meta:
         model = Task
-        fields = ["id", "title", "owner", "owner_name", "status", "due_date", "created_at"]
-        read_only_fields = ["id", "created_at", "owner_name"]
+        fields = ["id", "title", "owner", "owner_name", "status", "status_label", "due_date", "created_at"]
+        read_only_fields = ["id", "created_at", "owner_name", "status_label"]
 
     def get_owner_name(self, obj):
         if obj.owner:

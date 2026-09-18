@@ -117,8 +117,14 @@ class VerificationChecklist(models.Model):
     approved_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
     approved_at = models.DateTimeField(null=True, blank=True)
 
+    CHECK_FIELDS = (
+        "owner_info_ok", "price_ok", "location_ok", "details_ok",
+        "photos_ok", "documents_ok", "commission_agreement_ok",
+    )
+
     def is_complete(self) -> bool:
-        return all([
-            self.owner_info_ok, self.price_ok, self.location_ok, self.details_ok,
-            self.photos_ok, self.documents_ok, self.commission_agreement_ok,
-        ])
+        return all(getattr(self, f) for f in self.CHECK_FIELDS)
+
+    def compute_completion_percent(self) -> int:
+        ticked = sum(1 for f in self.CHECK_FIELDS if getattr(self, f))
+        return round(100 * ticked / len(self.CHECK_FIELDS))

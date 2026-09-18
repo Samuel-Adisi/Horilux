@@ -29,6 +29,12 @@ class CommissionRuleSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "created_at", "updated_at"]
 
 
+def _user_name(user):
+    if user is None:
+        return None
+    return f"{user.first_name} {user.last_name}".strip() or user.email
+
+
 class TransactionListSerializer(serializers.ModelSerializer):
     property_title = serializers.CharField(source="property.title", read_only=True, default=None)
     client_name = serializers.CharField(source="client.name", read_only=True, default=None)
@@ -43,27 +49,47 @@ class TransactionListSerializer(serializers.ModelSerializer):
             "commission_percent", "expected_commission", "amount_received",
             "outstanding_amount", "status", "status_label", "created_at",
         ]
-        read_only_fields = ["id", "expected_commission", "amount_received", "outstanding_amount", "created_at"]
+        # status only changes through POST transactions/{id}/advance/.
+        read_only_fields = [
+            "id", "expected_commission", "amount_received", "outstanding_amount", "status", "created_at",
+        ]
 
     def get_agent_name(self, obj):
         if not obj.agent_id:
             return None
-        return f"{obj.agent.first_name} {obj.agent.last_name}".strip() or obj.agent.username
+        return _user_name(obj.agent)
 
 
 class TransactionDetailSerializer(serializers.ModelSerializer):
-    payments = PaymentSerializer(many=True, read_only=True)
+    payments = serializers.SerializerMethodField()
     commission = CommissionSerializer(read_only=True)
+    property_title = serializers.CharField(source="property.title", read_only=True, default=None)
+    client_name = serializers.CharField(source="client.name", read_only=True, default=None)
+    owner_name = serializers.CharField(source="owner.name", read_only=True, default=None)
+    agent_name = serializers.SerializerMethodField()
+    status_label = serializers.CharField(source="get_status_display", read_only=True)
 
     class Meta:
         model = Transaction
         fields = [
-            "id", "property", "client", "owner", "agent", "price",
+            "id", "property", "property_title", "client", "client_name", "owner", "owner_name",
+            "agent", "agent_name", "price",
             "commission_percent", "expected_commission", "amount_received",
-            "outstanding_amount", "status", "created_at", "updated_at",
+            "outstanding_amount", "status", "status_label", "created_at", "updated_at",
             "payments", "commission",
         ]
-        read_only_fields = ["id", "expected_commission", "amount_received", "outstanding_amount", "created_at", "updated_at"]
+        read_only_fields = [
+            "id", "expected_commission", "amount_received", "outstanding_amount", "status",
+            "created_at", "updated_at",
+        ]
+
+    def get_agent_name(self, obj):
+        if not obj.agent_id:
+            return None
+        return _user_name(obj.agent)
+
+    def get_payments(self, obj):
+        return PaymentSerializer(obj.payments.order_by("-date", "id"), many=True).data
 
 
 class ApprovalThresholdSerializer(serializers.ModelSerializer):

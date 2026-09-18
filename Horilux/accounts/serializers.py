@@ -81,6 +81,18 @@ class StaffWriteSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["id"]
 
+    def validate_password(self, value):
+        if value and len(value) < 8:
+            raise serializers.ValidationError("Password must be at least 8 characters.")
+        return value
+
+    def validate(self, attrs):
+        # A password is mandatory on create -- without one create_user() sets an
+        # unusable password and the account can never log in.
+        if self.instance is None and not attrs.get("password"):
+            raise serializers.ValidationError({"password": ["A password of at least 8 characters is required."]})
+        return attrs
+
     def create(self, validated_data):
         password = validated_data.pop("password", None)
         role = validated_data.pop("role", None)

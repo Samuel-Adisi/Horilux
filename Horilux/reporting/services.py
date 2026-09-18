@@ -658,6 +658,12 @@ def property_performance():
     }
 
 
+def _actor_name(user):
+    if user is None:
+        return "System"
+    return f"{user.first_name} {user.last_name}".strip() or user.email
+
+
 def recent_activity(limit=15):
     from audit.models import AuditLog
 
@@ -669,7 +675,7 @@ def recent_activity(limit=15):
     return [
         {
             "id": log.id,
-            "actor": log.actor.get_full_name() if log.actor else "System",
+            "actor": _actor_name(log.actor),
             "action": log.action,
             "model": log.model_name,
             "object_id": log.object_id,
@@ -696,11 +702,11 @@ def governance_actions():
             "severity": "COMPLIANCE",
             "due": "Verification",
             "severity_color": "amber",
-            "title": f"{pending_count} Propert{'y' if pending_count == 1 else 'ies'} Pending Verification",
+            "title": f"{pending_count} propert{'y' if pending_count == 1 else 'ies'} waiting for verification",
             "detail": ", ".join(p.title or f"{p.property_type} — {p.region}" for p in pending_approvals[:3]),
-            "cta": "Review Approvals",
+            "cta": "Review",
             "cta_style": "solid",
-            "link": "/ceo/approvals",
+            "link": "/approvals",
         })
 
     unassigned = Lead.objects.filter(assigned_agent__isnull=True)
@@ -711,11 +717,11 @@ def governance_actions():
             "severity": "CRM LAG",
             "due": "Unassigned",
             "severity_color": "amber",
-            "title": f"{unassigned_count} Lead{'s' if unassigned_count != 1 else ''} Unassigned",
+            "title": f"{unassigned_count} lead{'s' if unassigned_count != 1 else ''} with no agent",
             "detail": f"{unassigned_count} lead{'s' if unassigned_count != 1 else ''} have no agent assigned and may be going cold.",
-            "cta": "View Leads",
+            "cta": "Assign",
             "cta_style": "outline",
-            "link": "/ceo/leads",
+            "link": "/leads?unassigned=1",
         })
 
     overdue = Viewing.objects.filter(status__in=["scheduled", "confirmed"], date__lt=today)
@@ -726,11 +732,11 @@ def governance_actions():
             "severity": "OVERDUE",
             "due": f"{overdue_count} overdue",
             "severity_color": "rose",
-            "title": f"{overdue_count} Overdue Viewing{'s' if overdue_count != 1 else ''}",
-            "detail": "Scheduled viewings past their date with no completed/cancelled status update.",
-            "cta": "Review Viewings",
+            "title": f"{overdue_count} viewing{'s' if overdue_count != 1 else ''} past their date",
+            "detail": "Still marked scheduled or confirmed. Record the outcome or cancel them.",
+            "cta": "Review",
             "cta_style": "outline",
-            "link": "/ceo/viewings",
+            "link": "/viewings?when=past",
         })
 
     return items

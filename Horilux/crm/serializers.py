@@ -20,7 +20,7 @@ class LeadSerializer(serializers.ModelSerializer):
     def get_assigned_agent_name(self, obj):
         if not obj.assigned_agent_id:
             return None
-        return f"{obj.assigned_agent.first_name} {obj.assigned_agent.last_name}".strip() or obj.assigned_agent.username
+        return f"{obj.assigned_agent.first_name} {obj.assigned_agent.last_name}".strip() or obj.assigned_agent.email
 
 
 class ClientSerializer(serializers.ModelSerializer):
@@ -37,7 +37,7 @@ class ClientSerializer(serializers.ModelSerializer):
     def get_assigned_agent_name(self, obj):
         if not obj.assigned_agent_id:
             return None
-        return f"{obj.assigned_agent.first_name} {obj.assigned_agent.last_name}".strip() or obj.assigned_agent.username
+        return f"{obj.assigned_agent.first_name} {obj.assigned_agent.last_name}".strip() or obj.assigned_agent.email
 
 
 class InteractionSerializer(serializers.ModelSerializer):
@@ -59,7 +59,7 @@ class InteractionSerializer(serializers.ModelSerializer):
     def get_agent_name(self, obj):
         if not obj.agent_id:
             return None
-        return f"{obj.agent.first_name} {obj.agent.last_name}".strip() or obj.agent.username
+        return f"{obj.agent.first_name} {obj.agent.last_name}".strip() or obj.agent.email
 
     def validate(self, attrs):
         lead = attrs.get("lead", getattr(self.instance, "lead", None))

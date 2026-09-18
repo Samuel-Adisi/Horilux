@@ -116,5 +116,32 @@ def test_record_payment_updates_outstanding_and_commission(
 
     from transactions.models import Commission
     commission = Commission.objects.get(transaction_id=txn_id)
-    assert float(commission.received) == 100000.0
-    assert float(commission.outstanding) == 0.0  # clamped at 0 once received exceeds expected
+    # Commission is earned pro rata: 100k of a 500k price = 20% of expected commission.
+    expected = float(commission.expected)
+    assert float(commission.received) == round(expected * 0.2, 2)
+    assert float(commission.outstanding) == round(expected * 0.8, 2)
+    assert commission.payment_status == "partial"
+
+    resp = api_client.post(f"/api/v1/transactions/{txn_id}/record_payment/", {"amount": "400000.00"})
+    assert resp.status_code == 200, resp.data
+    commission.refresh_from_db()
+    assert float(commission.received) == expected
+    assert float(commission.outstanding) == 0.0
+    assert commission.payment_status == "paid"
+    assert commission.payment_date is not None
+
+
+def test_commission_reflects_payments_made_before_commission_stage(
+    api_client, sales_agent, a_property, a_client_record, owner, commission_rule
+):
+    txn_id = create_transaction(api_client, sales_agent, a_property, a_client_record, owner)
+    for _ in range(4):  # to "payment"
+        api_client.post(f"/api/v1/transactions/{txn_id}/advance/")
+    api_client.post(f"/api/v1/transactions/{txn_id}/record_payment/", {"amount": "500000.00"})
+    for _ in range(2):  # to "commission" — commission is calculated here
+        api_client.post(f"/api/v1/transactions/{txn_id}/advance/")
+
+    from transactions.models import Commission
+    commission = Commission.objects.get(transaction_id=txn_id)
+    assert float(commission.received) == float(commission.expected)
+    assert commission.payment_status == "paid"

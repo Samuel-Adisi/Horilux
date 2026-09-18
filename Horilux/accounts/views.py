@@ -47,7 +47,12 @@ class StaffViewSet(viewsets.ModelViewSet):
         "update": "edit", "partial_update": "edit", "destroy": "delete",
         "deactivate": "delete", "reactivate": "edit",
     }
-    queryset = User.objects.all().select_related("department").prefetch_related("user_roles__role")
+    queryset = (
+        User.objects.all()
+        .select_related("department")
+        .prefetch_related("user_roles__role")
+        .order_by("first_name", "last_name", "email")
+    )
     pagination_class = None
 
     def get_queryset(self):

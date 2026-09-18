@@ -8,7 +8,7 @@ from decimal import Decimal, ROUND_HALF_UP
 
 from django.core.exceptions import ObjectDoesNotExist
 
-from .models import Commission, CommissionRule, Transaction
+from .models import Commission, CommissionRule, Payment, Transaction
 
 
 class NoCommissionRuleError(Exception):
@@ -69,11 +69,40 @@ def calculate_commission(transaction: Transaction) -> Commission:
     commission.expected = expected
     commission.agent_share = agent_share
     commission.company_share = company_share
-    commission.outstanding = expected - commission.received
+    sync_commission_received(transaction, commission, save=False)
     commission.save()
 
     if transaction.expected_commission != expected:
         transaction.expected_commission = expected
         transaction.save(update_fields=["expected_commission"])
 
+    return commission
+
+
+def sync_commission_received(transaction: Transaction, commission: Commission, save: bool = True) -> Commission:
+    """
+    Commission is earned pro rata as the client pays: received = expected x
+    (amount paid / price), capped at expected. Client payments are never
+    counted as commission one-for-one.
+    """
+    from datetime import date
+
+    expected = commission.expected or Decimal("0")
+    price = transaction.price or Decimal("0")
+    paid = transaction.amount_received or Decimal("0")
+    if price > 0 and expected > 0:
+        received = min(expected, (expected * paid / price).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
+    else:
+        received = Decimal("0")
+    commission.received = received
+    commission.outstanding = max(expected - received, Decimal("0"))
+    if expected > 0 and received >= expected:
+        commission.payment_status = Payment.Status.PAID
+        commission.payment_date = commission.payment_date or date.today()
+    elif received > 0:
+        commission.payment_status = Payment.Status.PARTIAL
+    else:
+        commission.payment_status = Payment.Status.PENDING
+    if save:
+        commission.save(update_fields=["received", "outstanding", "payment_status", "payment_date"])
     return commission

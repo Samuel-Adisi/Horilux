@@ -37,6 +37,59 @@ def get_user_scopes(user, action: str, resource: str) -> set[str]:
     return set(scopes)
 
 
+# Models that carry no agent/assigned_agent/created_by of their own resolve
+# object-level RBAC through a parent object. Keyed by model label_lower.
+RBAC_PARENT_FIELD = {
+    "properties.propertymedia": "property",
+    "properties.propertydocument": "property",
+    "properties.verificationchecklist": "property",
+    "transactions.payment": "transaction",
+    "transactions.commission": "transaction",
+    "marketing.campaignperformance": "campaign",
+}
+
+
+def resolve_rbac_target(obj):
+    """Walk up RBAC_PARENT_FIELD until we reach an object that owns its own agent fields."""
+    seen = 0
+    while obj is not None and seen < 5:
+        label = getattr(getattr(obj, "_meta", None), "label_lower", None)
+        parent_field = RBAC_PARENT_FIELD.get(label)
+        if not parent_field:
+            return obj
+        obj = getattr(obj, parent_field, None)
+        seen += 1
+    return obj
+
+
+def _is_user(value) -> bool:
+    from django.contrib.auth import get_user_model
+    return isinstance(value, get_user_model())
+
+
+def _first_user_attr(obj, names):
+    for name in names:
+        value = getattr(obj, name, None)
+        if value is not None and _is_user(value):
+            return value
+    return None
+
+
+def _property_owner_permission(user, scopes, owner) -> bool:
+    """PropertyOwner: company scope, or team/department scope when any of the
+    owner's properties is listed by an agent in the user's department. Owners
+    with no properties yet (e.g. just added from the property form) are open
+    to team/department scope so the person onboarding them can correct details."""
+    if "company" in scopes:
+        return True
+    if ("team" in scopes or "department" in scopes) and user.department_id:
+        properties = owner.properties.all()
+        if not properties.exists():
+            return True
+        return properties.filter(agent__department_id=user.department_id).exists()
+    return False
+
+
 def has_permission(user, action: str, resource: str, obj=None) -> bool:
     """
     True/False check for a single object or a general capability check
@@ -56,23 +109,30 @@ def has_permission(user, action: str, resource: str, obj=None) -> bool:
     if "company" in scopes:
         return True
 
+    if getattr(getattr(obj, "_meta", None), "label_lower", None) == "properties.propertyowner":
+        return _property_owner_permission(user, scopes, obj)
+
+    obj = resolve_rbac_target(obj)
+    if obj is None:
+        return False
+
     if "department" in scopes:
         obj_dept = getattr(obj, "department_id", None) or _infer_department(obj)
         if obj_dept and obj_dept == user.department_id:
             return True
 
     if "team" in scopes:
-        agent = getattr(obj, "agent", None) or getattr(obj, "assigned_agent", None) or getattr(obj, "created_by", None)
-        if agent and agent.department_id == user.department_id:
+        agent = _first_user_attr(obj, ("agent", "assigned_agent", "created_by"))
+        if agent and agent.department_id and agent.department_id == user.department_id:
             return True
 
     if "assigned" in scopes:
-        agent = getattr(obj, "agent", None) or getattr(obj, "assigned_agent", None) or getattr(obj, "responsible_agent", None)
+        agent = _first_user_attr(obj, ("agent", "assigned_agent", "responsible_agent"))
         if agent and agent_id_matches(agent, user):
             return True
 
     if "own" in scopes:
-        owner_field = getattr(obj, "created_by", None) or getattr(obj, "uploaded_by", None) or getattr(obj, "owner", None)
+        owner_field = _first_user_attr(obj, ("created_by", "uploaded_by", "owner"))
         if owner_field and agent_id_matches(owner_field, user):
             return True
 
@@ -84,7 +144,7 @@ def agent_id_matches(agent_field, user) -> bool:
 
 
 def _infer_department(obj):
-    agent = getattr(obj, "agent", None) or getattr(obj, "assigned_agent", None)
+    agent = _first_user_attr(obj, ("agent", "assigned_agent"))
     return agent.department_id if agent else None
 
 

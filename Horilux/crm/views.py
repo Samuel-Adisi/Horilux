@@ -19,6 +19,22 @@ class LeadViewSet(viewsets.ModelViewSet):
         "list": "view", "retrieve": "view", "create": "create",
         "update": "edit", "partial_update": "edit", "destroy": "delete",
         "assign": "assign", "qualify": "edit", "convert_to_client": "edit",
+        "transition": "edit",
+    }
+
+    # Allowed manual status moves via POST leads/{id}/transition/.
+    OPEN_STATUSES = (
+        Lead.Status.NEW, Lead.Status.CONTACTED, Lead.Status.QUALIFIED,
+        Lead.Status.PROPERTY_MATCHED, Lead.Status.VIEWING, Lead.Status.NEGOTIATION,
+    )
+    TRANSITIONS = {
+        Lead.Status.NEW: {Lead.Status.CONTACTED},
+        Lead.Status.CONTACTED: {Lead.Status.QUALIFIED},
+        Lead.Status.QUALIFIED: {Lead.Status.PROPERTY_MATCHED},
+        Lead.Status.PROPERTY_MATCHED: {Lead.Status.VIEWING},
+        Lead.Status.VIEWING: {Lead.Status.NEGOTIATION},
+        Lead.Status.NEGOTIATION: {Lead.Status.CLOSED},
+        Lead.Status.LOST: {Lead.Status.CONTACTED},  # reopen
     }
 
     filterset_fields = ["status"]
@@ -28,12 +44,23 @@ class LeadViewSet(viewsets.ModelViewSet):
             self.request.user, "view", "lead", Lead.objects.all(), agent_field="assigned_agent"
         ).select_related("assigned_agent")
 
+        unassigned = (self.request.query_params.get("unassigned") or "").lower()
+        if unassigned in ("true", "1", "yes"):
+            qs = qs.filter(assigned_agent__isnull=True)
+        elif unassigned in ("false", "0", "no"):
+            qs = qs.filter(assigned_agent__isnull=False)
+
         search = self.request.query_params.get("search")
         if search:
             from django.db.models import Q
-            qs = qs.filter(Q(name__icontains=search) | Q(location_preference__icontains=search))
+            qs = qs.filter(
+                Q(name__icontains=search)
+                | Q(location_preference__icontains=search)
+                | Q(phone__icontains=search)
+                | Q(email__icontains=search)
+            )
 
-        return qs
+        return qs.order_by("-created_at")
 
     def perform_create(self, serializer):
         # Website enquiries and manual entries both land here; default status is 'new'.
@@ -68,6 +95,30 @@ class LeadViewSet(viewsets.ModelViewSet):
         lead.status = Lead.Status.QUALIFIED
         lead.last_contact = timezone.now()
         lead.save(update_fields=["status", "last_contact"])
+        return Response(LeadSerializer(lead).data)
+
+    @action(detail=True, methods=["post"])
+    def transition(self, request, pk=None):
+        """Move a lead along the pipeline. Body: {"status": "<target>"}."""
+        lead = self.get_object()
+        target = request.data.get("status")
+        if not target:
+            raise ValidationError("status is required.")
+        if target not in Lead.Status.values:
+            raise ValidationError(f"Unknown lead status '{target}'.")
+
+        allowed = set(self.TRANSITIONS.get(lead.status, set()))
+        if lead.status in self.OPEN_STATUSES:
+            allowed.add(Lead.Status.LOST)
+        if target not in allowed:
+            raise ValidationError(f"Cannot move a lead from '{lead.status}' to '{target}'.")
+
+        lead.status = target
+        update_fields = ["status"]
+        if target == Lead.Status.CONTACTED:
+            lead.last_contact = timezone.now()
+            update_fields.append("last_contact")
+        lead.save(update_fields=update_fields)
         return Response(LeadSerializer(lead).data)
 
     @action(detail=True, methods=["post"])
@@ -106,7 +157,11 @@ class ClientViewSet(viewsets.ModelViewSet):
             from django.db.models import Q
             qs = qs.filter(Q(name__icontains=search) | Q(email__icontains=search) | Q(phone__icontains=search))
 
-        return qs
+        return qs.select_related("assigned_agent").order_by("-created_at")
+
+    def perform_create(self, serializer):
+        # Default to the creator so Sales (assigned scope) can see what they create.
+        serializer.save(assigned_agent=serializer.validated_data.get("assigned_agent") or self.request.user)
 
 
 class InteractionViewSet(viewsets.ModelViewSet):
