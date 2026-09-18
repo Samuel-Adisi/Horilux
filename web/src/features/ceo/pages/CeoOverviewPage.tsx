@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useCeoDashboard } from "@/features/dashboard/hooks/use-ceo-dashboard";
 import { useRecentActivity } from "@/features/ceo/hooks/use-recent-activity";
 import { usePropertyPerformance } from "@/features/property-performance/hooks/use-property-performance";
+import { useGovernanceActions } from "@/features/ceo/hooks/use-governance-actions";
 
 // Sections below have no backend model yet — governance action center,
 // top assets, territory geo, marketing ROAS by channel, rental/occupancy,
@@ -65,12 +66,6 @@ const MOCK = {
     { name: "Airport Res", gtv: "$2.6M", avg: "$690K Avg", yieldPct: "8.9% Yield", x: 34, y: 68, dot: "bg-violet-400" },
     { name: "Labone", gtv: "$1.9M", avg: "$480K Avg", yieldPct: "7.8% Yield", x: 62, y: 58, dot: "bg-slate-300" },
   ],
-  roasSummary: { blended: "Blended 18.6x ROAS", totalSpend: "$28,000", directAttributed: "$520,000", avgResponse: "14 mins" },
-  roas: [
-    { channel: "Google Search Ads & Intent", spend: "$16,000 spend · CPL $21.40", value: "23.3x ROAS", note: "Best Producer", icon: "search", iconBg: "bg-blue-900/60", iconColor: "text-blue-400", valueColor: "text-emerald-400" },
-    { channel: "WhatsApp Concierge Direct", spend: "Organic & VIP Referral", value: "12.4x ROAS", note: "4.2m Avg Speed", icon: "chat", iconBg: "bg-emerald-900/50", iconColor: "text-emerald-400", valueColor: "text-emerald-400" },
-    { channel: "Instagram Showcase & Video", spend: "$12,000 spend · CPL $32.10", value: "8.8x ROAS", note: "High Awareness", icon: "camera", iconBg: "bg-amber-900/50", iconColor: "text-amber-400", valueColor: "text-amber-400" },
-  ],
   rental: { monthlyRevenue: "$184K /mo", leased: 78, vacant: 14, flip: 8, renewalsDue: 12, avgYield: "9.1% ARR", delinquency: "0.8%", unitsTenanted: 112 },
   milestones: { revenueTarget: "$1.65M / $2.00M", revenuePct: 82.5, closings: "48 / 60 Units", closingsPct: 80, leads: "418 / 500", leadsPct: 83.6, daysLeft: 18 },
   aiInsight:
@@ -132,6 +127,7 @@ export default function CeoOverviewPage() {
   const { data, isLoading, error } = useCeoDashboard();
   const { data: activityData } = useRecentActivity();
   const { data: perfData } = usePropertyPerformance();
+  const { data: governanceData } = useGovernanceActions();
   const [range, setRange] = useState<(typeof RANGE_OPTIONS)[number]>("Q");
   const [leaderboardView, setLeaderboardView] = useState<"deals" | "volume" | "conversion">("deals");
 
@@ -390,39 +386,44 @@ export default function CeoOverviewPage() {
               <h3 className="font-bold text-white text-base">CEO Governance Action Center</h3>
               <p className="text-[11px] text-slate-500">Executive approvals & unassigned high-value risks</p>
             </div>
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-white/5 text-slate-500 font-mono ml-2">Sample data</span>
+            <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-mono ml-2">Live</span>
           </div>
           <div className="flex items-center gap-3">
             <span className="px-2.5 py-1 rounded-full bg-rose-500/15 text-rose-400 text-xs font-semibold">
-              {MOCK.governance.length} Items Require Signature / Action
+              {governanceData?.length ?? 0} Items Require Signature / Action
             </span>
             <button onClick={() => navigate("/ceo/approvals")} className="text-xs text-blue-400 hover:underline">Operations Hub →</button>
           </div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {MOCK.governance.map((g) => (
-            <div key={g.id} className="p-4 rounded-xl bg-white/[0.02] border border-white/5 flex flex-col justify-between">
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded bg-${g.severityColor}-500/15 text-${g.severityColor}-400 font-semibold`}>
-                    {g.severity}
-                  </span>
-                  <span className="text-[10px] text-slate-500">{g.due}</span>
+          {!governanceData || governanceData.length === 0 ? (
+            <p className="text-[11px] text-slate-500 col-span-full">No outstanding governance actions — all clear.</p>
+          ) : (
+            governanceData.map((g) => (
+              <div key={g.id} className="p-4 rounded-xl bg-white/[0.02] border border-white/5 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded bg-${g.severity_color}-500/15 text-${g.severity_color}-400 font-semibold`}>
+                      {g.severity}
+                    </span>
+                    <span className="text-[10px] text-slate-500">{g.due}</span>
+                  </div>
+                  <h4 className="text-xs font-bold text-white leading-snug">{g.title}</h4>
+                  <p className="text-[11px] text-slate-400 mt-1.5 leading-relaxed">{g.detail}</p>
                 </div>
-                <h4 className="text-xs font-bold text-white leading-snug">{g.title}</h4>
-                <p className="text-[11px] text-slate-400 mt-1.5 leading-relaxed">{g.detail}</p>
+                <button
+                  onClick={() => navigate(g.link)}
+                  className={`mt-3 w-full py-2 rounded-lg text-xs font-semibold transition-colors ${
+                    g.cta_style === "solid"
+                      ? "bg-blue-600 hover:bg-blue-500 text-white"
+                      : "bg-white/5 hover:bg-white/10 text-slate-200 border border-white/10"
+                  }`}
+                >
+                  {g.cta}
+                </button>
               </div>
-              <button
-                className={`mt-3 w-full py-2 rounded-lg text-xs font-semibold transition-colors ${
-                  g.ctaStyle === "solid"
-                    ? "bg-blue-600 hover:bg-blue-500 text-white"
-                    : "bg-white/5 hover:bg-white/10 text-slate-200 border border-white/10"
-                }`}
-              >
-                {g.cta}
-              </button>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
 

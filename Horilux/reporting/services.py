@@ -677,3 +677,60 @@ def recent_activity(limit=15):
         }
         for log in logs
     ]
+
+
+def governance_actions():
+    from django.utils import timezone
+    from properties.models import Property
+    from crm.models import Lead
+    from viewings.models import Viewing
+
+    today = timezone.now().date()
+    items = []
+
+    pending_approvals = Property.objects.filter(status="pending_verification")
+    pending_count = pending_approvals.count()
+    if pending_count:
+        items.append({
+            "id": "pending-approvals",
+            "severity": "COMPLIANCE",
+            "due": "Verification",
+            "severity_color": "amber",
+            "title": f"{pending_count} Propert{'y' if pending_count == 1 else 'ies'} Pending Verification",
+            "detail": ", ".join(p.title or f"{p.property_type} — {p.region}" for p in pending_approvals[:3]),
+            "cta": "Review Approvals",
+            "cta_style": "solid",
+            "link": "/ceo/approvals",
+        })
+
+    unassigned = Lead.objects.filter(assigned_agent__isnull=True)
+    unassigned_count = unassigned.count()
+    if unassigned_count:
+        items.append({
+            "id": "unassigned-leads",
+            "severity": "CRM LAG",
+            "due": "Unassigned",
+            "severity_color": "amber",
+            "title": f"{unassigned_count} Lead{'s' if unassigned_count != 1 else ''} Unassigned",
+            "detail": f"{unassigned_count} lead{'s' if unassigned_count != 1 else ''} have no agent assigned and may be going cold.",
+            "cta": "View Leads",
+            "cta_style": "outline",
+            "link": "/ceo/leads",
+        })
+
+    overdue = Viewing.objects.filter(status__in=["scheduled", "confirmed"], date__lt=today)
+    overdue_count = overdue.count()
+    if overdue_count:
+        items.append({
+            "id": "overdue-viewings",
+            "severity": "OVERDUE",
+            "due": f"{overdue_count} overdue",
+            "severity_color": "rose",
+            "title": f"{overdue_count} Overdue Viewing{'s' if overdue_count != 1 else ''}",
+            "detail": "Scheduled viewings past their date with no completed/cancelled status update.",
+            "cta": "Review Viewings",
+            "cta_style": "outline",
+            "link": "/ceo/viewings",
+        })
+
+    return items

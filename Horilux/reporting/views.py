@@ -179,3 +179,20 @@ class RecentActivityReportView(APIView):
         if "company" not in scopes and not request.user.is_superuser:
             return Response({"detail": "Not permitted."}, status=403)
         return Response(services.recent_activity())
+
+
+class GovernanceActionsReportView(APIView):
+    """
+    Governance Action Center for the CEO Overview page: pending property
+    approvals, unassigned leads, overdue viewings. Same pattern as
+    PropertyPerformanceReportView.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        if not has_permission(request.user, "view", "property"):
+            return Response({"detail": "Not permitted."}, status=403)
+        scopes = get_user_scopes(request.user, "view", "property")
+        if "company" not in scopes and not request.user.is_superuser:
+            return Response({"detail": "Not permitted."}, status=403)
+        return Response(services.governance_actions())
