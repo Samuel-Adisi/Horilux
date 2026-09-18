@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCeoDashboard } from "@/features/dashboard/hooks/use-ceo-dashboard";
 import { useRecentActivity } from "@/features/ceo/hooks/use-recent-activity";
+import { usePropertyPerformance } from "@/features/property-performance/hooks/use-property-performance";
 
 // Sections below have no backend model yet — governance action center,
 // top assets, territory geo, marketing ROAS by channel, rental/occupancy,
@@ -85,7 +86,6 @@ const MOCK = {
     { label: "Contract Submitted: Skyline Penthouse", detail: "Agent Michael Mensah • 1h ago", color: "amber" },
     { label: "Tenancy Renewal Executed", detail: "Airport Res Apt 4B • 2h ago", color: "slate" },
   ],
-  platformHealth: { uptime: "99.98%", amlFlags: 0, listingDiscrepancies: 2 },
 };
 
 const RANGE_OPTIONS = ["W", "M", "Q", "Y"] as const;
@@ -117,10 +117,21 @@ function activityColor(action: string): string {
   return "slate";
 }
 
+function regionBadge(pct: number | null): { text: string; color: string } {
+  if (pct === null) return { text: "No region data", color: "slate" };
+  const sign = pct >= 0 ? "+" : "";
+  return { text: `${sign}${pct}% vs region avg`, color: pct >= 0 ? "emerald" : "amber" };
+}
+
+function initials(title: string): string {
+  return title.trim().charAt(0).toUpperCase() || "?";
+}
+
 export default function CeoOverviewPage() {
   const navigate = useNavigate();
   const { data, isLoading, error } = useCeoDashboard();
   const { data: activityData } = useRecentActivity();
+  const { data: perfData } = usePropertyPerformance();
   const [range, setRange] = useState<(typeof RANGE_OPTIONS)[number]>("Q");
   const [leaderboardView, setLeaderboardView] = useState<"deals" | "volume" | "conversion">("deals");
 
@@ -427,23 +438,37 @@ export default function CeoOverviewPage() {
           </div>
           <div className="flex items-center justify-between mb-3">
             <h3 className="font-bold text-white text-base">Top Performing Prime Assets</h3>
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-white/5 text-slate-500 font-mono">Sample data</span>
+            <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-mono">Live</span>
           </div>
           <div className="space-y-3">
-            {MOCK.topAssets.map((a) => (
-              <div key={a.name} className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.02] border border-white/5">
-                <img src={a.image} alt={a.name} className="w-14 h-14 rounded-lg object-cover shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-bold text-white truncate">{a.name}</p>
-                  <p className="text-[11px] text-slate-400 truncate">{a.area} · <span className={`text-${a.offersColor}-400`}>{a.offers}</span></p>
-                  <p className="text-[10px] text-slate-500 mt-0.5 truncate">{a.views} · {a.leads} · <span className={a.offersColor === "amber" ? "text-blue-300 font-semibold" : "text-emerald-400 font-semibold"}>{a.yieldPct}</span></p>
-                </div>
-                <span className={`font-mono text-sm font-bold shrink-0 ${a.priceColor === "amber" ? "text-amber-400" : "text-white"}`}>${a.price.toLocaleString()}</span>
-              </div>
-            ))}
+            {!perfData || perfData.top_performers.length === 0 ? (
+              <p className="text-[11px] text-slate-500">No property performance data yet.</p>
+            ) : (
+              perfData.top_performers.slice(0, 5).map((a) => {
+                const badge = regionBadge(a.price_vs_region_avg_pct);
+                return (
+                  <div key={a.id} className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.02] border border-white/5">
+                    <div className="w-14 h-14 rounded-lg bg-white/5 flex items-center justify-center text-white font-bold text-lg shrink-0">
+                      {initials(a.title)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-bold text-white truncate">{a.title}</p>
+                      <p className="text-[11px] text-slate-400 truncate">{a.region} · <span className="capitalize">{a.status.replace(/_/g, " ")}</span></p>
+                      <p className="text-[10px] text-slate-500 mt-0.5 truncate">
+                        {a.views_count.toLocaleString()} views · {a.inquiries_count} inquiries ·{" "}
+                        <span className={`text-${badge.color}-400 font-semibold`}>{badge.text}</span>
+                      </p>
+                    </div>
+                    <span className="font-mono text-sm font-bold shrink-0 text-white">
+                      {a.price !== null ? `GH₵${Math.round(a.price).toLocaleString()}` : "—"}
+                    </span>
+                  </div>
+                );
+              })
+            )}
           </div>
           <div className="mt-4 pt-3 border-t border-white/5 flex items-center justify-between text-[11px]">
-            <span className="text-slate-500">Showing {MOCK.topAssets.length} of {MOCK.portfolioStats.totalRecords.toLocaleString()} records</span>
+            <span className="text-slate-500">Showing {perfData?.top_performers.length ?? 0} of {perfData?.summary.total_properties.toLocaleString() ?? 0} properties</span>
             <button onClick={() => navigate("/ceo/properties")} className="text-blue-400 hover:text-blue-300 font-semibold">
               View Property Performance →
             </button>
