@@ -9,6 +9,7 @@ import { PropertyCreatePage } from "@/features/properties/components/PropertyCre
 import { LeadsListPage } from "@/features/leads/components/LeadsListPage";
 import { LeadCreatePage } from "@/features/leads/components/LeadCreatePage";
 import { ViewingsListPage } from "@/features/viewings/components/ViewingsListPage";
+import CeoViewingsPage from "@/features/ceo/pages/CeoViewingsPage";
 import { ViewingCreatePage } from "@/features/viewings/components/ViewingCreatePage";
 import { TransactionsListPage } from "@/features/transactions/components/TransactionsListPage";
 import { TransactionCreatePage } from "@/features/transactions/components/TransactionCreatePage";
@@ -84,6 +85,7 @@ function App() {
             <Route path="rentals/occupancy" element={<CeoComingSoonPage />} />
             <Route path="rentals/tenancies" element={<CeoComingSoonPage />} />
             <Route path="approvals" element={<CeoApprovalsPage />} />
+            <Route path="viewings" element={<CeoViewingsPage />} />
             <Route path="audit-logs" element={<CeoAuditLogsPage />} />
             <Route path="risk" element={<CeoComingSoonPage />} />
             <Route path="ai-insights" element={<CeoComingSoonPage />} />
