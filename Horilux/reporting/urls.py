@@ -10,6 +10,8 @@ urlpatterns = [
     path("reports/finance/", views.FinanceReportView.as_view(), name="report-finance"),
     path("reports/operations/", views.OperationsReportView.as_view(), name="report-operations"),
     path("reports/ceo-dashboard/", views.CEODashboardView.as_view(), name="report-ceo-dashboard"),
+    path("reports/board-pack-pdf/", views.BoardPackPDFView.as_view(), name="report-board-pack-pdf"),
+    path("reports/revenue-trend/", views.RevenueTrendRangeView.as_view(), name="report-revenue-trend"),
     path("reports/finance-detail/", views.FinanceDetailReportView.as_view(), name="report-finance-detail"),
     path("reports/sales-pipeline/", views.SalesPipelineReportView.as_view(), name="report-sales-pipeline"),
     path("reports/marketing-campaigns/", views.MarketingCampaignDetailReportView.as_view(), name="report-marketing-campaigns"),
@@ -18,4 +20,5 @@ urlpatterns = [
     path("reports/property-performance/", views.PropertyPerformanceReportView.as_view(), name="report-property-performance"),
     path("reports/recent-activity/", views.RecentActivityReportView.as_view(), name="report-recent-activity"),
     path("reports/governance-actions/", views.GovernanceActionsReportView.as_view(), name="report-governance-actions"),
+    path("reports/territory-intelligence/", views.TerritoryIntelligenceReportView.as_view(), name="report-territory-intelligence"),
 ]

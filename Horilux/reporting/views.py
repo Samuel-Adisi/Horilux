@@ -2,8 +2,11 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 
+from django.http import HttpResponse
+
 from accounts.permissions import has_permission, get_user_scopes
 from reporting import services
+from reporting.pdf_export import generate_board_pack_pdf
 
 
 class BaseReportView(APIView):
@@ -129,6 +132,57 @@ class CEODashboardView(APIView):
         return Response(services.ceo_dashboard())
 
 
+class RevenueTrendRangeView(APIView):
+    """
+    Revenue trend for a selectable range, decoupled from the cached
+    ceo_dashboard() bundle so changing the range doesn't require
+    re-fetching the whole dashboard. Mirrors CEODashboardView's
+    permission gate since revenue trend is dashboard-level data.
+    """
+    permission_classes = [IsAuthenticated]
+    resources = ["report_listing", "report_sales", "report_marketing", "report_finance", "report_operations"]
+    RANGE_MONTHS = {"M": 6, "Q": 12, "Y": 24}
+
+    def get(self, request):
+        if not request.user.is_superuser:
+            for resource in self.resources:
+                scopes = get_user_scopes(request.user, "view", resource)
+                if "company" not in scopes:
+                    return Response({"detail": "Not permitted."}, status=403)
+
+        range_param = request.query_params.get("range", "M")
+        months = self.RANGE_MONTHS.get(range_param, 6)
+        return Response({
+            "range": range_param,
+            "months": months,
+            "trend": services.revenue_trend(months=months),
+        })
+
+
+class BoardPackPDFView(APIView):
+    """
+    Exports the same data as CEODashboardView (services.ceo_dashboard())
+    as a formal PDF. Mirrors CEODashboardView's exact permission gate --
+    company scope required on all five report resources, since it
+    aggregates every department's data.
+    """
+    permission_classes = [IsAuthenticated]
+    resources = ["report_listing", "report_sales", "report_marketing", "report_finance", "report_operations"]
+
+    def get(self, request):
+        if not request.user.is_superuser:
+            for resource in self.resources:
+                scopes = get_user_scopes(request.user, "view", resource)
+                if "company" not in scopes:
+                    return Response({"detail": "Not permitted."}, status=403)
+
+        data = services.ceo_dashboard()
+        pdf_bytes = generate_board_pack_pdf(data)
+        response = HttpResponse(pdf_bytes, content_type="application/pdf")
+        response["Content-Disposition"] = 'attachment; filename="horilux-board-pack.pdf"'
+        return response
+
+
 class StaffDirectoryReportView(APIView):
     """
     Staff directory for the CEO Staff Directory page.
@@ -196,3 +250,19 @@ class GovernanceActionsReportView(APIView):
         if "company" not in scopes and not request.user.is_superuser:
             return Response({"detail": "Not permitted."}, status=403)
         return Response(services.governance_actions())
+
+
+class TerritoryIntelligenceReportView(APIView):
+    """
+    Territory Intelligence (corridor GTV) for the CEO Overview page.
+    Same pattern as PropertyPerformanceReportView.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        if not has_permission(request.user, "view", "property"):
+            return Response({"detail": "Not permitted."}, status=403)
+        scopes = get_user_scopes(request.user, "view", "property")
+        if "company" not in scopes and not request.user.is_superuser:
+            return Response({"detail": "Not permitted."}, status=403)
+        return Response(services.territory_intelligence())

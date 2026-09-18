@@ -734,3 +734,42 @@ def governance_actions():
         })
 
     return items
+
+
+def territory_intelligence():
+    from django.db.models import Sum, Avg, Count
+    from properties.models import Property
+    from transactions.models import Transaction
+
+    corridors = []
+    locations = (
+        Property.objects.exclude(location="")
+        .values("location")
+        .annotate(property_count=Count("id"))
+        .order_by("-property_count")[:6]
+    )
+
+    for loc in locations:
+        location_name = loc["location"]
+        props_in_area = Property.objects.filter(location=location_name)
+        avg_price = props_in_area.aggregate(avg=Avg("price"))["avg"]
+
+        gtv = (
+            Transaction.objects.filter(status="closed", property__location=location_name)
+            .aggregate(total=Sum("price"))["total"]
+            or 0
+        )
+
+        corridors.append({
+            "name": location_name,
+            "property_count": loc["property_count"],
+            "gtv": float(gtv),
+            "avg_price": float(avg_price) if avg_price else None,
+        })
+
+    total_gtv = sum(c["gtv"] for c in corridors)
+
+    return {
+        "corridors": corridors,
+        "total_gtv": total_gtv,
+    }

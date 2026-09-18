@@ -36,6 +36,7 @@ RBAC_MATRIX = {
         "report_operations": {"view", "export"},
         "audit_log": {"view"},
         "company_settings": {"view", "edit"},
+        "task": {"view", "create", "edit"},
     },
     "Listing": {
         "property": {"view", "create", "edit", "approve"},

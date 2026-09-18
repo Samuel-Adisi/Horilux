@@ -4,86 +4,19 @@ import { useCeoDashboard } from "@/features/dashboard/hooks/use-ceo-dashboard";
 import { useRecentActivity } from "@/features/ceo/hooks/use-recent-activity";
 import { usePropertyPerformance } from "@/features/property-performance/hooks/use-property-performance";
 import { useGovernanceActions } from "@/features/ceo/hooks/use-governance-actions";
+import { useTerritoryIntelligence } from "@/features/ceo/hooks/use-territory-intelligence";
+import { ScheduleBriefingModal } from "@/features/tasks/components/ScheduleBriefingModal";
+import { apiClient } from "@/lib/api-client";
+import { useQuery } from "@tanstack/react-query";
+import { useAuthStore } from "@/features/accounts/store/auth-store";
 
 // Sections below have no backend model yet — governance action center,
 // top assets, territory geo, marketing ROAS by channel, rental/occupancy,
 // milestone tracker, AI diagnostic, forecast, activity feed, platform
 // health. Swap for real data once those endpoints/models exist (see
 // chat notes for the model list).
-const MOCK = {
-  governance: [
-    {
-      id: 1,
-      severity: "CRITICAL · 3 DEALS",
-      due: "Due: 2h",
-      severityColor: "rose",
-      title: "3 Escrow Authorizations Awaiting CEO Signature",
-      detail: "Total capital release: $1.40M for Cantonments & East Legon transactions.",
-      cta: "Review & Sign Escrow",
-      ctaStyle: "solid",
-    },
-    {
-      id: 2,
-      severity: "HIGH · CRM LAG",
-      due: ">48h idle",
-      severityColor: "amber",
-      title: "4 UHNW Buyer Leads Unassigned",
-      detail: "High ticket tier: $2.5M+ individual acquisition power from UK/Diaspora fund.",
-      cta: "Assign Senior Partner",
-      ctaStyle: "outline",
-    },
-    {
-      id: 3,
-      severity: "COMPLIANCE",
-      due: "Verification",
-      severityColor: "amber",
-      title: "2 Broker Agencies Pending License Check",
-      detail: "Gold Coast Realty & WestBridge affiliate packs require executive regulatory signoff.",
-      cta: "Inspect Credentials",
-      ctaStyle: "outline",
-    },
-    {
-      id: 4,
-      severity: "LIEN HOLD",
-      due: "$320K Hold",
-      severityColor: "amber",
-      title: "Developer Milestone Dispute: Cantonments",
-      detail: "Structural audit phase 3 variance claims reported by independent architect team.",
-      cta: "Review Audit Report",
-      ctaStyle: "outline",
-    },
-  ],
-  topAssets: [
-    { name: "The Grand Pavilions", area: "East Legon", price: 850000, offers: "7 Active Offers", offersColor: "emerald", views: "14.2K views", leads: "182 qualified leads", yieldPct: "Yield 9.4%", priceColor: "white", image: "https://images.unsplash.com/photo-1613977257363-707ba9348227?w=200&h=200&fit=crop" },
-    { name: "Skyline Heights Penthouse", area: "Cantonments", price: 1200000, offers: "3 Active Offers", offersColor: "emerald", views: "9.8K views", leads: "94 qualified leads", yieldPct: "Yield 8.2%", priceColor: "white", image: "https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?w=200&h=200&fit=crop" },
-    { name: "Airport Residential Executive Villa", area: "Airport Residential", price: 920000, offers: "Under Contract", offersColor: "amber", views: "8.1K views", leads: "76 qualified leads", yieldPct: "Closing Friday", priceColor: "amber", image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=200&h=200&fit=crop" },
-  ],
-  portfolioStats: { active: "1,284 Active", sold: "48 Sold", totalRecords: 4820 },
-  hotCorridorGtv: "$12.5M Hot Corridor GTV",
-  corridors: [
-    { name: "East Legon", gtv: "$4.2M", avg: "$520K Avg", yieldPct: "9.8% Yield", x: 38, y: 22, dot: "bg-indigo-400" },
-    { name: "Cantonments", gtv: "$3.8M", avg: "$740K Avg", yieldPct: "8.5% Yield", x: 58, y: 48, dot: "bg-amber-400" },
-    { name: "Airport Res", gtv: "$2.6M", avg: "$690K Avg", yieldPct: "8.9% Yield", x: 34, y: 68, dot: "bg-violet-400" },
-    { name: "Labone", gtv: "$1.9M", avg: "$480K Avg", yieldPct: "7.8% Yield", x: 62, y: 58, dot: "bg-slate-300" },
-  ],
-  rental: { monthlyRevenue: "$184K /mo", leased: 78, vacant: 14, flip: 8, renewalsDue: 12, avgYield: "9.1% ARR", delinquency: "0.8%", unitsTenanted: 112 },
-  milestones: { revenueTarget: "$1.65M / $2.00M", revenuePct: 82.5, closings: "48 / 60 Units", closingsPct: 80, leads: "418 / 500", leadsPct: 83.6, daysLeft: 18 },
-  aiInsight:
-    "Gross transaction volume is pacing +18% MoM driven by East Legon luxury villas. However, mobile inquiry-to-viewing conversion dipped 4.8% due to evening response lag.",
-  aiActions: [
-    { label: "Reallocate 3 evening agents to VIP WhatsApp queue", cta: "Apply", style: "solid" },
-    { label: "Fast-track Cantonments developer escrow release", cta: "Review", style: "outline" },
-  ],
-  forecast: { expRevenue: "$420K", escrowCloses: "37 units", newInquiries: "1,240", confidence: "89% Conf." },
-  activity: [
-    { label: "Escrow Released: $380,000", detail: "East Legon Villa • 12 mins ago", color: "emerald" },
-    { label: "New UHNW Lead: London Sovereign Fund", detail: "Portfolio inquiry $4.5M • 34 mins ago", color: "blue" },
-    { label: "Contract Submitted: Skyline Penthouse", detail: "Agent Michael Mensah • 1h ago", color: "amber" },
-    { label: "Tenancy Renewal Executed", detail: "Airport Res Apt 4B • 2h ago", color: "slate" },
-  ],
-};
 
-const RANGE_OPTIONS = ["W", "M", "Q", "Y"] as const;
+const RANGE_OPTIONS = ["M", "Q", "Y"] as const;
 
 function formatGHS(value: number): string {
   return `GH₵${Math.round(value).toLocaleString()}`;
@@ -122,13 +55,61 @@ function initials(title: string): string {
   return title.trim().charAt(0).toUpperCase() || "?";
 }
 
+function formatGHSCompact(value: number): string {
+  if (value >= 1_000_000) return `GH₵${(value / 1_000_000).toFixed(1)}M`;
+  if (value >= 1_000) return `GH₵${(value / 1_000).toFixed(0)}K`;
+  return `GH₵${Math.round(value)}`;
+}
+
+const CORRIDOR_COLORS = ["bg-indigo-400", "bg-amber-400", "bg-violet-400", "bg-emerald-400", "bg-blue-400", "bg-rose-400"];
+
 export default function CeoOverviewPage() {
   const navigate = useNavigate();
+  const user = useAuthStore((s) => s.user);
+  const [showBriefingModal, setShowBriefingModal] = useState(false);
+  const [isExportingPdf, setIsExportingPdf] = useState(false);
   const { data, isLoading, error } = useCeoDashboard();
   const { data: activityData } = useRecentActivity();
   const { data: perfData } = usePropertyPerformance();
+
+  const handleExportBoardPack = async () => {
+    setIsExportingPdf(true);
+    try {
+      const response = await apiClient.get("/reports/board-pack-pdf/", {
+        responseType: "blob",
+      });
+      const blob = new Blob([response.data], { type: "application/pdf" });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "horilux-board-pack.pdf";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Failed to export board pack PDF:", err);
+      alert("Failed to export the board pack PDF. Please try again.");
+    } finally {
+      setIsExportingPdf(false);
+    }
+  };
+  const activeCount = perfData
+    ? (perfData.status_funnel["published"] ?? 0) + (perfData.status_funnel["under_offer"] ?? 0)
+    : 0;
+  const soldCount = perfData?.status_funnel["sold_rented"] ?? 0;
   const { data: governanceData } = useGovernanceActions();
+  const { data: territoryData } = useTerritoryIntelligence();
   const [range, setRange] = useState<(typeof RANGE_OPTIONS)[number]>("Q");
+  const { data: rangeTrendData } = useQuery({
+    queryKey: ["revenue-trend", range],
+    queryFn: async () => {
+      const { data } = await apiClient.get("/reports/revenue-trend/", {
+        params: { range },
+      });
+      return data as { range: string; months: number; trend: { month: string; current: number; prior: number }[] };
+    },
+  });
   const [leaderboardView, setLeaderboardView] = useState<"deals" | "volume" | "conversion">("deals");
 
   if (isLoading) return <OverviewSkeleton />;
@@ -136,7 +117,8 @@ export default function CeoOverviewPage() {
 
   const { kpis, listing, sales, finance, revenue_trend, conversion_funnel, leaderboard } = data;
 
-  const maxRevenue = Math.max(1, ...revenue_trend.flatMap((m) => [m.current, m.prior]));
+  const effectiveTrend = rangeTrendData?.trend ?? revenue_trend;
+  const maxRevenue = Math.max(1, ...effectiveTrend.flatMap((m) => [m.current, m.prior]));
   const latestMonth = revenue_trend[revenue_trend.length - 1];
   const priorMonth = revenue_trend[revenue_trend.length - 2];
   const momGrowthPct =
@@ -152,21 +134,24 @@ export default function CeoOverviewPage() {
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-bold text-white">Good morning, Kwame Mensah</h1>
-              <span className="px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-400 text-xs font-semibold flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                Portfolio On Track ({momGrowthPct >= 0 ? "+" : ""}{momGrowthPct.toFixed(1)}% MoM)
-              </span>
+              <h1 className="text-2xl font-bold text-white">Good morning, {user?.full_name || "there"}</h1>
             </div>
             <p className="text-xs text-slate-400 mt-1">
               Executive Command Brief for Horilux Estates · Node Accra Core Alpha
             </p>
           </div>
           <div className="flex items-center gap-2.5 flex-wrap">
-            <button className="px-3.5 py-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-slate-200 text-xs font-semibold transition-colors">
-              Export Board Pack PDF
+            <button
+              onClick={handleExportBoardPack}
+              disabled={isExportingPdf}
+              className="px-3.5 py-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-slate-200 text-xs font-semibold transition-colors disabled:opacity-50"
+            >
+              {isExportingPdf ? "Exporting..." : "Export Board Pack PDF"}
             </button>
-            <button className="px-3.5 py-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-slate-200 text-xs font-semibold transition-colors">
+            <button
+              onClick={() => setShowBriefingModal(true)}
+              className="px-3.5 py-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-slate-200 text-xs font-semibold transition-colors"
+            >
               Schedule Exec Briefing
             </button>
             <button
@@ -322,7 +307,7 @@ export default function CeoOverviewPage() {
           </div>
 
           <div className="h-48 flex items-end justify-center gap-6">
-            {revenue_trend.map((m) => (
+            {(rangeTrendData?.trend ?? revenue_trend).map((m) => (
               <div key={m.month} className="w-16 shrink-0 flex flex-col items-center gap-1">
                 <div className="w-full flex items-end justify-center gap-1 h-36">
                   <div className="w-1/2 rounded-t bg-white/15" style={{ height: `${Math.max((m.prior / maxRevenue) * 100, m.prior > 0 ? 2 : 0)}%` }} />
@@ -331,8 +316,13 @@ export default function CeoOverviewPage() {
                 <span className="text-[11px] text-slate-400">{m.month}</span>
               </div>
             ))}
-            {!revenue_trend.length && <p className="text-xs text-slate-500">No revenue trend data yet.</p>}
+            {!(rangeTrendData?.trend ?? revenue_trend).length && <p className="text-xs text-slate-500">No revenue trend data yet.</p>}
           </div>
+          {rangeTrendData && rangeTrendData.trend.length < rangeTrendData.months / 6 * 6 && rangeTrendData.range !== "M" && (
+            <p className="text-[11px] text-slate-500 mt-2">
+              Showing all available data — transaction history doesn't yet span the full {rangeTrendData.range === "Q" ? "12-month" : "24-month"} window.
+            </p>
+          )}
 
           <div className="mt-4 pt-3 border-t border-white/5 flex items-center justify-between text-xs">
             <span className="flex items-center gap-3 text-slate-400">
@@ -433,8 +423,8 @@ export default function CeoOverviewPage() {
           <div className="flex items-center justify-between mb-1">
             <p className="text-[10px] font-mono text-slate-500 uppercase tracking-wide">Real Estate Portfolio Highlights</p>
             <div className="flex items-center gap-2">
-              <span className="text-[11px] px-2 py-0.5 rounded bg-white/5 text-slate-300 font-semibold">{MOCK.portfolioStats.active}</span>
-              <span className="text-[11px] px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-400 font-semibold">{MOCK.portfolioStats.sold}</span>
+              <span className="text-[11px] px-2 py-0.5 rounded bg-white/5 text-slate-300 font-semibold">{activeCount.toLocaleString()} Active</span>
+              <span className="text-[11px] px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-400 font-semibold">{soldCount.toLocaleString()} Sold</span>
             </div>
           </div>
           <div className="flex items-center justify-between mb-3">
@@ -546,41 +536,54 @@ export default function CeoOverviewPage() {
         <div className="executive-card p-5 rounded-2xl bg-[#131926] border border-white/10">
           <div className="flex items-center justify-between mb-1 flex-wrap gap-2">
             <p className="text-[10px] font-mono text-slate-500 uppercase tracking-wide">Territory Intelligence</p>
-            <span className="text-[11px] px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-400 font-mono font-semibold">{MOCK.hotCorridorGtv}</span>
+            <span className="text-[11px] px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-400 font-mono font-semibold">
+              {territoryData ? formatGHSCompact(territoryData.total_gtv) : "—"} Total GTV
+            </span>
           </div>
           <h3 className="font-bold text-white text-base mb-3">Greater Accra Metro Corridors</h3>
 
-          <div className="relative h-40 rounded-xl bg-[#0b0f18] border border-white/5 overflow-hidden mb-3">
-            <div
-              className="absolute inset-0 opacity-[0.07]"
-              style={{
-                backgroundImage:
-                  "linear-gradient(to right, white 1px, transparent 1px), linear-gradient(to bottom, white 1px, transparent 1px)",
-                backgroundSize: "24px 24px",
-              }}
-            />
-            {MOCK.corridors.map((c) => (
-              <div key={c.name} className="absolute -translate-x-1/2 -translate-y-1/2" style={{ left: `${c.x}%`, top: `${c.y}%` }}>
-                <span className={`block w-2.5 h-2.5 rounded-full ${c.dot} ring-4 ring-white/5`} />
-                <div className="absolute top-3.5 left-1/2 -translate-x-1/2 whitespace-nowrap px-2 py-1 rounded-md bg-[#131926]/95 border border-white/10 text-[10px] text-slate-200 font-semibold shadow-lg">
-                  {c.name} · <span className="text-emerald-400">{c.gtv}</span>
-                </div>
-              </div>
-            ))}
+          <div className="rounded-xl bg-[#0b0f18] border border-white/5 p-3 mb-3 space-y-2.5">
+            {!territoryData || territoryData.corridors.length === 0 ? (
+              <p className="text-[11px] text-slate-500 py-4 text-center">No location data available yet.</p>
+            ) : (
+              territoryData.corridors.map((c, i) => {
+                const maxGtv = Math.max(1, ...territoryData.corridors.map((x) => x.gtv));
+                const widthPct = Math.max(4, (c.gtv / maxGtv) * 100);
+                return (
+                  <div key={c.name}>
+                    <div className="flex items-center justify-between text-[11px] mb-1">
+                      <span className="text-slate-300 font-semibold flex items-center gap-1.5">
+                        <span className={`w-1.5 h-1.5 rounded-full ${CORRIDOR_COLORS[i % CORRIDOR_COLORS.length]}`} />
+                        {c.name}
+                      </span>
+                      <span className="text-emerald-400 font-mono">{formatGHSCompact(c.gtv)}</span>
+                    </div>
+                    <div className="h-1.5 rounded-full bg-white/5 overflow-hidden">
+                      <div
+                        className={`h-full rounded-full ${CORRIDOR_COLORS[i % CORRIDOR_COLORS.length]}`}
+                        style={{ width: `${widthPct}%` }}
+                      />
+                    </div>
+                  </div>
+                );
+              })
+            )}
           </div>
 
-          <div className="grid grid-cols-4 gap-2 text-center">
-            {MOCK.corridors.map((c) => (
+          <div className="grid grid-cols-3 gap-2 text-center">
+            {(territoryData?.corridors ?? []).slice(0, 6).map((c) => (
               <div key={c.name} className="p-2 rounded-lg bg-white/[0.02] border border-white/5">
                 <p className="text-[9px] text-slate-500 uppercase tracking-wide truncate">{c.name}</p>
-                <p className="text-[11px] text-white font-mono font-semibold mt-0.5">{c.avg}</p>
-                <p className="text-[10px] text-emerald-400 mt-0.5">{c.yieldPct}</p>
+                <p className="text-[11px] text-white font-mono font-semibold mt-0.5">
+                  {c.avg_price !== null ? formatGHSCompact(c.avg_price) : "—"}
+                </p>
+                <p className="text-[10px] text-slate-500 mt-0.5">{c.property_count} properties</p>
               </div>
             ))}
           </div>
 
           <div className="mt-4 pt-3 border-t border-white/5 flex items-center justify-between text-[11px]">
-            <span className="text-slate-500">Sample data — geo aggregation not wired yet</span>
+            <span className="text-slate-500">Live — ranked by transaction GTV</span>
             <button onClick={() => navigate("/ceo/locations")} className="text-blue-400 hover:text-blue-300 font-semibold">
               View Location Analytics →
             </button>
@@ -598,22 +601,30 @@ export default function CeoOverviewPage() {
               <p className="text-[11px] text-slate-500">No recent activity.</p>
             ) : (
               activityData.slice(0, 6).map((a) => (
-                <div key={a.id} className="flex items-start gap-2.5">
-                  <span className={`w-1.5 h-1.5 rounded-full bg-${activityColor(a.action)}-400 mt-1.5 shrink-0`} />
-                  <div>
-                    <p className="text-xs text-white font-semibold leading-snug">{activityLabel(a.action, a.model)}</p>
-                    <p className="text-[10px] text-slate-500">{a.actor} • {timeAgo(a.timestamp)}</p>
+                <div key={a.id} className="flex items-center justify-between gap-2.5">
+                  <div className="flex items-start gap-2.5 min-w-0">
+                    <span className={`w-1.5 h-1.5 rounded-full bg-${activityColor(a.action)}-400 mt-1.5 shrink-0`} />
+                    <div className="min-w-0">
+                      <p className="text-xs text-white font-semibold leading-snug truncate">{activityLabel(a.action, a.model)}</p>
+                      <p className="text-[10px] text-slate-500">{a.actor}</p>
+                    </div>
                   </div>
+                  <span className="text-[10px] text-slate-500 font-mono shrink-0 whitespace-nowrap px-2 py-1 rounded bg-white/5">
+                    {timeAgo(a.timestamp)}
+                  </span>
                 </div>
               ))
             )}
           </div>
           <div className="mt-4 pt-3 border-t border-white/5 flex justify-between text-[11px]">
             <span className="text-slate-500">Live Immutable Trail</span>
-            <button onClick={() => navigate("/ceo/audit")} className="text-blue-400 hover:text-blue-300 font-semibold">Audit Logs →</button>
+            <button onClick={() => navigate("/ceo/audit-logs")} className="text-blue-400 hover:text-blue-300 font-semibold">Audit Logs →</button>
           </div>
         </div>
       </div>
+      {showBriefingModal && (
+        <ScheduleBriefingModal onClose={() => setShowBriefingModal(false)} />
+      )}
     </div>
   );
 }
@@ -680,7 +691,7 @@ function KpiCard({
   hover: string;
 }) {
   return (
-    <div onClick={onClick} className={`executive-card bg-[#131926] border border-white/10 p-4 rounded-xl cursor-pointer transition-all group ${hover}`}>
+    <div onClick={onClick} className={`executive-card bg-[#131926] border border-white/10 p-4 rounded-xl cursor-pointer transition-all group overflow-hidden ${hover}`}>
       <div className="flex justify-between items-start">
         <span className="text-xs font-mono text-slate-400 uppercase">{label}</span>
         {badge && (
@@ -689,9 +700,9 @@ function KpiCard({
           </span>
         )}
       </div>
-      <div className="mt-3 flex items-end justify-between gap-2">
-        <h3 className="text-2xl font-extrabold text-white font-mono">{value}</h3>
-        <div className="flex flex-col items-end gap-1">
+      <div className="mt-3 flex items-end justify-between gap-2 min-w-0">
+        <h3 className="text-2xl font-extrabold text-white font-mono truncate min-w-0">{value}</h3>
+        <div className="flex flex-col items-end gap-1 shrink-0">
           {trendBadge && (
             <span className={`text-[11px] font-mono px-1.5 py-0.5 rounded font-semibold ${trendUp ? "bg-emerald-500/10 text-emerald-400" : "bg-rose-500/10 text-rose-400"}`}>
               {trendUp ? "↑" : "↓"} {trendBadge}
