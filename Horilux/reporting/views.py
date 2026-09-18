@@ -163,3 +163,19 @@ class PropertyPerformanceReportView(APIView):
         if "company" not in scopes and not request.user.is_superuser:
             return Response({"detail": "Not permitted."}, status=403)
         return Response(services.property_performance())
+
+
+class RecentActivityReportView(APIView):
+    """
+    Recent activity feed for the CEO Overview page, backed by AuditLog.
+    Gated on audit_log:view, same pattern as PropertyPerformanceReportView.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        if not has_permission(request.user, "view", "audit_log"):
+            return Response({"detail": "Not permitted."}, status=403)
+        scopes = get_user_scopes(request.user, "view", "audit_log")
+        if "company" not in scopes and not request.user.is_superuser:
+            return Response({"detail": "Not permitted."}, status=403)
+        return Response(services.recent_activity())

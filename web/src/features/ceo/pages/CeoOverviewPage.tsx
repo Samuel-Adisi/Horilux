@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCeoDashboard } from "@/features/dashboard/hooks/use-ceo-dashboard";
+import { useRecentActivity } from "@/features/ceo/hooks/use-recent-activity";
 
 // Sections below have no backend model yet — governance action center,
 // top assets, territory geo, marketing ROAS by channel, rental/occupancy,
@@ -93,9 +94,33 @@ function formatGHS(value: number): string {
   return `GH₵${Math.round(value).toLocaleString()}`;
 }
 
+function timeAgo(iso: string): string {
+  const diffMs = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(diffMs / 60000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins} min${mins === 1 ? "" : "s"} ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  return `${days}d ago`;
+}
+
+function activityLabel(action: string, model: string): string {
+  const verb = action.charAt(0).toUpperCase() + action.slice(1);
+  return `${verb}: ${model}`;
+}
+
+function activityColor(action: string): string {
+  if (action === "create") return "emerald";
+  if (action === "delete") return "rose";
+  if (action === "update") return "blue";
+  return "slate";
+}
+
 export default function CeoOverviewPage() {
   const navigate = useNavigate();
   const { data, isLoading, error } = useCeoDashboard();
+  const { data: activityData } = useRecentActivity();
   const [range, setRange] = useState<(typeof RANGE_OPTIONS)[number]>("Q");
   const [leaderboardView, setLeaderboardView] = useState<"deals" | "volume" | "conversion">("deals");
 
@@ -539,19 +564,23 @@ export default function CeoOverviewPage() {
         <div className="executive-card p-5 rounded-2xl bg-[#131926] border border-white/10">
           <div className="flex items-center justify-between mb-1">
             <p className="text-[10px] font-mono text-slate-500 uppercase tracking-wide">Audited Ledger Feed</p>
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-white/5 text-slate-500 font-mono">Sample data</span>
+            <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-mono">Live</span>
           </div>
           <h3 className="font-bold text-white text-base mb-3">Recent Activity</h3>
           <div className="space-y-3">
-            {MOCK.activity.map((a) => (
-              <div key={a.label} className="flex items-start gap-2.5">
-                <span className={`w-1.5 h-1.5 rounded-full bg-${a.color}-400 mt-1.5 shrink-0`} />
-                <div>
-                  <p className="text-xs text-white font-semibold leading-snug">{a.label}</p>
-                  <p className="text-[10px] text-slate-500">{a.detail}</p>
+            {!activityData || activityData.length === 0 ? (
+              <p className="text-[11px] text-slate-500">No recent activity.</p>
+            ) : (
+              activityData.slice(0, 6).map((a) => (
+                <div key={a.id} className="flex items-start gap-2.5">
+                  <span className={`w-1.5 h-1.5 rounded-full bg-${activityColor(a.action)}-400 mt-1.5 shrink-0`} />
+                  <div>
+                    <p className="text-xs text-white font-semibold leading-snug">{activityLabel(a.action, a.model)}</p>
+                    <p className="text-[10px] text-slate-500">{a.actor} • {timeAgo(a.timestamp)}</p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
           <div className="mt-4 pt-3 border-t border-white/5 flex justify-between text-[11px]">
             <span className="text-slate-500">Live Immutable Trail</span>

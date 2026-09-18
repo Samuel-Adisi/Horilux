@@ -16,4 +16,5 @@ urlpatterns = [
     path("reports/agents-roster/", views.AgentsRosterReportView.as_view(), name="report-agents-roster"),
     path("reports/staff-directory/", views.StaffDirectoryReportView.as_view(), name="report-staff-directory"),
     path("reports/property-performance/", views.PropertyPerformanceReportView.as_view(), name="report-property-performance"),
+    path("reports/recent-activity/", views.RecentActivityReportView.as_view(), name="report-recent-activity"),
 ]

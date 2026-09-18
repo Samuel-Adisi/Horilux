@@ -656,3 +656,24 @@ def property_performance():
         "stale_listings": stale_listings,
         "properties": rows,
     }
+
+
+def recent_activity(limit=15):
+    from audit.models import AuditLog
+
+    logs = (
+        AuditLog.objects
+        .select_related("actor")
+        .order_by("-timestamp")[:limit]
+    )
+    return [
+        {
+            "id": log.id,
+            "actor": log.actor.get_full_name() if log.actor else "System",
+            "action": log.action,
+            "model": log.model_name,
+            "object_id": log.object_id,
+            "timestamp": log.timestamp.isoformat(),
+        }
+        for log in logs
+    ]
