@@ -1,6 +1,7 @@
-import type { ReactNode } from "react";
-import { Link } from "react-router-dom";
-import { ArrowRight, CalendarPlus, Plus } from "lucide-react";
+import { useState, type ReactNode } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { ArrowRight, CalendarPlus, Download, Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Page } from "@/components/ui/page";
 import { ButtonLink } from "@/components/ui/button";
 import { ErrorState, Panel, Skeleton, Stat, StatStrip } from "@/components/ui/display";
@@ -24,7 +25,10 @@ import {
   useRecentActivity,
   useSalesReport,
 } from "@/features/reports/api";
+import { downloadBoardPack } from "@/features/reports/api";
 import { useDocumentTitle } from "@/hooks/use-document-title";
+import { getErrorMessage } from "@/lib/api-client";
+import { toast } from "@/lib/toast";
 import { formatDate, formatDateShort, formatMoney, formatPercent, formatRelative, formatTime, humanize, isPast, todayISO } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -58,7 +62,7 @@ function ListPanel<T>({
       className={className}
       actions={
         to && (
-          <Link to={to} className="inline-flex items-center gap-1 text-xs font-semibold text-brand hover:underline">
+          <Link to={to} className="inline-flex items-center gap-1 text-xs font-semibold text-brand-fg hover:underline">
             View all <ArrowRight className="size-3" />
           </Link>
         )
@@ -101,12 +105,23 @@ export function HomePage() {
   const role = primaryRole(user);
   const first = user?.first_name || user?.full_name?.split(" ")[0] || "";
 
+  if (role === "CEO") {
+    return (
+      <Page>
+        <ExecutiveGreeting name={user?.full_name || first} />
+        <ExecutiveHome />
+      </Page>
+    );
+  }
+
   return (
     <Page>
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-xs font-semibold text-ink-subtle">{new Date().toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })}</p>
-          <h1 className="mt-1 text-2xl font-bold tracking-tight text-ink">
+          <p className="font-mono text-[11px] uppercase tracking-wider text-ink-subtle">
+            {new Date().toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })}
+          </p>
+          <h1 className="mt-1 text-2xl font-bold tracking-tight text-heading">
             {greeting()}
             {first && `, ${first}`}
           </h1>
@@ -125,7 +140,6 @@ export function HomePage() {
         </div>
       </div>
 
-      {role === "CEO" && <ExecutiveHome />}
       {role === "Operations" && <OperationsHome />}
       {role === "Finance" && <FinanceHome />}
       {role === "Sales" && <SalesHome />}
@@ -160,7 +174,7 @@ function AttentionPanel() {
               <span className="block text-sm font-semibold text-ink">{a.title}</span>
               <span className="block text-xs text-ink-subtle">{a.detail}</span>
             </span>
-            <span className="shrink-0 text-xs font-semibold text-brand">{a.cta}</span>
+            <span className="shrink-0 text-xs font-semibold text-brand-fg">{a.cta}</span>
           </Link>
         </li>
       )}
@@ -246,9 +260,51 @@ function UpcomingViewingsPanel({ title = "Upcoming viewings" }: { title?: string
 // Role homes
 // ---------------------------------------------------------------------------
 
+function ExecutiveGreeting({ name }: { name: string }) {
+  const [exporting, setExporting] = useState(false);
+  async function boardPack() {
+    setExporting(true);
+    try {
+      await downloadBoardPack();
+    } catch (err) {
+      toast.error("Couldn't export the board pack", getErrorMessage(err));
+    } finally {
+      setExporting(false);
+    }
+  }
+  return (
+    <div className="mb-6 rounded-2xl border border-line bg-surface-raised p-6">
+      <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
+        <div>
+          <h1 className="text-2xl font-bold text-heading">
+            {greeting()}
+            {name && `, ${name}`}
+          </h1>
+          <p className="mt-1 text-xs text-ink-subtle">
+            Executive brief for Horilux Estates · {new Date().toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2.5">
+          <Button icon={<Download />} loading={exporting} onClick={boardPack}>
+            Export board pack PDF
+          </Button>
+          <ButtonLink to="/approvals" variant="primary">
+            Review approvals
+          </ButtonLink>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function ExecutiveHome() {
+  const navigate = useNavigate();
   const q = useCeoDashboard();
   const d = q.data;
+  const trend = d?.revenue_trend ?? [];
+  const last = trend[trend.length - 1]?.current ?? 0;
+  const prev = trend[trend.length - 2]?.current ?? 0;
+  const mom = prev > 0 ? ((last - prev) / prev) * 100 : null;
   return (
     <div className="space-y-6">
       {q.isLoading ? (
@@ -259,10 +315,35 @@ function ExecutiveHome() {
         </Panel>
       ) : (
         <StatStrip>
-          <Stat label="Gross volume (YTD)" value={formatMoney(d.kpis.gross_volume_ytd, "GHS", { compact: true })} />
-          <Stat label="Average deal" value={formatMoney(d.kpis.avg_deal_size, "GHS", { compact: true })} />
-          <Stat label="Active listings" value={d.kpis.active_mandates} hint={`${d.listing.by_status.pending_verification ?? 0} awaiting verification`} />
-          <Stat label="Lead-to-close" value={formatPercent(d.kpis.closed_yield_percent, 1)} hint={`${d.sales.total_leads} leads · ${d.kpis.active_agents} agents`} />
+          <Stat
+            label="Gross volume"
+            badge="YTD"
+            value={formatMoney(d.kpis.gross_volume_ytd, "GHS", { compact: true })}
+            sparkline={trend.map((t) => t.current)}
+            trend={mom != null ? { label: `${mom >= 0 ? "+" : ""}${mom.toFixed(1)}% MoM`, up: mom >= 0 } : undefined}
+            onClick={() => navigate("/insights/revenue")}
+          />
+          <Stat
+            label="Average deal"
+            badge="Size"
+            value={formatMoney(d.kpis.avg_deal_size, "GHS", { compact: true })}
+            hint={`${d.finance.total_transactions} transactions`}
+            onClick={() => navigate("/transactions")}
+          />
+          <Stat
+            label="Active listings"
+            badge="Portfolio"
+            value={d.kpis.active_mandates}
+            hint={`${d.listing.by_status.pending_verification ?? 0} awaiting verification`}
+            onClick={() => navigate("/properties")}
+          />
+          <Stat
+            label="Lead-to-close"
+            badge="Yield"
+            value={formatPercent(d.kpis.closed_yield_percent, 1)}
+            hint={`${d.sales.total_leads} leads · ${d.kpis.active_agents} agents`}
+            onClick={() => navigate("/insights/pipeline")}
+          />
         </StatStrip>
       )}
 
@@ -287,7 +368,7 @@ function ExecutiveHome() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
-        <Panel title="Top agents" flush actions={<Link to="/insights/agents" className="text-xs font-semibold text-brand hover:underline">All agents</Link>}>
+        <Panel title="Top agents" flush actions={<Link to="/insights/agents" className="text-xs font-semibold text-brand-fg hover:underline">All agents</Link>}>
           {!d || d.leaderboard.length === 0 ? (
             <p className="px-4 py-8 text-center text-sm text-ink-subtle">{d ? "No closed deals yet." : "Loading…"}</p>
           ) : (

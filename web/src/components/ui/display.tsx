@@ -17,7 +17,7 @@ const toneDot: Record<Tone, string> = {
 
 const toneText: Record<Tone, string> = {
   neutral: "text-ink",
-  brand: "text-brand",
+  brand: "text-brand-fg",
   success: "text-forest",
   warning: "text-kokoda-700",
   danger: "text-danger",
@@ -26,17 +26,23 @@ const toneText: Record<Tone, string> = {
 
 const toneFill: Record<Tone, string> = {
   neutral: "bg-surface-hover text-ink-muted",
-  brand: "bg-brand-50 text-brand",
+  brand: "bg-brand-50 text-brand-fg",
   success: "bg-forest-50 text-forest",
   warning: "bg-kokoda-50 text-kokoda-700",
   danger: "bg-danger-50 text-danger-700",
   muted: "bg-surface-sunken text-ink-subtle",
 };
 
-/** Dot + label. The default status marker across tables and headers. */
+/** Status pill: tinted background, dot and label. Used across tables and headers. */
 export function Status({ tone = "neutral", children, className }: { tone?: Tone; children: ReactNode; className?: string }) {
   return (
-    <span className={cn("inline-flex items-center gap-1.5 whitespace-nowrap text-sm font-medium", toneText[tone], className)}>
+    <span
+      className={cn(
+        "inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-semibold",
+        toneFill[tone],
+        className,
+      )}
+    >
       <span className={cn("size-1.5 shrink-0 rounded-full", toneDot[tone])} aria-hidden />
       {children}
     </span>
@@ -48,8 +54,8 @@ export function Tag({ tone = "neutral", children, className }: { tone?: Tone; ch
   return (
     <span
       className={cn(
-        "inline-flex items-center whitespace-nowrap rounded-sm px-1.5 py-px text-2xs font-semibold",
-        toneFill[tone],
+        "inline-flex items-center whitespace-nowrap rounded-full border px-2.5 py-0.5 text-[11.5px] font-medium",
+        tone === "neutral" ? "border-line bg-surface-sunken text-ink-muted" : cn("border-transparent", toneFill[tone]),
         className,
       )}
     >
@@ -77,17 +83,17 @@ export function Panel({
   flush?: boolean;
 }) {
   return (
-    <section className={cn("rounded border border-line bg-surface", className)}>
+    <section className={cn("overflow-hidden rounded-lg border border-line bg-surface shadow-card", className)}>
       {(title || actions) && (
-        <header className="flex items-start justify-between gap-3 border-b border-line px-4 py-3">
+        <header className="flex items-start justify-between gap-3 border-b border-line px-5 py-3.5">
           <div className="min-w-0">
-            {title && <h2 className="text-sm font-bold text-ink">{title}</h2>}
+            {title && <h2 className="text-sm font-bold text-heading">{title}</h2>}
             {description && <p className="mt-0.5 text-xs text-ink-subtle">{description}</p>}
           </div>
           {actions && <div className="flex shrink-0 items-center gap-2">{actions}</div>}
         </header>
       )}
-      <div className={cn(!flush && "p-4", bodyClassName)}>{children}</div>
+      <div className={cn(!flush && "p-5", bodyClassName)}>{children}</div>
     </section>
   );
 }
@@ -96,7 +102,7 @@ export function Avatar({ name, size = "md", className }: { name?: string | null;
   const s = size === "sm" ? "size-6 text-[10px]" : size === "lg" ? "size-10 text-sm" : "size-8 text-xs";
   return (
     <span
-      className={cn("inline-flex shrink-0 items-center justify-center rounded-full bg-brand-100 font-bold text-brand", s, className)}
+      className={cn("inline-flex shrink-0 items-center justify-center rounded-full bg-brand font-semibold text-white", s, className)}
       aria-hidden
     >
       {initials(name)}
@@ -163,42 +169,86 @@ export function ErrorState({
   );
 }
 
-/** A single figure with a label. Deliberately plain — no fake deltas. */
+function Sparkline({ points }: { points: number[] }) {
+  if (points.length < 2) return null;
+  const w = 96;
+  const h = 28;
+  const min = Math.min(...points);
+  const range = Math.max(...points) - min || 1;
+  const d = points.map((v, i) => `${(i / (points.length - 1)) * w},${h - 2 - ((v - min) / range) * (h - 4)}`).join(" ");
+  return (
+    <svg width={w} height={h} className="shrink-0 text-brand-fg" aria-hidden>
+      <polyline points={d} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+/**
+ * KPI card: mono uppercase label, big figure, optional badge, trend chip and
+ * sparkline. Every number passed in must come from real data.
+ */
 export function Stat({
   label,
   value,
   hint,
   tone,
+  badge,
+  trend,
+  sparkline,
+  onClick,
   className,
 }: {
   label: string;
   value: ReactNode;
   hint?: ReactNode;
   tone?: Tone;
+  badge?: string;
+  trend?: { label: string; up: boolean };
+  sparkline?: number[];
+  onClick?: () => void;
   className?: string;
 }) {
+  const Comp = onClick ? "button" : "div";
   return (
-    <div className={cn("min-w-0", className)}>
-      <p className="truncate text-xs font-semibold text-ink-subtle">{label}</p>
-      <p className={cn("num mt-1 truncate text-2xl font-bold tracking-tight", tone ? toneText[tone] : "text-ink")}>{value}</p>
-      {hint && <p className="mt-0.5 truncate text-xs text-ink-subtle">{hint}</p>}
-    </div>
-  );
-}
-
-/** A row of stats separated by hairlines, inside one bordered strip. */
-export function StatStrip({ children, className }: { children: ReactNode; className?: string }) {
-  return (
-    <div
+    <Comp
+      type={onClick ? "button" : undefined}
+      onClick={onClick}
       className={cn(
-        "grid grid-cols-2 divide-line rounded border border-line bg-surface sm:grid-cols-4 sm:divide-x [&>*]:px-4 [&>*]:py-3.5",
-        "max-sm:[&>*:nth-child(n+3)]:border-t max-sm:[&>*:nth-child(even)]:border-l",
+        "min-w-0 rounded-lg border border-line bg-surface p-5 text-left shadow-card transition-colors",
+        onClick && "cursor-pointer hover:border-brand",
         className,
       )}
     >
-      {children}
-    </div>
+      <div className="flex items-center justify-between gap-2">
+        <p className="truncate font-mono text-[11px] font-medium uppercase tracking-wider text-ink-subtle">{label}</p>
+        {badge && <span className="shrink-0 rounded bg-surface-hover px-1.5 py-0.5 font-mono text-[10px] text-ink-subtle">{badge}</span>}
+      </div>
+      <div className="mt-3 flex items-end justify-between gap-3">
+        <p className={cn("num truncate font-mono text-2xl font-bold tracking-tight", tone ? toneText[tone] : "text-heading")}>{value}</p>
+        {sparkline && <Sparkline points={sparkline} />}
+      </div>
+      {(hint || trend) && (
+        <div className="mt-2 flex items-center gap-2">
+          {trend && (
+            <span
+              className={cn(
+                "shrink-0 rounded-full px-2 py-0.5 font-mono text-[10.5px] font-semibold",
+                trend.up ? "bg-forest-50 text-forest" : "bg-danger-50 text-danger",
+              )}
+            >
+              {trend.up ? "▲" : "▼"} {trend.label}
+            </span>
+          )}
+          {hint && <p className="truncate text-xs text-ink-subtle">{hint}</p>}
+        </div>
+      )}
+    </Comp>
   );
+}
+
+/** Grid of KPI cards. */
+export function StatStrip({ children, className }: { children: ReactNode; className?: string }) {
+  return <div className={cn("grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4", className)}>{children}</div>;
 }
 
 export function DescriptionList({ items, columns = 2 }: { items: { label: string; value: ReactNode }[]; columns?: 2 | 3 | 4 }) {

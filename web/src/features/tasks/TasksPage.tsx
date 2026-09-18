@@ -72,7 +72,7 @@ export function TasksPage() {
         }
       />
       <Panel flush>
-        <div className="border-b border-line px-4 pt-2">
+        <div className="border-b border-line px-4 py-3">
           <Segmented
             value={status}
             onChange={(v) => set({ status: v === "active" ? null : v })}

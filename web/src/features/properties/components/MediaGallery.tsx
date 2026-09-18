@@ -84,7 +84,7 @@ export function MediaGallery({ property, canUpload, canDelete }: { property: Pro
         </button>
       ) : (
         <div>
-          <div className="group relative aspect-[16/9] bg-ink">
+          <div className="group relative aspect-[16/9] bg-black">
             {current.media_type === "video" ? (
               <video key={current.id} src={current.file} controls className="h-full w-full object-contain" />
             ) : (
@@ -108,7 +108,7 @@ export function MediaGallery({ property, canUpload, canDelete }: { property: Pro
                 >
                   <ChevronRight className="size-4" />
                 </button>
-                <span className="num absolute bottom-3 right-3 rounded-sm bg-ink/70 px-2 py-0.5 text-xs font-semibold text-white">
+                <span className="num absolute bottom-3 right-3 rounded-sm bg-black/70 px-2 py-0.5 text-xs font-semibold text-white">
                   {index + 1} / {media.length}
                 </span>
               </>
@@ -117,7 +117,7 @@ export function MediaGallery({ property, canUpload, canDelete }: { property: Pro
               <button
                 type="button"
                 onClick={() => setToDelete(current)}
-                className="absolute right-3 top-3 flex size-8 items-center justify-center rounded-full bg-ink/70 text-white opacity-0 transition-opacity hover:bg-danger group-hover:opacity-100 focus:opacity-100"
+                className="absolute right-3 top-3 flex size-8 items-center justify-center rounded-full bg-black/70 text-white opacity-0 transition-opacity hover:bg-danger group-hover:opacity-100 focus:opacity-100"
                 aria-label="Remove this file"
               >
                 <Trash2 className="size-4" />
@@ -138,7 +138,7 @@ export function MediaGallery({ property, canUpload, canDelete }: { property: Pro
                   aria-label={`Show file ${i + 1}`}
                 >
                   {m.media_type === "video" ? (
-                    <span className="flex h-full w-full items-center justify-center bg-ink text-2xs font-bold text-white">VIDEO</span>
+                    <span className="flex h-full w-full items-center justify-center bg-black text-2xs font-bold text-white">VIDEO</span>
                   ) : (
                     <img src={m.file} alt="" loading="lazy" className="h-full w-full object-cover" />
                   )}

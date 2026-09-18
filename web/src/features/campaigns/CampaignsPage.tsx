@@ -56,6 +56,7 @@ export function CampaignsPage() {
     <Page>
       <PageHeader
         title="Campaigns"
+        count={q.data ? `${q.data.count.toLocaleString()} campaigns` : undefined}
         description="Marketing for listings approved for marketing, from draft to published."
         actions={
           can("marketing_campaign", "create") && (
@@ -66,7 +67,7 @@ export function CampaignsPage() {
         }
       />
       <Panel flush>
-        <div className="border-b border-line px-4 pt-2">
+        <div className="border-b border-line px-4 py-3">
           <Segmented
             value={values.status}
             onChange={(v) => set({ status: v })}
@@ -155,7 +156,7 @@ function ChannelPicker({ value, onChange }: { value: string[]; onChange: (v: str
             onClick={() => onChange(on ? value.filter((x) => x !== ch) : [...value, ch])}
             className={cn(
               "rounded-sm border px-2.5 py-1 text-xs font-semibold transition-colors",
-              on ? "border-brand bg-brand-50 text-brand" : "border-line-strong text-ink-muted hover:border-ink-faint",
+              on ? "border-brand bg-brand-50 text-brand-fg" : "border-line-strong text-ink-muted hover:border-ink-faint",
             )}
           >
             {ch}
@@ -259,7 +260,7 @@ function CampaignDrawer({ campaign: c, onClose }: { campaign: Campaign; onClose:
       subtitle={
         <span className="flex items-center gap-3">
           <CampaignStatus status={c.status} />
-          <Link to={`/properties/${c.property}`} className="truncate hover:text-brand">
+          <Link to={`/properties/${c.property}`} className="truncate hover:text-brand-fg">
             {c.property_title}
           </Link>
         </span>

@@ -4,16 +4,15 @@ import { Page, PageHeader, SearchInput, Toolbar } from "@/components/ui/page";
 import { ButtonLink } from "@/components/ui/button";
 import { Select } from "@/components/ui/form";
 import { EmptyState, ErrorState, Panel } from "@/components/ui/display";
-import { Pagination, Table, TableSkeleton, TBody, TD, TH, THead, TR } from "@/components/ui/table";
-import { PropertyStatus } from "@/components/domain/status";
+import { Pagination, TableSkeleton } from "@/components/ui/table";
 import { useCan } from "@/features/accounts/permissions";
 import { useUrlState } from "@/hooks/use-url-state";
 import { useSearchBox } from "@/hooks/use-search-box";
 import { useDocumentTitle } from "@/hooks/use-document-title";
-import { formatMoney, formatRelative } from "@/lib/format";
 import { PAGE_SIZE } from "@/lib/types";
 import { PROPERTY_STATUS_LABEL, PROPERTY_STATUS_ORDER, useProperties } from "../api";
-import { PropertyThumb } from "../components/PropertyThumb";
+import { PropertyRow } from "../components/PropertyRow";
+import { cn } from "@/lib/utils";
 
 export function PropertiesPage() {
   useDocumentTitle("Properties");
@@ -29,7 +28,8 @@ export function PropertiesPage() {
     <Page>
       <PageHeader
         title="Properties"
-        description={q.data ? `${q.data.count} ${q.data.count === 1 ? "listing" : "listings"}${filtered ? " match your filters" : ""}` : "Every listing in the pipeline"}
+        count={q.data ? `${q.data.count.toLocaleString()} ${filtered ? "matching" : "total listings"}` : undefined}
+        description="Browse and manage listings across your portfolio."
         actions={
           can("property", "create") && (
             <ButtonLink to="/properties/new" variant="primary" icon={<Plus />}>
@@ -84,53 +84,11 @@ export function PropertiesPage() {
           />
         ) : (
           <>
-            <Table className={q.isPlaceholderData ? "opacity-60" : undefined}>
-              <THead>
-                <tr>
-                  <TH>Property</TH>
-                  <TH>Status</TH>
-                  <TH className="hidden md:table-cell">Details</TH>
-                  <TH className="hidden lg:table-cell">Agent</TH>
-                  <TH align="right">Price</TH>
-                  <TH className="hidden xl:table-cell" align="right">
-                    Added
-                  </TH>
-                </tr>
-              </THead>
-              <TBody>
-                {rows.map((p) => (
-                  <TR key={p.id} onClick={() => navigate(`/properties/${p.id}`)}>
-                    <TD>
-                      <div className="flex items-center gap-3">
-                        <PropertyThumb src={p.image_url} className="size-10" />
-                        <div className="min-w-0">
-                          <p className="max-w-[18rem] truncate font-semibold text-ink">{p.title}</p>
-                          <p className="max-w-[18rem] truncate text-xs text-ink-subtle">{[p.location, p.region].filter(Boolean).join(", ")}</p>
-                        </div>
-                      </div>
-                    </TD>
-                    <TD>
-                      <PropertyStatus status={p.status} />
-                    </TD>
-                    <TD className="hidden text-ink-muted md:table-cell">
-                      <span className="capitalize">{p.property_type}</span>
-                      {p.bedrooms != null && ` · ${p.bedrooms} bd`}
-                      {p.bathrooms != null && ` · ${p.bathrooms} ba`}
-                    </TD>
-                    <TD className="hidden text-ink-muted lg:table-cell">{p.agent_name ?? "—"}</TD>
-                    <TD align="right">
-                      <span className="font-semibold">{formatMoney(p.price, p.currency)}</span>
-                      <span className="block text-xs font-normal text-ink-subtle">
-                        {p.listing_type === "rent" ? `to rent${p.rental_period ? ` / ${p.rental_period.replace("ly", "")}` : ""}` : "for sale"}
-                      </span>
-                    </TD>
-                    <TD align="right" className="hidden text-ink-subtle xl:table-cell">
-                      {formatRelative(p.created_at)}
-                    </TD>
-                  </TR>
-                ))}
-              </TBody>
-            </Table>
+            <ul className={cn("divide-y divide-line", q.isPlaceholderData && "opacity-60")}>
+              {rows.map((p) => (
+                <PropertyRow key={p.id} property={p} onClick={() => navigate(`/properties/${p.id}`)} />
+              ))}
+            </ul>
             <Pagination
               page={page}
               pageSize={PAGE_SIZE}

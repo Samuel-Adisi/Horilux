@@ -17,19 +17,22 @@ export function PageHeader({
   actions,
   back,
   meta,
+  count,
 }: {
   title: ReactNode;
   description?: ReactNode;
   actions?: ReactNode;
   back?: { to: string; label: string };
   meta?: ReactNode;
+  /** Small mono badge next to the title, e.g. "53 total". */
+  count?: ReactNode;
 }) {
   return (
     <div className="mb-6">
       {back && (
         <Link
           to={back.to}
-          className="mb-3 inline-flex items-center gap-1 text-xs font-semibold text-ink-subtle transition-colors hover:text-brand"
+          className="mb-3 inline-flex items-center gap-1 text-[13px] font-medium text-ink-muted transition-colors hover:text-brand-fg"
         >
           <ChevronLeft className="size-3.5" />
           {back.label}
@@ -37,8 +40,15 @@ export function PageHeader({
       )}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div className="min-w-0">
-          <h1 className="text-2xl font-bold tracking-tight text-ink">{title}</h1>
-          {description && <p className="mt-1 text-sm text-ink-muted">{description}</p>}
+          <div className="flex flex-wrap items-center gap-3">
+            <h1 className="text-2xl font-bold tracking-tight text-heading">{title}</h1>
+            {count != null && (
+              <span className="inline-flex items-center rounded border border-brand/15 bg-brand/5 px-2 py-0.5 font-mono text-[11px] font-medium text-brand-fg">
+                {count}
+              </span>
+            )}
+          </div>
+          {description && <p className="mt-1 text-sm text-ink-subtle">{description}</p>}
           {meta && <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1">{meta}</div>}
         </div>
         {actions && <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div>}
@@ -48,7 +58,7 @@ export function PageHeader({
 }
 
 export function Toolbar({ children, className }: { children: ReactNode; className?: string }) {
-  return <div className={cn("flex flex-col gap-2 border-b border-line px-3 py-2.5 sm:flex-row sm:items-center", className)}>{children}</div>;
+  return <div className={cn("flex flex-col gap-2 border-b border-line px-4 py-3 sm:flex-row sm:items-center", className)}>{children}</div>;
 }
 
 export function SearchInput({
@@ -71,7 +81,7 @@ export function SearchInput({
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         aria-label={placeholder}
-        className="h-8 w-full rounded border border-line-strong bg-white pl-8 pr-7 text-sm text-ink placeholder:text-ink-faint focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/15 [&::-webkit-search-cancel-button]:hidden"
+        className="h-8 w-full rounded border border-line bg-surface-sunken pl-8 pr-7 text-xs font-medium text-ink placeholder:text-ink-faint transition focus:border-brand focus:bg-field focus:outline-none focus:ring-2 focus:ring-brand/20 [&::-webkit-search-cancel-button]:hidden"
       />
       {value && (
         <button
@@ -87,7 +97,7 @@ export function SearchInput({
   );
 }
 
-/** Segmented filter — the quick status switcher above tables. */
+/** Filter chips — the quick status switcher above tables. */
 export function Segmented<T extends string>({
   value,
   onChange,
@@ -100,7 +110,7 @@ export function Segmented<T extends string>({
   className?: string;
 }) {
   return (
-    <div className={cn("scrollbar-thin -mb-px flex gap-4 overflow-x-auto", className)} role="tablist">
+    <div className={cn("scrollbar-thin flex gap-1.5 overflow-x-auto", className)} role="tablist">
       {options.map((o) => {
         const active = o.value === value;
         return (
@@ -111,12 +121,12 @@ export function Segmented<T extends string>({
             aria-selected={active}
             onClick={() => onChange(o.value)}
             className={cn(
-              "flex shrink-0 items-center gap-1.5 border-b-2 pb-2 pt-1 text-sm font-semibold transition-colors",
-              active ? "border-brand text-ink" : "border-transparent text-ink-subtle hover:text-ink",
+              "flex shrink-0 items-center gap-1.5 rounded px-3 py-1.5 text-xs font-semibold transition-colors",
+              active ? "bg-brand text-white shadow-raise" : "bg-surface-hover text-ink-subtle hover:text-heading",
             )}
           >
             {o.label}
-            {o.count !== undefined && <span className="num text-xs font-medium text-ink-subtle">{o.count}</span>}
+            {o.count !== undefined && <span className={cn("font-mono text-[10.5px]", active ? "text-white/75" : "text-ink-faint")}>{o.count}</span>}
           </button>
         );
       })}

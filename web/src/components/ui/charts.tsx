@@ -1,17 +1,24 @@
 import type { ReactNode } from "react";
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { formatCompact } from "@/lib/format";
+import { useTheme } from "@/lib/theme";
 import { cn } from "@/lib/utils";
 
 /**
- * Chart palette — validated with the dataviz palette checker (lightness band,
- * chroma floor, CVD separation, contrast on white). Slot order is fixed.
+ * Chart palettes per theme — each validated with the dataviz palette checker
+ * (lightness band, chroma floor, CVD separation, contrast on its surface).
+ * Slot order is fixed.
  */
-const SERIES = ["#5B3BB5", "#9A8F2E"] as const;
-const GRID = "#ECEAE4";
-const AXIS_TEXT = "#8A8693";
+const PALETTES = {
+  staff: { series: ["#5B3BB5", "#9A8F2E"], grid: "#ECEAE4", axis: "#8A8578", cursor: "#B5AF9E", dotRing: "#FFFFFF" },
+  ceo: { series: ["#3B82F6", "#D97706"], grid: "#1E2432", axis: "#64748B", cursor: "#334155", dotRing: "#0D121F" },
+} as const;
 
-export function Legend({ items }: { items: { label: string; color: string; dashed?: boolean }[] }) {
+function usePalette() {
+  return PALETTES[useTheme()];
+}
+
+function Legend({ items }: { items: { label: string; color: string; dashed?: boolean }[] }) {
   return (
     <ul className="flex flex-wrap gap-x-4 gap-y-1">
       {items.map((i) => (
@@ -43,6 +50,7 @@ export function TrendChart({
   height?: number;
   format?: (v: number) => string;
 }) {
+  const { series: SERIES, grid: GRID, axis: AXIS_TEXT, cursor, dotRing } = usePalette();
   return (
     <div>
       <div className="mb-3">
@@ -55,7 +63,7 @@ export function TrendChart({
             <XAxis dataKey="label" tickLine={false} axisLine={{ stroke: GRID }} tick={{ fill: AXIS_TEXT, fontSize: 11 }} dy={6} />
             <YAxis tickLine={false} axisLine={false} tick={{ fill: AXIS_TEXT, fontSize: 11 }} width={48} tickFormatter={(v) => format(Number(v))} />
             <Tooltip
-              cursor={{ stroke: "#B4B0BA", strokeWidth: 1 }}
+              cursor={{ stroke: cursor, strokeWidth: 1 }}
               content={({ active, payload, label }) =>
                 active && payload?.length ? (
                   <div className="rounded border border-line bg-surface px-3 py-2 shadow-pop">
@@ -82,7 +90,7 @@ export function TrendChart({
                 strokeWidth={2}
                 strokeDasharray={s.dashed ? "5 4" : undefined}
                 dot={false}
-                activeDot={{ r: 4, strokeWidth: 2, stroke: "#fff" }}
+                activeDot={{ r: 4, strokeWidth: 2, stroke: dotRing }}
                 isAnimationActive={false}
               />
             ))}
@@ -108,6 +116,7 @@ export function BarList({
   emptyText?: string;
   className?: string;
 }) {
+  const { series: SERIES } = usePalette();
   const max = Math.max(0, ...items.map((i) => i.value));
   if (items.length === 0 || max === 0) return <p className="py-4 text-sm text-ink-subtle">{emptyText}</p>;
   return (

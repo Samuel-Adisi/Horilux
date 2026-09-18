@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 const icons = {
   success: <CheckCircle2 className="size-4 text-forest" />,
   error: <XCircle className="size-4 text-danger" />,
-  info: <Info className="size-4 text-brand" />,
+  info: <Info className="size-4 text-brand-fg" />,
 };
 
 export function Toaster() {

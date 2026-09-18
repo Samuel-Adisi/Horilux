@@ -1,104 +1,139 @@
 import { NavLink } from "react-router-dom";
-import { LogOut, Settings } from "lucide-react";
-import { visibleNav } from "@/config/navigation";
+import { visibleNav, type NavItem } from "@/config/navigation";
 import { useAuthStore } from "@/features/accounts/store/auth-store";
-import { DEPARTMENT_LABELS } from "@/features/accounts/types";
-import { Avatar } from "@/components/ui/display";
-import { Menu, MenuItem } from "@/components/ui/overlay";
+import { can } from "@/features/accounts/permissions";
+import { useProperties } from "@/features/properties/api";
+import { useTheme } from "@/lib/theme";
 import { cn } from "@/lib/utils";
-import { useSignOut } from "./use-sign-out";
+import { UserMenu } from "./UserMenu";
+
+/** Live count for the Approvals item (listings waiting on verification). */
+function useApprovalsBadge(enabled: boolean) {
+  const q = useProperties({ status: "pending_verification" }, { enabled });
+  return q.data?.count ?? 0;
+}
 
 export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const user = useAuthStore((s) => s.user);
+  const theme = useTheme();
   const groups = visibleNav(user);
-  const signOut = useSignOut();
-  const roleLabel = user?.roles.map((r) => r.name).join(", ") || (user?.is_staff ? "Administrator" : "");
-  const deptLabel = user?.department ? DEPARTMENT_LABELS[user.department.name] ?? user.department.name : null;
+  const pending = useApprovalsBadge(can(user, "property", "approve") || can(user, "property_verification", "view"));
+  const badges: Record<string, number> = { "/approvals": pending };
 
+  return theme === "ceo" ? (
+    <CeoSidebar groups={groups} badges={badges} onNavigate={onNavigate} />
+  ) : (
+    <StaffSidebar groups={groups} badges={badges} onNavigate={onNavigate} />
+  );
+}
+
+type Props = { groups: ReturnType<typeof visibleNav>; badges: Record<string, number>; onNavigate?: () => void };
+
+function CeoSidebar({ groups, badges, onNavigate }: Props) {
   return (
-    <div className="flex h-full flex-col bg-surface">
-      <div className="flex h-14 shrink-0 items-center gap-2.5 border-b border-line px-4">
-        <img src="/brand-mark.png" alt="" className="size-7" />
-        <div className="leading-none">
-          <p className="text-sm font-extrabold tracking-tight text-brand">Horilux</p>
-          <p className="mt-0.5 text-2xs font-medium text-ink-subtle">Estates</p>
+    <div className="flex h-full select-none flex-col bg-sidebar">
+      <div className="flex items-center gap-3 border-b border-line p-4">
+        <img src="/logo1.png" alt="" className="size-10 shrink-0 rounded-lg shadow-md" />
+        <div className="overflow-hidden">
+          <p className="text-sm font-bold uppercase tracking-tight text-heading">Horilux</p>
+          <p className="truncate text-[11px] text-ink-subtle">Real Estate Command Center</p>
         </div>
       </div>
-
-      <nav className="scrollbar-thin flex-1 overflow-y-auto px-2.5 py-3" aria-label="Main">
+      <nav className="scrollbar-thin flex-1 space-y-5 overflow-y-auto px-2 py-3 text-xs" aria-label="Main">
         {groups.map((group, gi) => (
-          <div key={group.label ?? gi} className={cn(gi > 0 && "mt-5")}>
-            {group.label && <p className="mb-1 px-2.5 text-2xs font-bold uppercase tracking-[0.08em] text-ink-faint">{group.label}</p>}
-            <ul className="space-y-px">
+          <div key={group.label ?? gi}>
+            <p className="px-3 font-mono text-[10px] font-semibold uppercase tracking-wider text-ink-faint">{group.label ?? "Overview"}</p>
+            <div className="mt-1 space-y-0.5">
               {group.items.map((item) => (
-                <li key={item.path}>
-                  <NavLink
-                    to={item.path}
-                    end={item.end}
-                    onClick={onNavigate}
-                    className={({ isActive }) =>
-                      cn(
-                        "group relative flex h-8 items-center gap-2.5 rounded px-2.5 text-sm font-semibold transition-colors",
-                        isActive ? "bg-brand-50 text-brand" : "text-ink-muted hover:bg-surface-hover hover:text-ink",
-                      )
-                    }
-                  >
-                    {({ isActive }) => (
-                      <>
-                        {isActive && <span className="absolute inset-y-1.5 left-0 w-0.5 rounded-full bg-brand" aria-hidden />}
-                        <item.icon className={cn("size-4 shrink-0", isActive ? "text-brand" : "text-ink-subtle group-hover:text-ink-muted")} />
-                        {item.label}
-                      </>
-                    )}
-                  </NavLink>
-                </li>
+                <CeoLink key={item.path} item={item} badge={badges[item.path]} onNavigate={onNavigate} />
               ))}
-            </ul>
+            </div>
           </div>
         ))}
       </nav>
+      {/* On desktop the CEO's account menu lives in the top bar. */}
+      <div className="relative border-t border-line p-3 sm:hidden">
+        <UserMenu variant="sidebar" onNavigate={onNavigate} />
+      </div>
+    </div>
+  );
+}
 
-      <div className="shrink-0 border-t border-line p-2.5">
-        <Menu
-          side="top"
-          align="start"
-          className="w-[calc(100%)]"
-          trigger={(p) => (
-            <button
-              type="button"
-              {...p}
-              className="flex w-full items-center gap-2.5 rounded p-1.5 text-left transition-colors hover:bg-surface-hover"
-            >
-              <Avatar name={user?.full_name} />
-              <span className="min-w-0 flex-1">
-                <span className="block truncate text-sm font-semibold text-ink">{user?.full_name || user?.email}</span>
-                <span className="block truncate text-xs text-ink-subtle">{[roleLabel, deptLabel !== roleLabel ? deptLabel : null].filter(Boolean).join(" · ")}</span>
-              </span>
-            </button>
-          )}
-        >
-          {(close) => (
-            <>
-              <div className="border-b border-line px-3 pb-2 pt-1.5">
-                <p className="truncate text-xs text-ink-subtle">{user?.email}</p>
-              </div>
-              <NavLink
-                to="/settings"
-                onClick={() => {
-                  close();
-                  onNavigate?.();
-                }}
-                className="flex items-center gap-2 px-3 py-1.5 text-sm text-ink hover:bg-surface-hover"
-              >
-                <Settings className="size-4 text-ink-subtle" />
-                Settings
-              </NavLink>
-              <MenuItem icon={<LogOut />} onClick={signOut}>
-                Sign out
-              </MenuItem>
-            </>
-          )}
-        </Menu>
+function CeoLink({ item, badge, onNavigate }: { item: NavItem; badge?: number; onNavigate?: () => void }) {
+  return (
+    <NavLink
+      to={item.path}
+      end={item.end}
+      onClick={onNavigate}
+      className={({ isActive }) =>
+        cn(
+          "flex w-full items-center gap-2.5 rounded-md px-3 py-1.5 text-left font-medium transition-colors",
+          isActive ? "bg-brand text-white" : "text-ink-subtle hover:bg-white/5 hover:text-white",
+        )
+      }
+    >
+      {({ isActive }) => (
+        <>
+          <item.icon className={cn("size-[18px] shrink-0", isActive ? "text-white" : item.color)} />
+          <span className="flex-1">{item.label}</span>
+          {badge ? <span className="rounded-full bg-amber-500/20 px-1.5 font-mono text-[10px] text-amber-300">{badge}</span> : null}
+        </>
+      )}
+    </NavLink>
+  );
+}
+
+function StaffSidebar({ groups, badges, onNavigate }: Props) {
+  return (
+    <div className="flex h-full flex-col bg-sidebar">
+      <div className="flex items-center gap-2.5 px-5 py-5">
+        <img src="/logo1.png" alt="" className="size-9 shrink-0 object-contain" />
+        <div className="flex min-w-0 flex-col">
+          <span className="truncate text-[15px] font-semibold leading-tight tracking-tight text-ink">Horilux Estates</span>
+          <span className="truncate text-[9.5px] font-medium uppercase leading-tight tracking-wider text-ink-subtle">Private Wealth &amp; Realty</span>
+        </div>
+      </div>
+      <nav className="scrollbar-thin flex-1 overflow-y-auto px-3 py-2" aria-label="Main">
+        {groups.map((group, gi) => (
+          <div key={group.label ?? gi} className={cn(gi > 0 && "mt-4")}>
+            {group.label && <p className="mb-1 px-3 text-[10px] font-semibold uppercase tracking-wider text-ink-faint">{group.label}</p>}
+            <div className="space-y-0.5">
+              {group.items.map((item) => (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  end={item.end}
+                  onClick={onNavigate}
+                  className={({ isActive }) =>
+                    cn(
+                      "group relative flex items-center gap-2.5 rounded-[6px] px-3 py-2 text-[13.5px] font-medium transition-colors",
+                      isActive ? "bg-brand/[0.07] text-brand-fg" : "text-[#5C5747] hover:bg-canvas hover:text-ink",
+                    )
+                  }
+                >
+                  {({ isActive }) => (
+                    <>
+                      <span
+                        className={cn(
+                          "absolute left-0 top-1/2 h-4 w-[2.5px] -translate-y-1/2 rounded-full bg-brand transition-opacity",
+                          isActive ? "opacity-100" : "opacity-0",
+                        )}
+                      />
+                      <item.icon className={cn("size-4 shrink-0", isActive ? "text-brand-fg" : "text-ink-faint group-hover:text-ink-subtle")} />
+                      <span className="flex-1">{item.label}</span>
+                      {badges[item.path] ? (
+                        <span className="rounded-full bg-brand/10 px-1.5 font-mono text-[10px] font-semibold text-brand-fg">{badges[item.path]}</span>
+                      ) : null}
+                    </>
+                  )}
+                </NavLink>
+              ))}
+            </div>
+          </div>
+        ))}
+      </nav>
+      <div className="relative border-t border-line px-4 py-4">
+        <UserMenu variant="sidebar" onNavigate={onNavigate} />
       </div>
     </div>
   );

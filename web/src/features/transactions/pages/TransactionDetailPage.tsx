@@ -57,12 +57,12 @@ function Stages({ status }: { status: string }) {
           <span
             className={cn(
               "mb-1 flex size-4 items-center justify-center rounded-full text-[9px] font-bold",
-              i < idx || status === "closed" ? "bg-brand text-white" : i === idx ? "border-2 border-brand text-brand" : "border border-line-strong text-ink-faint",
+              i < idx || status === "closed" ? "bg-brand text-white" : i === idx ? "border-2 border-brand text-brand-fg" : "border border-line-strong text-ink-faint",
             )}
           >
             {i < idx || status === "closed" ? <Check className="size-2.5" strokeWidth={3.5} /> : i + 1}
           </span>
-          <span className={cn("block truncate text-xs font-semibold", i === idx ? "text-brand" : i < idx ? "text-ink" : "text-ink-subtle")}>{TRANSACTION_STATUS_LABEL[s]}</span>
+          <span className={cn("block truncate text-xs font-semibold", i === idx ? "text-brand-fg" : i < idx ? "text-ink" : "text-ink-subtle")}>{TRANSACTION_STATUS_LABEL[s]}</span>
         </li>
       ))}
     </ol>
@@ -101,7 +101,7 @@ function TransactionView({ t }: { t: TransactionDetail }) {
           <>
             <TransactionStatus status={t.status} />
             {t.client_name && (
-              <Link to={`/clients/${t.client}`} className="text-sm text-ink-muted hover:text-brand">
+              <Link to={`/clients/${t.client}`} className="text-sm text-ink-muted hover:text-brand-fg">
                 {t.client_name}
               </Link>
             )}
@@ -205,7 +205,7 @@ function TransactionView({ t }: { t: TransactionDetail }) {
                 {
                   label: "Property",
                   value: (
-                    <Link to={`/properties/${t.property}`} className="text-brand hover:underline">
+                    <Link to={`/properties/${t.property}`} className="text-brand-fg hover:underline">
                       View listing
                     </Link>
                   ),
@@ -283,7 +283,7 @@ function PaymentDialog({ t, onClose }: { t: TransactionDetail; onClose: () => vo
               <div>
                 <Input {...p} type="number" min="0" step="0.01" className="num" value={f.amount} onChange={(e) => setF({ ...f, amount: e.target.value })} />
                 {outstanding > 0 && (
-                  <button type="button" onClick={() => setF({ ...f, amount: String(outstanding) })} className="mt-1 text-xs font-semibold text-brand hover:underline">
+                  <button type="button" onClick={() => setF({ ...f, amount: String(outstanding) })} className="mt-1 text-xs font-semibold text-brand-fg hover:underline">
                     Full balance
                   </button>
                 )}

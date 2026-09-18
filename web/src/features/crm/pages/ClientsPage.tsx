@@ -20,11 +20,10 @@ export function ClientsPage() {
 
   return (
     <Page>
-      <PageHeader title="Clients" description="Qualified buyers and tenants. Leads become clients once they're qualified." />
+      <PageHeader title="Clients" count={q.data ? `${q.data.count.toLocaleString()} clients` : undefined} description="Qualified buyers and tenants. Leads become clients once they're qualified." />
       <Panel flush>
         <Toolbar>
           <SearchInput value={text} onChange={setText} placeholder="Search name, phone or email" />
-          {q.data && <span className="text-xs text-ink-subtle sm:ml-auto">{q.data.count} clients</span>}
         </Toolbar>
         {q.isLoading ? (
           <TableSkeleton cols={4} />

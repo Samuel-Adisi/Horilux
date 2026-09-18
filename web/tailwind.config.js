@@ -1,69 +1,54 @@
 import animate from "tailwindcss-animate";
 
+/**
+ * Colours are CSS variables (see src/index.css) so the same components render
+ * in two themes: the warm "staff" theme and the dark "ceo" command-centre theme.
+ */
+const v = (name) => `rgb(var(--${name}) / <alpha-value>)`;
+
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ["./index.html", "./src/**/*.{ts,tsx}"],
   theme: {
     extend: {
       colors: {
-        // Brand palette (Horilux brand guidelines)
         brand: {
-          50: "#F3F0FA",
-          100: "#E4DDF4",
-          200: "#C9BCE9",
-          300: "#9E88D4",
-          500: "#4A2A9E",
-          600: "#34118A",
-          DEFAULT: "#240270",
-          800: "#1B0156",
-          900: "#12013B",
+          50: v("brand-50"),
+          100: v("brand-100"),
+          200: v("brand-200"),
+          300: v("brand-300"),
+          500: v("brand-500"),
+          600: v("brand-600"),
+          DEFAULT: v("brand"),
+          800: v("brand-800"),
+          900: v("brand-900"),
+          fg: v("brand-fg"),
         },
-        forest: {
-          50: "#EAF2EA",
-          100: "#CFE2CF",
-          DEFAULT: "#003E03",
-          600: "#1F5A22",
-        },
-        kokoda: {
-          50: "#F6F2DD",
-          100: "#EAE2B5",
-          DEFAULT: "#7A6D0C",
-          700: "#5F5409",
-        },
-        danger: {
-          50: "#FBEDEC",
-          100: "#F3D1CE",
-          DEFAULT: "#A12C23",
-          700: "#7F2019",
-        },
-        // Neutrals
-        ink: {
-          DEFAULT: "#17131F",
-          muted: "#57535F",
-          subtle: "#8A8693",
-          faint: "#B4B0BA",
-        },
-        canvas: "#F6F5F1",
-        surface: {
-          DEFAULT: "#FFFFFF",
-          sunken: "#FAF9F6",
-          hover: "#F3F2EE",
-        },
-        line: {
-          DEFAULT: "#E7E4DD",
-          strong: "#D4D0C6",
-        },
+        forest: { 50: v("forest-50"), 100: v("forest-100"), DEFAULT: v("forest"), 600: v("forest-600") },
+        kokoda: { 50: v("kokoda-50"), 100: v("kokoda-100"), DEFAULT: v("kokoda"), 700: v("kokoda-700") },
+        danger: { 50: v("danger-50"), 100: v("danger-100"), DEFAULT: v("danger"), 700: v("danger-700") },
+        ink: { DEFAULT: v("ink"), muted: v("ink-muted"), subtle: v("ink-subtle"), faint: v("ink-faint") },
+        heading: v("heading"),
+        canvas: v("canvas"),
+        surface: { DEFAULT: v("surface"), sunken: v("surface-sunken"), hover: v("surface-hover"), raised: v("surface-raised") },
+        field: v("field"),
+        line: { DEFAULT: v("line"), strong: v("line-strong") },
+        sidebar: v("sidebar"),
+        topbar: v("topbar"),
       },
       borderRadius: {
         none: "0",
-        sm: "2px",
-        DEFAULT: "4px",
-        md: "5px",
-        lg: "6px",
+        sm: "var(--radius-sm)",
+        DEFAULT: "var(--radius)",
+        md: "var(--radius)",
+        lg: "var(--radius-card)",
+        xl: "var(--radius-card)",
+        "2xl": "var(--radius-hero)",
         full: "9999px",
       },
       fontFamily: {
         sans: ['"Manrope Variable"', "Manrope", "system-ui", "sans-serif"],
+        mono: ['"JetBrains Mono Variable"', "ui-monospace", "SFMono-Regular", "monospace"],
       },
       fontSize: {
         "2xs": ["11px", "16px"],
@@ -76,8 +61,9 @@ export default {
         "3xl": ["28px", "34px"],
       },
       boxShadow: {
-        pop: "0 1px 2px rgba(23,19,31,0.06), 0 8px 24px -6px rgba(23,19,31,0.16)",
-        raise: "0 1px 2px rgba(23,19,31,0.05)",
+        pop: "var(--shadow-pop)",
+        raise: "var(--shadow-raise)",
+        card: "var(--shadow-card)",
       },
       keyframes: {
         "slide-in-right": { from: { transform: "translateX(100%)" }, to: { transform: "translateX(0)" } },

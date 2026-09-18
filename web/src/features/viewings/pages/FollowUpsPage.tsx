@@ -17,13 +17,13 @@ import { useCompleteFollowUp, useFollowUps, type FollowUp } from "../api";
 function Who({ f }: { f: FollowUp }) {
   if (f.client)
     return (
-      <Link to={`/clients/${f.client}`} className="font-semibold hover:text-brand hover:underline">
+      <Link to={`/clients/${f.client}`} className="font-semibold hover:text-brand-fg hover:underline">
         {f.client_name ?? "Client"}
       </Link>
     );
   if (f.lead)
     return (
-      <Link to={`/leads/${f.lead}`} className="font-semibold hover:text-brand hover:underline">
+      <Link to={`/leads/${f.lead}`} className="font-semibold hover:text-brand-fg hover:underline">
         {f.lead_name ?? "Lead"}
       </Link>
     );
@@ -52,7 +52,7 @@ export function FollowUpsPage() {
     <Page>
       <PageHeader title="Follow-ups" description="Promised call-backs after viewings, oldest due first." />
       <Panel flush>
-        <div className="border-b border-line px-4 pt-2">
+        <div className="border-b border-line px-4 py-3">
           <Segmented
             value={show}
             onChange={(v) => set({ show: v === "open" ? null : v })}

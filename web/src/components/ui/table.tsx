@@ -13,7 +13,7 @@ export function Table({ children, className }: { children: ReactNode; className?
 }
 
 export function THead({ children }: { children: ReactNode }) {
-  return <thead className="border-b border-line bg-surface-sunken">{children}</thead>;
+  return <thead className="border-b border-line">{children}</thead>;
 }
 
 export function TH({ className, align, ...props }: ThHTMLAttributes<HTMLTableCellElement> & { align?: "right" | "center" }) {
@@ -21,7 +21,7 @@ export function TH({ className, align, ...props }: ThHTMLAttributes<HTMLTableCel
     <th
       scope="col"
       className={cn(
-        "whitespace-nowrap px-4 py-2 text-2xs font-bold uppercase tracking-[0.06em] text-ink-subtle",
+        "whitespace-nowrap px-5 py-3 font-mono text-[11px] font-medium uppercase tracking-wide text-ink-subtle",
         align === "right" && "text-right",
         align === "center" && "text-center",
         className,
@@ -43,7 +43,7 @@ export function TR({
   return (
     <tr
       onClick={onClick}
-      className={cn(onClick && "cursor-pointer", "transition-colors hover:bg-surface-sunken", className)}
+      className={cn(onClick && "cursor-pointer", "transition-colors hover:bg-surface-hover/60", className)}
       {...props}
     />
   );
@@ -53,7 +53,7 @@ export function TD({ className, align, ...props }: TdHTMLAttributes<HTMLTableCel
   return (
     <td
       className={cn(
-        "px-4 py-2.5 align-middle text-ink",
+        "px-5 py-3.5 align-middle text-ink-muted [&_.font-semibold]:text-heading",
         align === "right" && "num text-right",
         align === "center" && "text-center",
         className,
@@ -94,7 +94,7 @@ export function Pagination({
 }) {
   if (!hasNext && !hasPrevious) {
     return count > 0 ? (
-      <div className="border-t border-line px-4 py-2.5 text-xs text-ink-subtle">
+      <div className="border-t border-line px-5 py-3 text-xs text-ink-subtle">
         {count} {count === 1 ? "record" : "records"}
       </div>
     ) : null;
@@ -102,16 +102,18 @@ export function Pagination({
   const from = (page - 1) * pageSize + 1;
   const to = Math.min(page * pageSize, count);
   return (
-    <div className="flex items-center justify-between gap-3 border-t border-line px-4 py-2">
+    <div className="flex items-center justify-between gap-3 border-t border-line px-5 py-3">
       <p className="num text-xs text-ink-subtle">
-        {from}–{to} of {count}
+        Showing <span className="font-mono font-semibold text-heading">{from}–{to}</span> of{" "}
+        <span className="font-mono font-semibold text-heading">{count.toLocaleString()}</span>
       </p>
-      <div className="flex items-center gap-1">
-        <Button size="sm" variant="ghost" disabled={!hasPrevious} onClick={() => onPageChange(page - 1)} aria-label="Previous page">
+      <div className="flex items-center gap-1.5">
+        <Button size="sm" disabled={!hasPrevious} onClick={() => onPageChange(page - 1)} aria-label="Previous page">
           <ChevronLeft />
           Prev
         </Button>
-        <Button size="sm" variant="ghost" disabled={!hasNext} onClick={() => onPageChange(page + 1)} aria-label="Next page">
+        <span className="px-1 font-mono text-xs text-ink-subtle">Page {page}</span>
+        <Button size="sm" disabled={!hasNext} onClick={() => onPageChange(page + 1)} aria-label="Next page">
           Next
           <ChevronRight />
         </Button>

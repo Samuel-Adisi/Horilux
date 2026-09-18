@@ -1,8 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { Navigate, useLocation } from "react-router-dom";
-import { Eye, EyeOff } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Field, FormError, Input } from "@/components/ui/form";
+import { Eye, EyeOff, Loader2, Lock, Mail } from "lucide-react";
 import { getErrorMessage, getStatus } from "@/lib/api-client";
 import { useAuthStore } from "../store/auth-store";
 import { useLogin } from "../hooks/use-login";
@@ -33,94 +31,93 @@ export function LoginPage() {
       : getErrorMessage(login.error)
     : null;
 
+  const fieldRow = "flex items-center gap-3 border-b border-gray-200 pb-2 transition-colors focus-within:border-[#240270]";
+
   return (
-    <div className="grid min-h-full lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
-      <div className="flex flex-col bg-surface px-6 py-8 sm:px-12">
-        <div className="flex items-center gap-2.5">
-          <img src="/brand-mark.png" alt="" className="size-8" />
-          <span className="text-base font-bold tracking-tight text-brand">Horilux Estates</span>
-        </div>
+    <div className="relative min-h-full w-full overflow-hidden bg-black">
+      <img src="/assets/login-hero.jpg" alt="" className="absolute inset-0 h-full w-full object-cover" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/0" />
+      <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black to-transparent" />
 
-        <div className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center py-12">
-          <h1 className="text-3xl font-bold tracking-tight text-ink">Sign in</h1>
-          <p className="mt-2 text-sm text-ink-muted">Use the work email your administrator set up for you.</p>
-
-          <form onSubmit={handleSubmit} className="mt-8 space-y-4" noValidate>
-            {expired && !login.isError && (
-              <div className="rounded border border-kokoda-100 bg-kokoda-50 px-3 py-2 text-sm text-kokoda-700">
-                Your session expired. Sign in again to continue.
-              </div>
-            )}
-            <FormError message={errorMessage} />
-
-            <Field label="Email">
-              {(p) => (
-                <Input
-                  {...p}
-                  type="email"
-                  autoComplete="username"
-                  autoFocus
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="name@horiluxestates.com"
-                  className="h-10"
-                />
-              )}
-            </Field>
-
-            <Field label="Password">
-              {(p) => (
-                <div className="relative">
-                  <Input
-                    {...p}
-                    type={showPassword ? "text" : "password"}
-                    autoComplete="current-password"
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="h-10 pr-10"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword((s) => !s)}
-                    className="absolute right-1 top-1/2 flex size-8 -translate-y-1/2 items-center justify-center rounded text-ink-subtle hover:text-ink"
-                    aria-label={showPassword ? "Hide password" : "Show password"}
-                  >
-                    {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-                  </button>
-                </div>
-              )}
-            </Field>
-
-            <Button
-              type="submit"
-              variant="primary"
-              className="h-10 w-full"
-              loading={login.isPending}
-              disabled={!email.trim() || !password}
-            >
-              Sign in
-            </Button>
-          </form>
-
-          <p className="mt-6 text-xs text-ink-subtle">
-            Forgotten your password? Ask your administrator to reset it from the staff directory.
-          </p>
-        </div>
-
-        <p className="text-2xs text-ink-faint">© {new Date().getFullYear()} Horilux Estates</p>
+      <div className="absolute bottom-10 left-10 hidden items-center gap-3 text-white md:flex">
+        <img src="/logo.png" alt="" className="size-10 object-contain" />
+        <span className="text-3xl font-semibold tracking-tight">Horilux Estates</span>
       </div>
 
-      <div className="relative hidden overflow-hidden bg-brand-900 lg:block">
-        <img src="/assets/login-hero.jpg" alt="" className="absolute inset-0 h-full w-full object-cover opacity-60 mix-blend-luminosity" />
-        <div className="absolute inset-0 bg-gradient-to-t from-brand-900 via-brand-900/40 to-transparent" />
-        <div className="motif-slant absolute -right-24 top-0 h-full w-1/2 text-white/[0.07]" aria-hidden />
-        <div className="absolute inset-x-0 bottom-0 p-12 text-white">
-          <p className="max-w-md text-2xl font-semibold leading-snug tracking-tight">
-            Listings, clients, viewings and deals, from first enquiry to commission paid.
-          </p>
-          <p className="mt-3 text-sm text-white/60">Horilux Estates operations platform</p>
+      <div className="relative z-10 flex min-h-screen items-center justify-center px-5 py-10 md:justify-end lg:px-20">
+        <div className="w-full max-w-md rounded-[2rem] bg-white p-8 shadow-2xl sm:p-10">
+          <div className="mb-6 flex items-center gap-2.5 md:hidden">
+            <img src="/logo1.png" alt="" className="size-8" />
+            <span className="text-base font-semibold text-[#240270]">Horilux Estates</span>
+          </div>
+          <h1 className="text-3xl font-semibold text-[#240270]">Log in</h1>
+          <p className="mt-1 text-sm text-gray-500">Enter your work email and password to continue.</p>
+
+          <form onSubmit={handleSubmit} className="mt-8 space-y-5" noValidate>
+            {expired && !login.isError && (
+              <p className="rounded-xl bg-amber-50 px-3 py-2 text-sm text-amber-800">Your session expired. Log in again to continue.</p>
+            )}
+
+            <div className={fieldRow}>
+              <Mail className="size-[18px] text-gray-400" aria-hidden />
+              <label htmlFor="email" className="sr-only">
+                Email
+              </label>
+              <input
+                id="email"
+                type="email"
+                autoComplete="username"
+                autoFocus
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Your Email"
+                className="w-full bg-transparent text-sm text-[#240270] placeholder:text-gray-400 focus:outline-none focus-visible:ring-0"
+              />
+            </div>
+
+            <div className={fieldRow}>
+              <Lock className="size-[18px] text-gray-400" aria-hidden />
+              <label htmlFor="password" className="sr-only">
+                Password
+              </label>
+              <input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                autoComplete="current-password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Your Password"
+                className="w-full bg-transparent text-sm text-[#240270] placeholder:text-gray-400 focus:outline-none focus-visible:ring-0"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                {showPassword ? <EyeOff className="size-[18px]" /> : <Eye className="size-[18px]" />}
+              </button>
+            </div>
+
+            {errorMessage && (
+              <p role="alert" className="text-sm text-red-600">
+                {errorMessage}
+              </p>
+            )}
+
+            <button
+              type="submit"
+              disabled={login.isPending || !email.trim() || !password}
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-700 disabled:opacity-50"
+            >
+              {login.isPending && <Loader2 className="size-4 animate-spin" />}
+              {login.isPending ? "Signing in…" : "Log in"}
+            </button>
+          </form>
+
+          <p className="mt-8 text-center text-sm text-gray-500">Forgot your password? Ask your administrator to reset it.</p>
         </div>
       </div>
     </div>

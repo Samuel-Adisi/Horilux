@@ -28,7 +28,7 @@ export function LocationsPage() {
         </Panel>
       ) : (
         <>
-          <StatStrip className="sm:grid-cols-3">
+          <StatStrip className="lg:grid-cols-3">
             <Stat label="Top area" value={rows[0].name} />
             <Stat label="Listings across these areas" value={rows.reduce((n, r) => n + r.property_count, 0)} />
             <Stat label="Total asking value" value={formatMoney(q.data!.total_gtv, "GHS", { compact: true })} />
@@ -50,7 +50,7 @@ export function LocationsPage() {
                   {rows.map((r) => (
                     <TR key={r.name}>
                       <TD>
-                        <Link to={`/properties?search=${encodeURIComponent(r.name)}`} className="font-semibold hover:text-brand hover:underline">
+                        <Link to={`/properties?search=${encodeURIComponent(r.name)}`} className="font-semibold hover:text-brand-fg hover:underline">
                           {r.name}
                         </Link>
                       </TD>

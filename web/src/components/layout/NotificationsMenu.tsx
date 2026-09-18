@@ -54,7 +54,7 @@ function NotificationsPanel({ close, onOpen }: { close: () => void; onOpen: (to:
       <div className="flex items-center justify-between border-b border-line px-4 py-2.5">
         <p className="text-sm font-bold text-ink">Notifications</p>
         {hasUnread && (
-          <button type="button" onClick={() => markAll.mutate()} className="text-xs font-semibold text-brand hover:underline">
+          <button type="button" onClick={() => markAll.mutate()} className="text-xs font-semibold text-brand-fg hover:underline">
             Mark all read
           </button>
         )}
@@ -88,7 +88,7 @@ function NotificationsPanel({ close, onOpen }: { close: () => void; onOpen: (to:
           </ul>
         )}
       </div>
-      <Link to="/notifications" onClick={close} className="block border-t border-line px-4 py-2.5 text-center text-xs font-semibold text-brand hover:bg-surface-hover">
+      <Link to="/notifications" onClick={close} className="block border-t border-line px-4 py-2.5 text-center text-xs font-semibold text-brand-fg hover:bg-surface-hover">
         View all notifications
       </Link>
     </div>

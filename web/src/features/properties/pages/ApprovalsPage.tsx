@@ -52,7 +52,7 @@ export function ApprovalsPage() {
       />
 
       <Panel flush>
-        <div className="border-b border-line px-4 pt-2">
+        <div className="border-b border-line px-4 py-3">
           <Segmented
             value={queue.value}
             onChange={(v) => set({ queue: v === QUEUES[0].value ? null : v })}

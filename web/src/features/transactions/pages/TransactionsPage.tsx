@@ -26,6 +26,7 @@ export function TransactionsPage() {
     <Page>
       <PageHeader
         title="Transactions"
+        count={q.data ? `${q.data.count.toLocaleString()} deals` : undefined}
         description="Deals from offer through payment to commission."
         actions={
           can("transaction", "create") && (
@@ -36,7 +37,7 @@ export function TransactionsPage() {
         }
       />
       <Panel flush>
-        <div className="border-b border-line px-4 pt-2">
+        <div className="border-b border-line px-4 py-3">
           <Segmented
             value={values.status}
             onChange={(v) => set({ status: v })}
@@ -45,7 +46,6 @@ export function TransactionsPage() {
         </div>
         <Toolbar>
           <SearchInput value={text} onChange={setText} placeholder="Search property or client" />
-          {q.data && <span className="text-xs text-ink-subtle sm:ml-auto">{q.data.count} transactions</span>}
         </Toolbar>
         {q.isLoading ? (
           <TableSkeleton />

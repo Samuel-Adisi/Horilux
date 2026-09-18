@@ -41,6 +41,7 @@ export function LeadsPage() {
     <Page>
       <PageHeader
         title="Leads"
+        count={q.data ? `${q.data.count.toLocaleString()} leads` : undefined}
         description="Enquiries from the website, walk-ins and referrals, from first contact to close."
         actions={
           can("lead", "create") && (
@@ -52,7 +53,7 @@ export function LeadsPage() {
       />
 
       <Panel flush>
-        <div className="border-b border-line px-4 pt-2">
+        <div className="border-b border-line px-4 py-3">
           <Segmented value={values.status} onChange={(v) => set({ status: v })} options={TABS} />
         </div>
         <Toolbar>

@@ -10,7 +10,7 @@ import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const control =
-  "w-full rounded border border-line-strong bg-white px-3 text-sm text-ink placeholder:text-ink-faint transition-colors hover:border-ink-faint focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/15 disabled:cursor-not-allowed disabled:bg-surface-sunken disabled:text-ink-subtle aria-[invalid=true]:border-danger aria-[invalid=true]:focus:ring-danger/15";
+  "w-full rounded border border-line-strong bg-field px-3 text-sm text-ink placeholder:text-ink-faint transition-colors hover:border-ink-faint focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/15 disabled:cursor-not-allowed disabled:bg-surface-sunken disabled:text-ink-subtle aria-[invalid=true]:border-danger aria-[invalid=true]:focus:ring-danger/15";
 
 export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement>>(function Input(
   { className, ...props },

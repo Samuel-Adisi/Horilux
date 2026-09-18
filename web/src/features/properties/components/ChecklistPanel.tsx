@@ -63,7 +63,7 @@ export function ChecklistPanel({ property }: { property: PropertyDetail }) {
                 <span
                   className={cn(
                     "flex size-4 shrink-0 items-center justify-center rounded-sm border transition-colors",
-                    on ? "border-forest bg-forest text-white" : "border-line-strong bg-white",
+                    on ? "border-forest bg-forest text-white" : "border-line-strong bg-field",
                   )}
                 >
                   {on && <Check className="size-3" strokeWidth={3} />}

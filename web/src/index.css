@@ -1,8 +1,120 @@
 @import "@fontsource-variable/manrope";
+@import "@fontsource-variable/jetbrains-mono";
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ---------------------------------------------------------------------------
+   Themes. Values are "R G B" so Tailwind opacity modifiers keep working.
+   staff (default): warm paper, midnight-blue accents — the original staff app.
+   ceo: dark navy command centre with blue accents — the original CEO console.
+   --------------------------------------------------------------------------- */
+@layer base {
+  :root {
+    --canvas: 250 249 246;          /* #FAF9F6 */
+    --surface: 255 255 255;
+    --surface-sunken: 247 246 243;  /* #F7F6F3 */
+    --surface-hover: 243 241 236;
+    --surface-raised: 255 255 255;
+    --field: 255 255 255;
+    --sidebar: 255 255 255;
+    --topbar: 255 255 255;
+    --line: 228 225 217;            /* #E4E1D9 */
+    --line-strong: 216 211 198;     /* #D8D3C6 */
+
+    --ink: 23 19 31;                /* #17131F */
+    --heading: 24 1 78;             /* #18014E */
+    --ink-muted: 62 58 49;          /* #3E3A31 */
+    --ink-subtle: 125 117 107;      /* #7D756B */
+    --ink-faint: 181 175 158;       /* #B5AF9E */
+
+    --brand: 36 2 112;              /* #240270 midnight */
+    --brand-fg: 36 2 112;
+    --brand-50: 234 227 247;        /* #EAE3F7 */
+    --brand-100: 221 211 242;
+    --brand-200: 201 188 233;
+    --brand-300: 158 136 212;
+    --brand-500: 74 42 158;
+    --brand-600: 28 1 89;           /* #1C0159 hover */
+    --brand-800: 24 1 78;
+    --brand-900: 18 1 59;
+
+    --forest: 46 125 91;            /* #2E7D5B */
+    --forest-50: 231 243 236;
+    --forest-100: 200 228 212;
+    --forest-600: 0 62 3;           /* #003E03 brand forest */
+    --kokoda: 185 138 30;           /* #B98A1E */
+    --kokoda-50: 251 243 224;
+    --kokoda-100: 243 226 181;
+    --kokoda-700: 122 109 12;       /* #7A6D0C brand kokoda */
+    --danger: 138 46 46;            /* #8A2E2E */
+    --danger-50: 251 237 237;
+    --danger-100: 240 207 207;
+    --danger-700: 111 35 35;
+
+    --radius-sm: 3px;
+    --radius: 5px;
+    --radius-card: 8px;
+    --radius-hero: 16px;
+    --shadow-raise: 0 1px 2px rgba(23, 19, 31, 0.05);
+    --shadow-card: 0 1px 2px rgba(23, 19, 31, 0.04);
+    --shadow-pop: 0 1px 2px rgba(23, 19, 31, 0.06), 0 8px 24px -6px rgba(23, 19, 31, 0.16);
+    color-scheme: light;
+  }
+
+  [data-theme="ceo"] {
+    --canvas: 11 15 25;             /* #0B0F19 */
+    --surface: 13 18 31;            /* #0D121F */
+    --surface-sunken: 14 19 32;     /* #0E1320 */
+    --surface-hover: 24 31 46;
+    --surface-raised: 19 25 38;     /* #131926 */
+    --field: 20 26 41;              /* #141A29 */
+    --sidebar: 13 18 31;
+    --topbar: 14 19 32;
+    --line: 32 38 52;               /* ≈ white/10 */
+    --line-strong: 48 56 74;
+
+    --ink: 226 232 240;             /* slate-200 */
+    --heading: 255 255 255;
+    --ink-muted: 203 213 225;       /* slate-300 */
+    --ink-subtle: 148 163 184;      /* slate-400 */
+    --ink-faint: 100 116 139;       /* slate-500 */
+
+    --brand: 37 99 235;             /* blue-600 */
+    --brand-fg: 96 165 250;         /* blue-400, readable on navy */
+    --brand-50: 22 34 70;
+    --brand-100: 30 52 110;
+    --brand-200: 30 64 175;
+    --brand-300: 96 165 250;
+    --brand-500: 59 130 246;
+    --brand-600: 59 130 246;        /* blue-500 hover */
+    --brand-800: 29 78 216;
+    --brand-900: 23 37 84;
+
+    --forest: 52 211 153;           /* emerald-400 */
+    --forest-50: 6 44 34;
+    --forest-100: 6 78 59;
+    --forest-600: 5 150 105;
+    --kokoda: 251 191 36;           /* amber-400 */
+    --kokoda-50: 50 38 10;
+    --kokoda-100: 92 73 20;
+    --kokoda-700: 252 211 77;
+    --danger: 251 113 133;          /* rose-400 */
+    --danger-50: 55 18 30;
+    --danger-100: 92 31 44;
+    --danger-700: 253 164 175;
+
+    --radius-sm: 4px;
+    --radius: 8px;
+    --radius-card: 12px;
+    --radius-hero: 16px;
+    --shadow-raise: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow-card: none;
+    --shadow-pop: 0 12px 32px -8px rgba(0, 0, 0, 0.6);
+    color-scheme: dark;
+  }
+}
 
 @layer base {
   html {
@@ -23,10 +135,10 @@
     @apply border-line;
   }
   ::selection {
-    @apply bg-brand-100 text-brand-900;
+    @apply bg-brand-100 text-heading;
   }
   :focus-visible {
-    @apply outline-none ring-2 ring-brand/40 ring-offset-1 ring-offset-white;
+    @apply outline-none ring-2 ring-brand/40;
   }
   input[type="number"]::-webkit-inner-spin-button,
   input[type="number"]::-webkit-outer-spin-button {
@@ -44,14 +156,10 @@
   }
   /* Brand motif: the slanted parallel bars from the Horilux mark. */
   .motif-slant {
-    background-image: repeating-linear-gradient(
-      -37deg,
-      currentColor 0 1px,
-      transparent 1px 14px
-    );
+    background-image: repeating-linear-gradient(-37deg, currentColor 0 1px, transparent 1px 14px);
   }
   .scrollbar-thin {
     scrollbar-width: thin;
-    scrollbar-color: #d4d0c6 transparent;
+    scrollbar-color: rgb(var(--line-strong)) transparent;
   }
 }

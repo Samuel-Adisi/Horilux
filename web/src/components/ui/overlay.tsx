@@ -81,7 +81,7 @@ export function Dialog({
   const width = size === "sm" ? "max-w-sm" : size === "lg" ? "max-w-2xl" : "max-w-lg";
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-end justify-center p-0 sm:items-center sm:p-4">
-      <div className="absolute inset-0 bg-ink/40 animate-in fade-in-0" onClick={onClose} aria-hidden />
+      <div className="absolute inset-0 bg-black/40 animate-in fade-in-0" onClick={onClose} aria-hidden />
       <div
         ref={panelRef}
         role="dialog"
@@ -89,7 +89,7 @@ export function Dialog({
         aria-labelledby={titleId}
         tabIndex={-1}
         className={cn(
-          "relative flex max-h-[92vh] w-full flex-col rounded-t-lg bg-surface shadow-pop outline-none animate-in fade-in-0 zoom-in-[0.98] sm:rounded",
+          "relative flex max-h-[92vh] w-full flex-col rounded-t-lg bg-surface shadow-pop outline-none animate-in fade-in-0 zoom-in-[0.98] sm:rounded-lg",
           width,
         )}
       >
@@ -134,7 +134,7 @@ export function Drawer({
   if (!open) return null;
   return createPortal(
     <div className="fixed inset-0 z-50">
-      <div className="absolute inset-0 bg-ink/30 animate-in fade-in-0" onClick={onClose} aria-hidden />
+      <div className="absolute inset-0 bg-black/30 animate-in fade-in-0" onClick={onClose} aria-hidden />
       <div
         ref={panelRef}
         role="dialog"

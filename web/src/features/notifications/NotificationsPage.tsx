@@ -37,7 +37,7 @@ export function NotificationsPage() {
         }
       />
       <Panel flush>
-        <div className="border-b border-line px-4 pt-2">
+        <div className="border-b border-line px-4 py-3">
           <Segmented
             value={values.show || "all"}
             onChange={(v) => set({ show: v === "all" ? null : v })}

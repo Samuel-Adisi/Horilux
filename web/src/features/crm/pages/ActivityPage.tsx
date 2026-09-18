@@ -56,11 +56,11 @@ export function ActivityPage() {
                     <TD className="whitespace-nowrap text-ink-muted">{formatDateTime(i.occurred_at)}</TD>
                     <TD className="whitespace-nowrap">
                       {i.lead ? (
-                        <Link to={`/leads/${i.lead}`} className="font-semibold hover:text-brand hover:underline">
+                        <Link to={`/leads/${i.lead}`} className="font-semibold hover:text-brand-fg hover:underline">
                           {i.lead_name}
                         </Link>
                       ) : i.client ? (
-                        <Link to={`/clients/${i.client}`} className="font-semibold hover:text-brand hover:underline">
+                        <Link to={`/clients/${i.client}`} className="font-semibold hover:text-brand-fg hover:underline">
                           {i.client_name}
                         </Link>
                       ) : (

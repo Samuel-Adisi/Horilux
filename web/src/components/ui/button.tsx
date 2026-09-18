@@ -7,19 +7,19 @@ type Variant = "primary" | "secondary" | "ghost" | "danger" | "success";
 type Size = "sm" | "md" | "icon";
 
 const base =
-  "inline-flex shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded font-semibold transition-colors disabled:pointer-events-none disabled:opacity-50 [&_svg]:size-4 [&_svg]:shrink-0";
+  "inline-flex shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded font-semibold transition-colors disabled:pointer-events-none disabled:opacity-50 [&_svg]:size-3.5 [&_svg]:shrink-0";
 
 const variants: Record<Variant, string> = {
-  primary: "bg-brand text-white hover:bg-brand-600 active:bg-brand-800",
-  secondary: "border border-line-strong bg-white text-ink hover:bg-surface-hover",
-  ghost: "text-ink-muted hover:bg-surface-hover hover:text-ink",
-  danger: "border border-danger-100 bg-white text-danger hover:bg-danger-50",
-  success: "bg-forest text-white hover:bg-forest-600",
+  primary: "border border-brand-800 bg-brand text-white shadow-raise hover:bg-brand-600",
+  secondary: "border border-line-strong bg-field text-ink shadow-raise hover:bg-surface-hover hover:text-heading",
+  ghost: "text-ink-subtle hover:bg-surface-hover hover:text-heading",
+  danger: "border border-danger-100 bg-field text-danger hover:bg-danger-50",
+  success: "border border-forest-600 bg-forest-600 text-white shadow-raise hover:opacity-90",
 };
 
 const sizes: Record<Size, string> = {
   sm: "h-7 px-2.5 text-xs",
-  md: "h-9 px-3.5 text-sm",
+  md: "h-9 px-3.5 text-xs",
   icon: "h-8 w-8",
 };
 

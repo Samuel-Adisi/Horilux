@@ -42,7 +42,7 @@ export function SettingsPage() {
   return (
     <Page width="narrow">
       <PageHeader title="Settings" />
-      <div className="mb-6 border-b border-line">
+      <div className="mb-6">
         <Segmented value={tab} onChange={(v) => set({ tab: v === "account" ? null : v })} options={tabs} />
       </div>
       {tab === "account" && <AccountSection />}
@@ -319,7 +319,7 @@ function RuleEditor({ rule, roles, onClose }: { rule?: CommissionRule; roles: { 
               disabled={!!rule}
               value={role}
               onChange={(e) => setRole(e.target.value)}
-              className="h-9 w-full rounded border border-line-strong bg-white px-3 text-sm disabled:bg-surface-sunken"
+              className="h-9 w-full rounded border border-line-strong bg-field px-3 text-sm disabled:bg-surface-sunken"
             >
               <option value="">Default (all roles)</option>
               {roles.map((r) => (

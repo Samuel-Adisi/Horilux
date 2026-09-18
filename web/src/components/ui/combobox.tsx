@@ -111,7 +111,7 @@ export function Combobox({
         aria-expanded={open}
         aria-invalid={invalid || undefined}
         className={cn(
-          "flex h-9 w-full items-center gap-2 rounded border border-line-strong bg-white px-3 text-left text-sm transition-colors hover:border-ink-faint focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/15 disabled:cursor-not-allowed disabled:bg-surface-sunken aria-[invalid=true]:border-danger",
+          "flex h-9 w-full items-center gap-2 rounded border border-line-strong bg-field px-3 text-left text-sm transition-colors hover:border-ink-faint focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/15 disabled:cursor-not-allowed disabled:bg-surface-sunken aria-[invalid=true]:border-danger",
           !display && "text-ink-faint",
         )}
       >
@@ -171,7 +171,7 @@ export function Combobox({
                       <span className="block truncate text-sm text-ink">{o.label}</span>
                       {o.hint && <span className="block truncate text-xs text-ink-subtle">{o.hint}</span>}
                     </span>
-                    {o.value === value && <Check className="size-4 text-brand" />}
+                    {o.value === value && <Check className="size-4 text-brand-fg" />}
                   </button>
                 </li>
               ))

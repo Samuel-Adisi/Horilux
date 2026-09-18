@@ -71,7 +71,7 @@ export function OwnersPage() {
                     {o.address && <p className="max-w-xs truncate text-xs text-ink-subtle">{o.address}</p>}
                   </TD>
                   <TD>
-                    <a href={`tel:${o.phone}`} className="hover:text-brand">
+                    <a href={`tel:${o.phone}`} className="hover:text-brand-fg">
                       {o.phone}
                     </a>
                   </TD>

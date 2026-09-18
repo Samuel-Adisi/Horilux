@@ -49,13 +49,13 @@ function WorkflowSteps({ status }: { status: PStatus }) {
               className={cn(
                 "flex size-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold",
                 done && "bg-brand text-white",
-                active && "border-2 border-brand text-brand",
+                active && "border-2 border-brand text-brand-fg",
                 !done && !active && "border border-line-strong text-ink-faint",
               )}
             >
               {done ? <Check className="size-3" strokeWidth={3} /> : i + 1}
             </span>
-            <span className={cn("truncate text-xs font-semibold", active ? "text-brand" : done ? "text-ink" : "text-ink-subtle")}>
+            <span className={cn("truncate text-xs font-semibold", active ? "text-brand-fg" : done ? "text-ink" : "text-ink-subtle")}>
               {status === "under_offer" && s.key === "live" ? "Under offer" : s.label}
             </span>
           </li>
@@ -319,13 +319,13 @@ function PropertyView({ property: p }: { property: PropertyDetail }) {
             <p className="text-sm font-semibold text-ink">{p.owner_detail.name}</p>
             <div className="mt-2 space-y-1.5 text-sm">
               {p.owner_detail.phone && (
-                <a href={`tel:${p.owner_detail.phone}`} className="flex items-center gap-2 text-ink-muted hover:text-brand">
+                <a href={`tel:${p.owner_detail.phone}`} className="flex items-center gap-2 text-ink-muted hover:text-brand-fg">
                   <Phone className="size-3.5" />
                   {p.owner_detail.phone}
                 </a>
               )}
               {p.owner_detail.email && (
-                <a href={`mailto:${p.owner_detail.email}`} className="flex items-center gap-2 break-all text-ink-muted hover:text-brand">
+                <a href={`mailto:${p.owner_detail.email}`} className="flex items-center gap-2 break-all text-ink-muted hover:text-brand-fg">
                   <Mail className="size-3.5 shrink-0" />
                   {p.owner_detail.email}
                 </a>

@@ -92,7 +92,7 @@ export function ActivityTimeline({ lead, client }: { lead?: string; client?: str
         <ol className="relative px-4 py-3">
           {items.map((i) => (
             <li key={i.id} className="group relative flex gap-3 pb-4 last:pb-1">
-              <span className="relative z-10 mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full border border-line bg-white text-ink-subtle">
+              <span className="relative z-10 mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full border border-line bg-field text-ink-subtle">
                 {i.direction === "inbound" ? <ArrowDownLeft className="size-3.5" /> : <ArrowUpRight className="size-3.5" />}
               </span>
               <span className="absolute bottom-0 left-3 top-7 w-px bg-line group-last:hidden" aria-hidden />

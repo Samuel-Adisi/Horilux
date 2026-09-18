@@ -88,7 +88,7 @@ export function ViewingsPage() {
         }
       />
       <Panel flush>
-        <div className="border-b border-line px-4 pt-2">
+        <div className="border-b border-line px-4 py-3">
           <Segmented
             value={when}
             onChange={(v) => set({ when: v === "upcoming" ? null : v })}
@@ -135,11 +135,11 @@ export function ViewingsPage() {
                           <span className="num w-12 shrink-0 text-sm font-bold text-ink">{formatTime(v.time)}</span>
                           <PropertyThumb src={v.property_image_url} className="hidden size-10 sm:flex" />
                           <div className="min-w-0 flex-1">
-                            <Link to={`/properties/${v.property}`} className="block truncate text-sm font-semibold text-ink hover:text-brand">
+                            <Link to={`/properties/${v.property}`} className="block truncate text-sm font-semibold text-ink hover:text-brand-fg">
                               {v.property_title}
                             </Link>
                             <p className="truncate text-xs text-ink-subtle">
-                              <Link to={`/clients/${v.client}`} className="hover:text-brand">
+                              <Link to={`/clients/${v.client}`} className="hover:text-brand-fg">
                                 {v.client_name}
                               </Link>
                               {v.agent_name && ` · with ${v.agent_name}`}

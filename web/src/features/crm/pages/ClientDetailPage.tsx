@@ -72,12 +72,12 @@ function ClientView({ client }: { client: Client }) {
         <div className="space-y-6">
           <Panel title="Contact">
             <div className="space-y-2 text-sm">
-              <a href={`tel:${client.phone}`} className="flex items-center gap-2 font-semibold text-ink hover:text-brand">
+              <a href={`tel:${client.phone}`} className="flex items-center gap-2 font-semibold text-ink hover:text-brand-fg">
                 <Phone className="size-3.5 text-ink-subtle" />
                 {client.phone}
               </a>
               {client.email && (
-                <a href={`mailto:${client.email}`} className="flex items-center gap-2 break-all text-ink hover:text-brand">
+                <a href={`mailto:${client.email}`} className="flex items-center gap-2 break-all text-ink hover:text-brand-fg">
                   <Mail className="size-3.5 shrink-0 text-ink-subtle" />
                   {client.email}
                 </a>
@@ -92,7 +92,7 @@ function ClientView({ client }: { client: Client }) {
               ]}
             />
             {client.lead && (
-              <Link to={`/leads/${client.lead}`} className="mt-4 flex items-center gap-1 text-xs font-semibold text-brand hover:underline">
+              <Link to={`/leads/${client.lead}`} className="mt-4 flex items-center gap-1 text-xs font-semibold text-brand-fg hover:underline">
                 View original enquiry
                 <ArrowRight className="size-3" />
               </Link>

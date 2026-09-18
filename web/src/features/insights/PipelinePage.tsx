@@ -63,7 +63,7 @@ export function PipelinePage() {
                   {d.deals_in_flight.map((x) => (
                     <TR key={x.id}>
                       <TD>
-                        <Link to={`/transactions/${x.id}`} className="font-semibold hover:text-brand hover:underline">
+                        <Link to={`/transactions/${x.id}`} className="font-semibold hover:text-brand-fg hover:underline">
                           {x.property_title}
                         </Link>
                       </TD>

@@ -47,7 +47,7 @@ export function StaffPage() {
         }
       />
       <Panel flush>
-        <div className="border-b border-line px-4 pt-2">
+        <div className="border-b border-line px-4 py-3">
           <Segmented
             value={show}
             onChange={setShow}

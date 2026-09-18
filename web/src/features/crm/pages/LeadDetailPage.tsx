@@ -219,19 +219,19 @@ function LeadView({ lead }: { lead: Lead }) {
         <div className="space-y-6">
           <Panel title="Contact">
             <div className="space-y-2 text-sm">
-              <a href={`tel:${lead.phone}`} className="flex items-center gap-2 font-semibold text-ink hover:text-brand">
+              <a href={`tel:${lead.phone}`} className="flex items-center gap-2 font-semibold text-ink hover:text-brand-fg">
                 <Phone className="size-3.5 text-ink-subtle" />
                 {lead.phone}
               </a>
               {lead.email && (
-                <a href={`mailto:${lead.email}`} className="flex items-center gap-2 break-all text-ink hover:text-brand">
+                <a href={`mailto:${lead.email}`} className="flex items-center gap-2 break-all text-ink hover:text-brand-fg">
                   <Mail className="size-3.5 shrink-0 text-ink-subtle" />
                   {lead.email}
                 </a>
               )}
             </div>
             {client.data && (
-              <Link to={`/clients/${client.data.id}`} className="mt-3 flex items-center gap-1 text-xs font-semibold text-brand hover:underline">
+              <Link to={`/clients/${client.data.id}`} className="mt-3 flex items-center gap-1 text-xs font-semibold text-brand-fg hover:underline">
                 Open client record
                 <ArrowRight className="size-3" />
               </Link>

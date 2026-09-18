@@ -277,7 +277,7 @@ function PropertyForm({ property }: { property?: PropertyDetail }) {
                     onClick={() => set("amenities", on ? form.amenities.filter((x) => x !== a) : [...form.amenities, a])}
                     className={cn(
                       "rounded-sm border px-2.5 py-1 text-xs font-semibold transition-colors",
-                      on ? "border-brand bg-brand-50 text-brand" : "border-line-strong bg-white text-ink-muted hover:border-ink-faint",
+                      on ? "border-brand bg-brand-50 text-brand-fg" : "border-line-strong bg-field text-ink-muted hover:border-ink-faint",
                     )}
                   >
                     {a}
@@ -321,7 +321,7 @@ function PropertyForm({ property }: { property?: PropertyDetail }) {
             )}
           </Field>
           {!form.owner && (
-            <button type="button" onClick={() => setOwnerDialog(true)} className="mt-2 text-xs font-semibold text-brand hover:underline">
+            <button type="button" onClick={() => setOwnerDialog(true)} className="mt-2 text-xs font-semibold text-brand-fg hover:underline">
               Owner not on file? Add them
             </button>
           )}

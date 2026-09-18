@@ -133,7 +133,7 @@ function Palette({ onClose }: { onClose: () => void }) {
   let lastGroup = "";
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-start justify-center px-4 pt-[12vh]">
-      <div className="absolute inset-0 bg-ink/30" onClick={onClose} aria-hidden />
+      <div className="absolute inset-0 bg-black/30" onClick={onClose} aria-hidden />
       <div
         role="dialog"
         aria-modal="true"
@@ -188,7 +188,7 @@ function Palette({ onClose }: { onClose: () => void }) {
                       i === active ? "bg-brand-50" : "hover:bg-surface-hover",
                     )}
                   >
-                    <span className={i === active ? "text-brand" : "text-ink-subtle"}>{r.icon}</span>
+                    <span className={i === active ? "text-brand-fg" : "text-ink-subtle"}>{r.icon}</span>
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-sm font-semibold text-ink">{r.title}</span>
                       {r.subtitle && <span className="block truncate text-xs text-ink-subtle">{r.subtitle}</span>}
