@@ -122,17 +122,17 @@ const ROLE_GRANTS: Record<string, Grants> = {
 
 /** Staff accounts with no role are Django superusers/admins — the API lets them do everything. */
 export function isAdmin(user: User | null | undefined): boolean {
-  return !!user && user.is_staff && user.roles.length === 0;
+  return !!user && user.is_staff && user.roles?.length === 0;
 }
 
 export function can(user: User | null | undefined, resource: Resource, action: Action = "view"): boolean {
   if (!user) return false;
   if (isAdmin(user)) return true;
-  return user.roles.some((r) => ROLE_GRANTS[r.name]?.[resource]?.includes(action));
+  return user.roles?.some((r) => ROLE_GRANTS[r.name]?.[resource]?.includes(action)) ?? false;
 }
 
 export function hasRole(user: User | null | undefined, role: string): boolean {
-  return !!user?.roles.some((r) => r.name === role);
+  return !!user?.roles?.some((r) => r.name === role);
 }
 
 /** The role that decides which home dashboard a user lands on. */
@@ -140,7 +140,7 @@ export function primaryRole(user: User | null | undefined): string | null {
   if (!user) return null;
   if (isAdmin(user)) return "CEO";
   const order = ["CEO", "Operations", "Finance", "Sales", "Listing", "Marketing"];
-  return order.find((r) => hasRole(user, r)) ?? user.roles[0]?.name ?? null;
+  return order.find((r) => hasRole(user, r)) ?? user.roles?.[0]?.name ?? null;
 }
 
 export function useCan() {
