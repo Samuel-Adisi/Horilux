@@ -34,6 +34,10 @@ class Lead(models.Model):
     last_contact = models.DateTimeField(null=True, blank=True)
     next_follow_up = models.DateField(null=True, blank=True)
     notes = models.TextField(blank=True)
+    lost_reason = models.CharField(max_length=30, blank=True, default="")
+    referred_by = models.ForeignKey(
+        "self", on_delete=models.SET_NULL, null=True, blank=True, related_name="referrals"
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -95,3 +99,14 @@ class Interaction(models.Model):
     def __str__(self):
         who = self.client.name if self.client else (self.lead.name if self.lead else "Unknown")
         return f"{self.get_type_display()} with {who}"
+
+
+class AgentQuota(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    agent = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="quotas")
+    period = models.CharField(max_length=20)
+    target_amount = models.DecimalField(max_digits=14, decimal_places=2)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.agent_id} {self.period}"

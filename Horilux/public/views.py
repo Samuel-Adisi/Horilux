@@ -11,11 +11,15 @@ from crm.models import Lead, Client
 from viewings.models import Viewing
 from .models import Customer, SavedProperty, PropertyInquiry
 from .authentication import issue_tokens, refresh_access_token, CustomerJWTAuthentication
+from django.conf import settings
+from django.core.mail import send_mail
 from .serializers import (
     PublicPropertyListSerializer, PublicPropertyDetailSerializer,
     CustomerRegisterSerializer, CustomerLoginSerializer, CustomerSerializer,
     SavedPropertySerializer, PropertyInquirySerializer, MARKETABLE_STATUSES,
+    ContactSubmissionSerializer,
 )
+from .models import Customer, SavedProperty, PropertyInquiry, ContactSubmission
 
 
 class PublicPropertyViewSet(viewsets.ReadOnlyModelViewSet):
@@ -158,3 +162,39 @@ class PropertyInquiryViewSet(viewsets.ModelViewSet):
             )
 
         serializer.save(customer=customer, lead=lead, viewing=viewing)
+
+
+class ContactSubmissionView(generics.CreateAPIView):
+    """No auth required — general contact form, sends an email to the company inbox."""
+    permission_classes = [permissions.AllowAny]
+    authentication_classes = []
+    serializer_class = ContactSubmissionSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        submission = serializer.save()
+
+        recipient = getattr(settings, "CONTACT_RECIPIENT_EMAIL", None)
+        if recipient:
+            body_lines = [
+                f"Name: {submission.name}",
+                f"Email: {submission.email}",
+                f"Phone: {submission.phone or ''}",
+                f"Country: {submission.country or ''}",
+                "",
+                "Message:",
+                submission.message or "",
+            ]
+            try:
+                send_mail(
+                    subject=f"New website contact form submission from {submission.name}",
+                    message="\n".join(body_lines),
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[recipient],
+                    fail_silently=True,
+                )
+            except Exception:
+                pass  # submission is already saved even if email delivery fails
+
+        return Response(serializer.data, status=status.HTTP_201_CREATED)

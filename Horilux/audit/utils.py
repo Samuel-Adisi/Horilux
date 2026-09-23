@@ -8,6 +8,7 @@ because it stores full historical row snapshots per model -- a different
 shape than the actor/action/old-vs-new-value log the spec/ERD calls for.
 This is a lighter, purpose-built writer against the actual AuditLog model.
 """
+from django.contrib.auth import get_user_model
 from django.forms.models import model_to_dict
 
 from audit.models import AuditLog
@@ -42,12 +43,17 @@ def log_audit_event(actor, action, instance, old_snapshot=None):
     """
     Write an AuditLog row.
 
-    actor: the acting User, or None (e.g. system/celery-triggered changes)
+    actor: the acting User, or None (e.g. system/celery-triggered changes,
+           or a non-staff actor such as a public-website Customer -- the
+           AuditLog.actor FK only accepts staff User instances, so anything
+           else is recorded as None rather than raising)
     action: short string, e.g. "create", "update", "delete", "status_change"
     instance: the model instance being logged (its current/new state)
     old_snapshot: optional dict of the pre-change field values (pass None
                   for creates, or when the prior state wasn\'t captured)
     """
+    if actor is not None and not isinstance(actor, get_user_model()):
+        actor = None
     AuditLog.objects.create(
         actor=actor,
         action=action,

@@ -218,3 +218,13 @@ STORAGES = {
 }
 
 MEDIA_URL = '/media/'
+
+# ---------------------------------------------------------------------------
+# Email (Resend, via Anymail)
+# ---------------------------------------------------------------------------
+EMAIL_BACKEND = "anymail.backends.resend.EmailBackend"
+ANYMAIL = {
+    "RESEND_API_KEY": os.environ.get("RESEND_API_KEY"),
+}
+DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "onboarding@resend.dev")
+CONTACT_RECIPIENT_EMAIL = os.environ.get("CONTACT_RECIPIENT_EMAIL")

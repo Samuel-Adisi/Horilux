@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from properties.models import Property
-from .models import Customer, SavedProperty, PropertyInquiry
+from .models import Customer, SavedProperty, PropertyInquiry, ContactSubmission
 
 MARKETABLE_STATUSES = ["published", "under_offer", "marketing_ready", "sold_rented"]
 
@@ -90,4 +90,11 @@ class PropertyInquirySerializer(serializers.ModelSerializer):
             "id", "property", "message", "requested_viewing",
             "requested_viewing_date", "created_at",
         ]
+        read_only_fields = ["id", "created_at"]
+
+
+class ContactSubmissionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ContactSubmission
+        fields = ["id", "name", "email", "phone", "country", "message", "created_at"]
         read_only_fields = ["id", "created_at"]
