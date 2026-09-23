@@ -1,0 +1,26 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Playfair+Display:wght@500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-brand-blue: #240270;
+  --color-brand-green: #003E03;
+  --color-brand-taupe: #7A6D0C;
+  --color-cream: #FAF6EF;
+  --color-ink: #14131F;
+  --font-sans: "Manrope", system-ui, sans-serif;
+  --font-serif: "Playfair Display", Georgia, serif;
+  --animate-float: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+body {
+  font-family: theme(--font-sans);
+}
