@@ -57,6 +57,7 @@ INSTALLED_APPS = [
 
     'accounts',
     'properties',
+    "public",
     'crm',
     'viewings',
     'transactions',
