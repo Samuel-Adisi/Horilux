@@ -14,6 +14,12 @@ class Customer(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    @property
+    def is_authenticated(self):
+        """DRF's IsAuthenticated permission checks this attribute; Customer
+        is not a Django auth user, so it must be provided explicitly."""
+        return True
+
     def set_password(self, raw_password):
         self.password_hash = make_password(raw_password)
 
@@ -47,3 +53,16 @@ class PropertyInquiry(models.Model):
     lead = models.ForeignKey("crm.Lead", on_delete=models.SET_NULL, null=True, blank=True, related_name="public_inquiry")
     viewing = models.ForeignKey("viewings.Viewing", on_delete=models.SET_NULL, null=True, blank=True, related_name="public_inquiry")
     created_at = models.DateTimeField(auto_now_add=True)
+
+
+class ContactSubmission(models.Model):
+    """General-purpose contact form submission — no auth, no property tied."""
+    name = models.CharField(max_length=200)
+    email = models.EmailField()
+    phone = models.CharField(max_length=30, blank=True)
+    country = models.CharField(max_length=100, blank=True)
+    message = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.name} <{self.email}>"
