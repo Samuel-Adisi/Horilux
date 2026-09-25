@@ -96,5 +96,10 @@ class PropertyInquirySerializer(serializers.ModelSerializer):
 class ContactSubmissionSerializer(serializers.ModelSerializer):
     class Meta:
         model = ContactSubmission
-        fields = ["id", "name", "email", "phone", "country", "message", "created_at"]
+        fields = ["id", "name", "email", "phone", "country", "message", "property", "budget", "bedrooms_preference", "created_at"]
         read_only_fields = ["id", "created_at"]
+        extra_kwargs = {
+            "property": {"required": False, "allow_null": True},
+            "budget": {"required": False, "allow_null": True},
+            "bedrooms_preference": {"required": False, "allow_null": True},
+        }

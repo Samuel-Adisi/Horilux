@@ -6,13 +6,15 @@ from .models import Lead, Client, Interaction
 class LeadSerializer(serializers.ModelSerializer):
     assigned_agent_name = serializers.SerializerMethodField()
     status_label = serializers.CharField(source="get_status_display", read_only=True)
+    property_interest_title = serializers.SerializerMethodField()
 
     class Meta:
         model = Lead
         fields = [
             "id", "name", "phone", "email", "source", "budget", "currency",
             "location_preference", "property_type_preference", "bedrooms_preference",
-            "purpose", "assigned_agent", "assigned_agent_name", "status", "status_label",
+            "purpose", "property_interest", "property_interest_title",
+            "assigned_agent", "assigned_agent_name", "status", "status_label",
             "last_contact", "next_follow_up", "notes", "created_at",
         ]
         read_only_fields = ["id", "status", "created_at"]
@@ -21,6 +23,9 @@ class LeadSerializer(serializers.ModelSerializer):
         if not obj.assigned_agent_id:
             return None
         return f"{obj.assigned_agent.first_name} {obj.assigned_agent.last_name}".strip() or obj.assigned_agent.email
+
+    def get_property_interest_title(self, obj):
+        return obj.property_interest.title if obj.property_interest_id else None
 
 
 class ClientSerializer(serializers.ModelSerializer):

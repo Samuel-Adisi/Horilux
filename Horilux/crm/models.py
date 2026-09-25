@@ -29,6 +29,9 @@ class Lead(models.Model):
     property_type_preference = models.CharField(max_length=20, blank=True)
     bedrooms_preference = models.PositiveIntegerField(null=True, blank=True)
     purpose = models.CharField(max_length=10, choices=Purpose.choices, null=True, blank=True)
+    property_interest = models.ForeignKey(
+        "properties.Property", on_delete=models.SET_NULL, null=True, blank=True, related_name="interested_leads"
+    )
     assigned_agent = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name="leads")
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.NEW)
     last_contact = models.DateTimeField(null=True, blank=True)

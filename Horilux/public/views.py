@@ -170,10 +170,40 @@ class ContactSubmissionView(generics.CreateAPIView):
     authentication_classes = []
     serializer_class = ContactSubmissionSerializer
 
+    @transaction.atomic
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         submission = serializer.save()
+
+        prop = submission.property
+        if prop:
+            notes = f"Interested in: {prop.title} ({prop.region})."
+            if submission.message:
+                notes += f"\n\n{submission.message}"
+            Lead.objects.create(
+                name=submission.name,
+                email=submission.email,
+                phone=submission.phone,
+                source="Contact Form",
+                purpose="buy" if prop.listing_type == "sale" else "rent",
+                location_preference=prop.region,
+                property_type_preference=prop.property_type,
+                property_interest=prop,
+                budget=submission.budget,
+                bedrooms_preference=submission.bedrooms_preference,
+                notes=notes,
+            )
+        else:
+            Lead.objects.create(
+                name=submission.name,
+                email=submission.email,
+                phone=submission.phone,
+                source="Contact Form",
+                budget=submission.budget,
+                bedrooms_preference=submission.bedrooms_preference,
+                notes=submission.message or "Submitted via website contact form.",
+            )
 
         recipient = getattr(settings, "CONTACT_RECIPIENT_EMAIL", None)
         if recipient:
