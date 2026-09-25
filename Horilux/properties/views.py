@@ -58,9 +58,25 @@ class PropertyOwnerViewSet(ProtectedDestroyMixin, viewsets.ModelViewSet):
     protected_message = "This owner has properties or transactions and cannot be deleted."
 
 
-class PropertyViewSet(ProtectedDestroyMixin, viewsets.ModelViewSet):
+class PropertyViewSet(viewsets.ModelViewSet):
     permission_classes = [RBACPermission]
     rbac_resource = "property"
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        try:
+            return super().destroy(request, *args, **kwargs)
+        except ProtectedError:
+            if instance.status != Property.Status.ARCHIVED:
+                instance.status = Property.Status.ARCHIVED
+                instance.save(update_fields=["status"])
+            return Response(
+                {
+                    "detail": "This property has linked transactions and was archived instead of deleted.",
+                    "archived": True,
+                },
+                status=status.HTTP_200_OK,
+            )
     rbac_action_map = {
         "list": "view",
         "retrieve": "view",
