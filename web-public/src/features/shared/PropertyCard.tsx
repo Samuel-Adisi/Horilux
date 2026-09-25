@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useState } from "react";
 import type { PropertyListItem } from "@/lib/types";
 
 function formatPrice(price: string, currency: string) {
@@ -14,6 +15,7 @@ export default function PropertyCard({
   property: PropertyListItem;
   size?: "md" | "lg";
 }) {
+  const [loaded, setLoaded] = useState(false);
   const aspect = size === "lg" ? "aspect-[4/3] sm:aspect-[16/9]" : "aspect-[4/3]";
   const titleClass = size === "lg" ? "text-lg sm:text-xl md:text-2xl" : "text-lg";
   const priceClass = size === "lg" ? "text-lg sm:text-xl md:text-2xl" : "text-xl";
@@ -24,11 +26,23 @@ export default function PropertyCard({
       className={`group relative block ${aspect} overflow-hidden`}
     >
       {property.cover_image ? (
-        <img
-          src={property.cover_image}
-          alt={property.title}
-          className="h-full w-full object-cover transition-all duration-500 group-hover:scale-105 group-hover:brightness-75"
-        />
+        <>
+          <div
+            aria-hidden
+            className={`absolute inset-0 bg-neutral-200 transition-opacity duration-500 ${
+              loaded ? "opacity-0" : "opacity-100 animate-pulse"
+            }`}
+          />
+          <img
+            src={property.cover_image}
+            alt={property.title}
+            loading="lazy"
+            onLoad={() => setLoaded(true)}
+            className={`h-full w-full object-cover transition-all duration-700 group-hover:scale-105 group-hover:brightness-75 ${
+              loaded ? "opacity-100 blur-0 scale-100" : "opacity-0 blur-md scale-105"
+            }`}
+          />
+        </>
       ) : (
         <div className="flex h-full w-full items-center justify-center bg-neutral-100 text-sm text-neutral-400">
           No image

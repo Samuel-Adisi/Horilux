@@ -4,6 +4,7 @@ import { useProperties } from "@/features/listings/hooks/use-properties";
 import PropertyCard from "@/features/shared/PropertyCard";
 import SearchBar from "./SearchBar";
 import LoadingSpinner from "@/components/shared/LoadingSpinner";
+import Reveal from "@/components/shared/Reveal";
 
 export default function HomePage() {
   const { data: propertiesPage, isLoading, isError } = useProperties({
@@ -38,14 +39,16 @@ export default function HomePage() {
       {/* Intro + search */}
       <section className="bg-cream px-6 py-20">
         <div className="mx-auto max-w-4xl text-center">
-          <h2 className="font-serif text-xl sm:text-2xl md:text-4xl tracking-[0.15em] uppercase text-brand-blue">
-            Luxury Lives Here
-          </h2>
-          <p className="mt-6 text-neutral-600 leading-relaxed max-w-2xl mx-auto">
-            Horilux Estates brings deep local expertise to Ghana&apos;s real estate market,
-            connecting discerning buyers and tenants with verified, exceptional homes from
-            Accra to Kumasi.
-          </p>
+          <Reveal>
+            <h2 className="font-serif text-xl sm:text-2xl md:text-4xl tracking-[0.15em] uppercase text-brand-blue">
+              Luxury Lives Here
+            </h2>
+            <p className="mt-6 text-neutral-600 leading-relaxed max-w-2xl mx-auto">
+              Horilux Estates brings deep local expertise to Ghana&apos;s real estate market,
+              connecting discerning buyers and tenants with verified, exceptional homes from
+              Accra to Kumasi.
+            </p>
+          </Reveal>
         </div>
         <div className="mt-12">
           <SearchBar />
@@ -54,12 +57,12 @@ export default function HomePage() {
 
       {/* Featured listings */}
       <section className="bg-cream py-20">
-        <div className="text-center mb-12 px-6">
+        <Reveal className="text-center mb-12 px-6">
           <p className="text-xs uppercase tracking-[0.2em] text-brand-taupe font-semibold mb-2">
             Handpicked
           </p>
           <h2 className="font-serif text-xl sm:text-2xl md:text-4xl text-neutral-900">Featured Properties</h2>
-        </div>
+        </Reveal>
 
         {isLoading && <LoadingSpinner />}
 
@@ -73,8 +76,10 @@ export default function HomePage() {
 
         {featured && featured.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {featured.slice(0, 8).map((property) => (
-              <PropertyCard key={property.id} property={property} size="lg" />
+            {featured.slice(0, 8).map((property, index) => (
+              <Reveal key={property.id} delay={(index % 4) * 100}>
+                <PropertyCard property={property} size="lg" />
+              </Reveal>
             ))}
           </div>
         )}
@@ -99,9 +104,11 @@ export default function HomePage() {
           }}
         />
         <div className="relative z-10 max-w-3xl mx-auto text-center">
-          <h2 className="font-serif text-xl sm:text-2xl md:text-3xl text-white uppercase tracking-[0.1em] mb-10">
-            Keep Yourself Updated On The Latest Homes Available
-          </h2>
+          <Reveal>
+            <h2 className="font-serif text-xl sm:text-2xl md:text-3xl text-white uppercase tracking-[0.1em] mb-10">
+              Keep Yourself Updated On The Latest Homes Available
+            </h2>
+          </Reveal>
 
           {subscribed ? (
             <p className="text-white font-serif text-lg">Thank you &mdash; you&apos;re on the list.</p>
@@ -139,22 +146,22 @@ export default function HomePage() {
       {/* Stats bar */}
       <section className="bg-cream py-16 border-t border-black/5">
         <div className="mx-auto max-w-5xl px-6 grid grid-cols-1 md:grid-cols-3 gap-10 text-center md:text-left">
-          <div className="flex items-start gap-4 justify-center md:justify-start">
+          <Reveal delay={0} className="flex items-start gap-4 justify-center md:justify-start">
             <span className="font-serif text-5xl text-brand-blue">10+</span>
             <p className="text-sm text-neutral-600 pt-2">
               years connecting buyers and tenants with Ghana&apos;s finest homes.
             </p>
-          </div>
-          <div className="flex items-start gap-4 justify-center md:justify-start">
+          </Reveal>
+          <Reveal delay={100} className="flex items-start gap-4 justify-center md:justify-start">
             <span className="font-serif text-5xl text-brand-blue">6</span>
             <p className="text-sm text-neutral-600 pt-2">regions of active practice, from Accra to Kumasi.</p>
-          </div>
-          <div className="flex items-start gap-4 justify-center md:justify-start">
+          </Reveal>
+          <Reveal delay={200} className="flex items-start gap-4 justify-center md:justify-start">
             <span className="font-serif text-5xl text-brand-blue">1</span>
             <p className="text-sm text-neutral-600 pt-2">
               goal &mdash; a transparent, seamless experience for every client.
             </p>
-          </div>
+          </Reveal>
         </div>
       </section>
     </div>

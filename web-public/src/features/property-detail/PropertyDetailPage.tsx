@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { useProperty, useProperties } from "@/features/listings/hooks/use-properties";
 import PropertyCard from "@/features/shared/PropertyCard";
 import LoadingSpinner from "@/components/shared/LoadingSpinner";
@@ -140,12 +140,12 @@ export default function PropertyDetailPage() {
 
   return (
     <div>
-      <a
-        href="/contact"
+      <Link
+        to="/contact"
         className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 md:bottom-8 md:right-8 z-30 animate-float px-4 py-2 sm:px-6 sm:py-3 rounded-full bg-brand-blue text-white font-serif tracking-wider uppercase text-[10px] sm:text-xs md:text-sm shadow-lg hover:bg-brand-blue/90 transition-colors"
       >
         Contact Us
-      </a>
+      </Link>
 
       {/* 1. Hero / cover */}
       <section className="relative min-h-screen flex items-end px-6 md:px-12 pb-16">
