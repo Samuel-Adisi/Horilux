@@ -83,7 +83,7 @@ export default function ListingsPage() {
           <p className="text-white/80 uppercase tracking-[0.3em] text-xs md:text-sm mb-4">
             Ghana&apos;s Premium Real Estate
           </p>
-          <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl text-white leading-tight">
+          <h1 className="font-serif text-2xl sm:text-4xl md:text-6xl text-white leading-tight">
             All Properties
           </h1>
         </div>
@@ -92,7 +92,7 @@ export default function ListingsPage() {
       {/* Intro + search */}
       <section className="bg-cream px-6 py-16">
         <div className="mx-auto max-w-4xl text-center">
-          <h2 className="font-serif text-3xl md:text-4xl tracking-[0.15em] uppercase text-brand-blue">
+          <h2 className="font-serif text-xl sm:text-2xl md:text-4xl tracking-[0.15em] uppercase text-brand-blue">
             Explore Our Properties
           </h2>
           <p className="mt-4 text-neutral-500 text-sm">Please reset filters before starting a new search.</p>
@@ -115,7 +115,7 @@ export default function ListingsPage() {
             <p className="text-neutral-500">No properties match your search.</p>
             <button
               onClick={handleReset}
-              className="mt-4 inline-block px-6 py-3 rounded-full bg-brand-blue text-white font-serif tracking-[0.15em] uppercase text-xs sm:text-sm hover:bg-brand-blue/90 transition-colors"
+              className="mt-4 inline-block px-5 py-2.5 sm:px-6 sm:py-3 rounded-full bg-brand-blue text-white font-serif tracking-[0.15em] uppercase text-[11px] sm:text-sm hover:bg-brand-blue/90 transition-colors"
             >
               Reset Search
             </button>

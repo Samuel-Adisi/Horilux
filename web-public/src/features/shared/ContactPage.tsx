@@ -1,11 +1,17 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { api } from "../../lib/api";
+import { useAuthStore } from "../../lib/auth-store";
+
+const CONTACT_EMAIL = "horiluxestates@gmail.com";
 
 const inputClass =
   "w-full rounded-2xl bg-white px-5 py-4 text-sm text-neutral-700 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-brand-blue/30 transition-shadow";
 
 export default function ContactPage() {
   const navigate = useNavigate();
+  const customer = useAuthStore((s) => s.customer);
+  const isAuthed = !!customer;
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -14,20 +20,28 @@ export default function ContactPage() {
   const [consent, setConsent] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
-  function handleSubmit(e: React.FormEvent) {
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    // NOTE: no general-purpose contact endpoint exists on the backend yet.
-    // This form is fully built and validated on the frontend but has nothing
-    // to submit to until that endpoint is added.
-    console.warn("Contact form submitted locally — no backend endpoint wired yet.", {
-      name,
-      email,
-      phone,
-      country,
-      message,
-      consent,
-    });
-    setSubmitted(true);
+    setError(null);
+    setSending(true);
+
+    try {
+      await api.post("/public/contact/", {
+        name: isAuthed ? customer!.full_name : name,
+        email: isAuthed ? customer!.email : email,
+        phone: isAuthed ? customer!.phone : phone,
+        country: isAuthed ? "" : country,
+        message,
+      });
+      setSubmitted(true);
+    } catch {
+      setError("Something went wrong sending your message. Please try again.");
+    } finally {
+      setSending(false);
+    }
   }
 
   return (
@@ -45,7 +59,7 @@ export default function ContactPage() {
       {/* Left: form */}
       <div className="bg-cream px-6 sm:px-12 lg:px-16 py-16 md:py-24 flex flex-col justify-center">
         <div className="max-w-md w-full mx-auto md:mx-0">
-          <h1 className="font-serif text-3xl md:text-4xl uppercase tracking-wide text-brand-blue mb-10">
+          <h1 className="font-serif text-xl sm:text-2xl md:text-4xl uppercase tracking-wide text-brand-blue mb-10">
             Get In Touch
           </h1>
 
@@ -55,41 +69,45 @@ export default function ContactPage() {
             </p>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <input
-                  type="text"
-                  required
-                  placeholder="Name*"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className={inputClass}
-                />
-                <input
-                  type="email"
-                  required
-                  placeholder="Email*"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className={inputClass}
-                />
-              </div>
+              {!isAuthed && (
+                <>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <input
+                      type="text"
+                      required
+                      placeholder="Name*"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      className={inputClass}
+                    />
+                    <input
+                      type="email"
+                      required
+                      placeholder="Email*"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className={inputClass}
+                    />
+                  </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <input
-                  type="tel"
-                  placeholder="Phone number"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  className={inputClass}
-                />
-                <input
-                  type="text"
-                  placeholder="Country of origin"
-                  value={country}
-                  onChange={(e) => setCountry(e.target.value)}
-                  className={inputClass}
-                />
-              </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <input
+                      type="tel"
+                      placeholder="Phone number"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      className={inputClass}
+                    />
+                    <input
+                      type="text"
+                      placeholder="Country of origin"
+                      value={country}
+                      onChange={(e) => setCountry(e.target.value)}
+                      className={inputClass}
+                    />
+                  </div>
+                </>
+              )}
 
               <textarea
                 placeholder="Message"
@@ -114,11 +132,16 @@ export default function ContactPage() {
                 </span>
               </label>
 
+              {error && (
+                <p className="text-xs text-red-600">{error}</p>
+              )}
+
               <button
                 type="submit"
-                className="mt-4 w-full sm:w-auto px-6 py-3 sm:px-10 sm:py-4 rounded-full bg-brand-blue text-white font-serif tracking-wider uppercase text-xs sm:text-sm hover:bg-brand-blue/90 transition-colors"
+                disabled={sending}
+                className="mt-4 w-full sm:w-auto px-6 py-3 sm:px-10 sm:py-4 rounded-full bg-brand-blue text-white font-serif tracking-wider uppercase text-xs sm:text-sm hover:bg-brand-blue/90 transition-colors disabled:opacity-60"
               >
-                Submit
+                {sending ? "Sending..." : "Submit"}
               </button>
             </form>
           )}
@@ -135,14 +158,14 @@ export default function ContactPage() {
           }}
         />
         <div className="relative z-10 h-full flex flex-col justify-center px-6 sm:px-12 lg:px-16 py-16 md:py-24 text-white">
-          <h2 className="font-serif text-3xl md:text-4xl uppercase tracking-wide mb-1">
+          <h2 className="font-serif text-xl sm:text-2xl md:text-4xl uppercase tracking-wide mb-1">
             Horilux Estates
           </h2>
           <p className="text-xs uppercase tracking-[0.15em] text-white/70 mb-8">
             Live Better, Invest Smart
           </p>
-          <a href="mailto:info@horiluxestates.com" className="underline underline-offset-4 text-lg mb-3 w-fit">
-            info@horiluxestates.com
+          <a href={`mailto:${CONTACT_EMAIL}`} className="underline underline-offset-4 text-lg mb-3 w-fit">
+            {CONTACT_EMAIL}
           </a>
           <p className="text-lg mb-3">+233247628324</p>
           <p className="text-lg">Accra, Ghana</p>

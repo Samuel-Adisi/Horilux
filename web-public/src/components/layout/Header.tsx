@@ -60,7 +60,7 @@ export default function Header() {
               Horilux Estates
             </span>
             <span
-              className={`hidden sm:block text-[10px] md:text-xs uppercase tracking-[0.15em] whitespace-nowrap ${
+              className={`block text-[8px] sm:text-[10px] md:text-xs uppercase tracking-[0.1em] sm:tracking-[0.15em] whitespace-nowrap ${
                 isHome ? "text-white/70" : "text-brand-taupe"
               }`}
             >
@@ -82,8 +82,8 @@ export default function Header() {
               to="/account"
               className={
                 (isHome
-                  ? "text-sm font-semibold text-white border border-white/60 px-5 py-2 rounded-full hover:bg-white/10 transition-colors"
-                  : "text-sm font-semibold text-white bg-brand-blue px-5 py-2 rounded-full hover:opacity-90 transition-opacity") +
+                  ? "text-xs sm:text-sm font-semibold text-white border border-white/60 px-4 py-1.5 sm:px-5 sm:py-2 rounded-full hover:bg-white/10 transition-colors"
+                  : "text-xs sm:text-sm font-semibold text-white bg-brand-blue px-4 py-1.5 sm:px-5 sm:py-2 rounded-full hover:opacity-90 transition-opacity") +
                 " hidden md:inline-block"
               }
             >
@@ -94,8 +94,8 @@ export default function Header() {
               to="/login"
               className={
                 (isHome
-                  ? "text-sm font-semibold text-white border border-white/60 px-5 py-2 rounded-full hover:bg-white/10 transition-colors"
-                  : "text-sm font-semibold text-white bg-brand-blue px-5 py-2 rounded-full hover:opacity-90 transition-opacity") +
+                  ? "text-xs sm:text-sm font-semibold text-white border border-white/60 px-4 py-1.5 sm:px-5 sm:py-2 rounded-full hover:bg-white/10 transition-colors"
+                  : "text-xs sm:text-sm font-semibold text-white bg-brand-blue px-4 py-1.5 sm:px-5 sm:py-2 rounded-full hover:opacity-90 transition-opacity") +
                 " hidden md:inline-block"
               }
             >

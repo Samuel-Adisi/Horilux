@@ -31,6 +31,7 @@ export function LeadsPage() {
   const { values, page, set } = useUrlState(["search", "status", "unassigned"] as const);
   const [text, setText] = useSearchBox(values.search, (v) => set({ search: v }));
   const [creating, setCreating] = useState(false);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
   const unassigned = values.unassigned === "1";
   const q = useLeads({ page, search: values.search, status: values.status, unassigned });
   const rows = q.data?.results ?? [];
@@ -105,34 +106,71 @@ export function LeadsPage() {
               <TBody>
                 {rows.map((l) => {
                   const overdue = l.next_follow_up && isPast(l.next_follow_up) && !["closed", "lost"].includes(l.status);
+                  const isExpanded = expandedId === l.id;
+                  const lookingForLabel =
+                    l.property_interest_title ||
+                    [l.purpose === "rent" ? "Rent" : l.purpose === "buy" ? "Buy" : null, l.bedrooms_preference ? `${l.bedrooms_preference} bd` : null, l.location_preference]
+                      .filter(Boolean)
+                      .join(" · ") ||
+                    "—";
                   return (
-                    <TR key={l.id} onClick={() => navigate(`/leads/${l.id}`)}>
-                      <TD>
-                        <p className="font-semibold">{l.name}</p>
-                        <p className="text-xs text-ink-subtle">
-                          {l.phone}
-                          {l.source && ` · ${l.source}`}
-                        </p>
-                      </TD>
-                      <TD>
-                        <LeadStatus status={l.status} />
-                      </TD>
-                      <TD className="hidden max-w-[16rem] md:table-cell">
-                        <p className="truncate text-ink-muted">
-                          {[l.purpose === "rent" ? "Rent" : l.purpose === "buy" ? "Buy" : null, l.bedrooms_preference ? `${l.bedrooms_preference} bd` : null, l.location_preference]
-                            .filter(Boolean)
-                            .join(" · ") || "—"}
-                        </p>
-                        {l.budget && <p className="num text-xs text-ink-subtle">up to {formatMoney(l.budget, l.currency, { compact: true })}</p>}
-                      </TD>
-                      <TD className="hidden lg:table-cell">{l.assigned_agent_name ?? <Tag tone="warning">Unassigned</Tag>}</TD>
-                      <TD className={cn("hidden sm:table-cell", overdue ? "font-semibold text-danger" : "text-ink-muted")}>
-                        {l.next_follow_up ? `${formatDateShort(l.next_follow_up)}${overdue ? " · overdue" : ""}` : "—"}
-                      </TD>
-                      <TD align="right" className="hidden text-ink-subtle xl:table-cell">
-                        {formatRelative(l.created_at)}
-                      </TD>
-                    </TR>
+                    <>
+                      <TR
+                        key={l.id}
+                        onClick={() => {
+                          if (l.notes) {
+                            setExpandedId(isExpanded ? null : l.id);
+                          } else {
+                            navigate(`/leads/${l.id}`);
+                          }
+                        }}
+                      >
+                        <TD>
+                          <p className="font-semibold">{l.name}</p>
+                          <p className="text-xs text-ink-subtle">
+                            {l.phone}
+                            {l.source && ` · ${l.source}`}
+                          </p>
+                        </TD>
+                        <TD>
+                          <LeadStatus status={l.status} />
+                        </TD>
+                        <TD className="hidden max-w-[16rem] md:table-cell">
+                          <p className="truncate text-ink-muted">
+                            {l.property_interest_title && <span className="font-medium text-ink">{l.property_interest_title}</span>}
+                            {l.property_interest_title && (l.location_preference || l.purpose) ? " · " : ""}
+                            {!l.property_interest_title && lookingForLabel}
+                            {l.property_interest_title && l.location_preference}
+                          </p>
+                          {l.budget && <p className="num text-xs text-ink-subtle">up to {formatMoney(l.budget, l.currency, { compact: true })}</p>}
+                        </TD>
+                        <TD className="hidden lg:table-cell">{l.assigned_agent_name ?? <Tag tone="warning">Unassigned</Tag>}</TD>
+                        <TD className={cn("hidden sm:table-cell", overdue ? "font-semibold text-danger" : "text-ink-muted")}>
+                          {l.next_follow_up ? `${formatDateShort(l.next_follow_up)}${overdue ? " · overdue" : ""}` : "—"}
+                        </TD>
+                        <TD align="right" className="hidden text-ink-subtle xl:table-cell">
+                          {formatRelative(l.created_at)}
+                        </TD>
+                      </TR>
+                      {isExpanded && l.notes && (
+                        <tr key={`${l.id}-notes`} className="border-b border-line bg-surface-subtle">
+                          <td colSpan={6} className="px-4 py-3">
+                            <p className="text-xs uppercase tracking-wide text-ink-subtle mb-1">Message</p>
+                            <p className="whitespace-pre-line text-sm text-ink-muted">{l.notes}</p>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                navigate(`/leads/${l.id}`);
+                              }}
+                              className="mt-2 text-xs font-semibold text-brand hover:underline"
+                            >
+                              Open full lead →
+                            </button>
+                          </td>
+                        </tr>
+                      )}
+                    </>
                   );
                 })}
               </TBody>

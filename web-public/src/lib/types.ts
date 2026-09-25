@@ -27,6 +27,7 @@ export interface PropertyDetail extends PropertyListItem {
   address: string;
   description?: string;
   media: PropertyMediaItem[];
+  amenities: string[];
 }
 
 export interface PaginatedResponse<T> {

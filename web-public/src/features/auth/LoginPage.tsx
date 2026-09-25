@@ -27,7 +27,7 @@ export default function LoginPage() {
           <p className="text-white/80 uppercase tracking-[0.3em] text-xs md:text-sm mb-4">
             Welcome back
           </p>
-          <h1 className="font-serif text-3xl sm:text-4xl md:text-6xl text-white leading-tight uppercase">
+          <h1 className="font-serif text-2xl sm:text-4xl md:text-6xl text-white leading-tight uppercase">
             Sign In
           </h1>
         </div>
@@ -70,7 +70,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={login.isPending}
-              className="w-full px-6 py-3 rounded-full bg-brand-blue text-white font-serif tracking-wider uppercase text-xs hover:bg-brand-blue/90 transition-colors disabled:opacity-50"
+              className="w-full px-5 py-2.5 sm:px-6 sm:py-3 rounded-full bg-brand-blue text-white font-serif tracking-wider uppercase text-[11px] sm:text-xs hover:bg-brand-blue/90 transition-colors disabled:opacity-50"
             >
               {login.isPending ? "Signing In..." : "Sign In"}
             </button>

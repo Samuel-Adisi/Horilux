@@ -33,7 +33,7 @@ export const LEAD_NEXT: Partial<Record<LeadStatus, LeadStatus>> = {
 
 export const LEAD_OPEN: LeadStatus[] = ["new", "contacted", "qualified", "property_matched", "viewing", "negotiation"];
 
-export const LEAD_SOURCES = ["Website", "Referral", "Walk-in", "Phone call", "WhatsApp", "Instagram", "Facebook", "Property portal", "Signboard", "Other"];
+export const LEAD_SOURCES = ["Website", "Contact Form", "Referral", "Walk-in", "Phone call", "WhatsApp", "Instagram", "Facebook", "Property portal", "Signboard", "Other"];
 
 export interface Lead {
   id: string;
@@ -47,6 +47,8 @@ export interface Lead {
   property_type_preference: string;
   bedrooms_preference: number | null;
   purpose: "buy" | "rent" | null;
+  property_interest: string | null;
+  property_interest_title: string | null;
   assigned_agent: string | null;
   assigned_agent_name: string | null;
   status: LeadStatus;

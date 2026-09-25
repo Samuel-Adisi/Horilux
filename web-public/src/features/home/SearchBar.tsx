@@ -16,7 +16,7 @@ const PRICE_RANGES = [
 ];
 
 const pillClass =
-  "w-full appearance-none rounded-full bg-white border border-black/5 shadow-sm px-4 sm:px-6 py-3 sm:py-3.5 pr-9 text-sm text-neutral-700 focus:outline-none focus:ring-2 focus:ring-brand-blue/30 transition-shadow hover:shadow-md cursor-pointer";
+  "w-full appearance-none rounded-full bg-white border border-black/5 shadow-sm px-4 sm:px-6 py-3 sm:py-3.5 pr-9 text-base sm:text-sm text-neutral-700 focus:outline-none focus:ring-2 focus:ring-brand-blue/30 transition-shadow hover:shadow-md cursor-pointer";
 
 function Chevron() {
   return (

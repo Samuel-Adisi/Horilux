@@ -29,7 +29,7 @@ export default function HomePage() {
           <p className="text-white/80 uppercase tracking-[0.3em] text-xs md:text-sm mb-4">
             Ghana&apos;s Premium Real Estate
           </p>
-          <h1 className="font-serif text-3xl sm:text-4xl md:text-6xl text-white leading-tight">
+          <h1 className="font-serif text-2xl sm:text-4xl md:text-6xl text-white leading-tight">
             Find Your Place Among Ghana&apos;s Finest Homes
           </h1>
         </div>
@@ -38,7 +38,7 @@ export default function HomePage() {
       {/* Intro + search */}
       <section className="bg-cream px-6 py-20">
         <div className="mx-auto max-w-4xl text-center">
-          <h2 className="font-serif text-3xl md:text-4xl tracking-[0.15em] uppercase text-brand-blue">
+          <h2 className="font-serif text-xl sm:text-2xl md:text-4xl tracking-[0.15em] uppercase text-brand-blue">
             Luxury Lives Here
           </h2>
           <p className="mt-6 text-neutral-600 leading-relaxed max-w-2xl mx-auto">
@@ -58,7 +58,7 @@ export default function HomePage() {
           <p className="text-xs uppercase tracking-[0.2em] text-brand-taupe font-semibold mb-2">
             Handpicked
           </p>
-          <h2 className="font-serif text-3xl md:text-4xl text-neutral-900">Featured Properties</h2>
+          <h2 className="font-serif text-xl sm:text-2xl md:text-4xl text-neutral-900">Featured Properties</h2>
         </div>
 
         {isLoading && <LoadingSpinner />}
@@ -99,7 +99,7 @@ export default function HomePage() {
           }}
         />
         <div className="relative z-10 max-w-3xl mx-auto text-center">
-          <h2 className="font-serif text-2xl md:text-3xl text-white uppercase tracking-[0.1em] mb-10">
+          <h2 className="font-serif text-xl sm:text-2xl md:text-3xl text-white uppercase tracking-[0.1em] mb-10">
             Keep Yourself Updated On The Latest Homes Available
           </h2>
 

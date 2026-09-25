@@ -1,10 +1,23 @@
 import { useRef, useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { useProperty, useProperties } from "@/features/listings/hooks/use-properties";
 import PropertyCard from "@/features/shared/PropertyCard";
 import LoadingSpinner from "@/components/shared/LoadingSpinner";
 import { useAuthStore } from "@/lib/auth-store";
-import { useCreateInquiry, useMyInquiries } from "@/features/account/hooks/use-account";
+import { api } from "@/lib/api";
+import { getAmenityIcon } from "./amenity-icons";
+import { BedDouble, Bath, Ruler, LandPlot, Tag, MapPin, Home } from "lucide-react";
+
+const FACT_ICONS: Record<string, typeof BedDouble> = {
+  "Bedrooms": BedDouble,
+  "Bathrooms": Bath,
+  "Floor Area": Ruler,
+  "Land Area": LandPlot,
+  "Property Type": Home,
+  "Listing Type": Tag,
+  "Region": MapPin,
+  "Status": Tag,
+};
 
 function formatPrice(price: string, currency: string) {
   const n = Number(price);
@@ -24,41 +37,58 @@ export default function PropertyDetailPage() {
   const carouselRef = useRef<HTMLDivElement>(null);
 
   const customer = useAuthStore((s) => s.customer);
-  const createInquiry = useCreateInquiry();
-  const { data: myInquiries } = useMyInquiries();
+  const isAuthed = !!customer;
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [country, setCountry] = useState("");
   const [message, setMessage] = useState("");
+  const [budget, setBudget] = useState("");
+  const [bedrooms, setBedrooms] = useState("");
+  const [sending, setSending] = useState(false);
+  const [inquiryError, setInquiryError] = useState<string | null>(null);
   const [inquirySuccess, setInquirySuccess] = useState(false);
 
   // Reset local inquiry UI state whenever the viewed property changes --
   // otherwise a success message from a previous property lingers, since
   // React Router reuses this component instance across /listings/:id navigations.
   useEffect(() => {
+    setName("");
+    setEmail("");
+    setPhone("");
+    setCountry("");
     setMessage("");
+    setBudget("");
+    setBedrooms("");
+    setInquiryError(null);
     setInquirySuccess(false);
   }, [id]);
 
-  const alreadyInquired = Boolean(
-    property &&
-      Array.isArray(myInquiries) &&
-      myInquiries.some((inq) => inq.property === property.id)
-  );
-
-  function handleInquirySubmit(e: React.FormEvent) {
+  async function handleInquirySubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!property) return;
-    createInquiry.mutate(
-      {
-        property: property.id,
+    setInquiryError(null);
+    setSending(true);
+    try {
+      await api.post("/public/contact/", {
+        name: isAuthed ? customer!.full_name : name,
+        email: isAuthed ? customer!.email : email,
+        phone: isAuthed ? customer!.phone : phone,
+        country: isAuthed ? "" : country,
         message,
-        requested_viewing: false,
-      },
-      {
-        onSuccess: () => {
-          setInquirySuccess(true);
-          setMessage("");
-        },
-      }
-    );
+        property: property.id,
+        budget: budget ? budget : null,
+        bedrooms_preference: bedrooms ? Number(bedrooms) : null,
+      });
+      setInquirySuccess(true);
+      setMessage("");
+      setBudget("");
+      setBedrooms("");
+    } catch {
+      setInquiryError("Something went wrong sending your message. Please try again.");
+    } finally {
+      setSending(false);
+    }
   }
 
   function scrollCarousel(direction: "left" | "right") {
@@ -124,7 +154,7 @@ export default function PropertyDetailPage() {
           <p className="text-white/80 uppercase tracking-[0.3em] text-xs md:text-sm mb-4">
             {property.region}
           </p>
-          <h1 className="font-serif text-3xl sm:text-4xl md:text-6xl text-white leading-tight uppercase">
+          <h1 className="font-serif text-2xl sm:text-4xl md:text-6xl text-white leading-tight uppercase">
             {property.title}
           </h1>
           <p className="mt-4 font-serif text-2xl md:text-3xl text-white">
@@ -141,9 +171,9 @@ export default function PropertyDetailPage() {
       </section>
 
       {/* 2 + 3. Description + property details */}
-      <section className="bg-white px-6 md:px-12 py-16 md:py-20">
-        <div className="mx-auto max-w-4xl">
-          <h2 className="font-serif text-2xl md:text-3xl uppercase tracking-wide text-brand-blue mb-8">
+      <section className="bg-white px-6 md:pl-12 md:pr-12 py-16 md:py-20">
+        <div className="mx-auto md:mx-0 max-w-4xl">
+          <h2 className="font-serif text-xl sm:text-2xl md:text-3xl uppercase tracking-wide text-brand-blue mb-8">
             {property.title}
           </h2>
           {property.description ? (
@@ -158,53 +188,118 @@ export default function PropertyDetailPage() {
           )}
         </div>
 
-        <div className="mx-auto max-w-5xl mt-16">
-          <h3 className="font-serif text-xl md:text-2xl uppercase tracking-wide text-brand-blue text-center mb-10">
+        <div className="mx-auto md:mx-0 max-w-5xl mt-16">
+          <h3 className="font-serif text-lg sm:text-xl md:text-2xl uppercase tracking-wide text-brand-blue text-center md:text-left mb-10">
             Property Details
           </h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-6 gap-y-8">
-            {facts.map((fact) => (
-              <div key={fact.label}>
-                <p className="text-xs uppercase tracking-widest text-brand-taupe font-semibold mb-1">
-                  {fact.label}
-                </p>
-                <p className="text-neutral-700">{fact.value}</p>
-              </div>
-            ))}
+            {facts.map((fact) => {
+              const Icon = FACT_ICONS[fact.label];
+              return (
+                <div key={fact.label} className="flex items-start gap-3">
+                  {Icon && <Icon className="mt-0.5 h-4 w-4 shrink-0 text-neutral-900" strokeWidth={1.75} />}
+                  <div>
+                    <p className="text-xs uppercase tracking-widest text-brand-taupe font-semibold mb-1">
+                      {fact.label}
+                    </p>
+                    <p className="text-neutral-700">{fact.value}</p>
+                  </div>
+                </div>
+              );
+            })}
           </div>
+
+          {property.amenities && property.amenities.length > 0 && (
+            <div className="mt-16">
+              <h3 className="font-serif text-xl md:text-2xl uppercase tracking-wide text-brand-blue text-center md:text-left mb-10">
+                Amenities
+              </h3>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-6 gap-y-6">
+                {property.amenities.map((amenity) => {
+                  const Icon = getAmenityIcon(amenity);
+                  return (
+                    <div key={amenity} className="flex items-center gap-3">
+                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-neutral-100 text-neutral-900">
+                        <Icon className="h-3.5 w-3.5" strokeWidth={1.75} />
+                      </span>
+                      <span className="text-sm text-neutral-700">{amenity}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
       </section>
 
       {/* 3.5 Inquiry / contact this property */}
       <section className="bg-white px-6 md:px-12 py-16 md:py-20 border-t border-neutral-100">
         <div className="mx-auto max-w-2xl">
-          <h3 className="font-serif text-xl md:text-2xl uppercase tracking-wide text-brand-blue text-center mb-8">
+          <h3 className="font-serif text-lg sm:text-xl md:text-2xl uppercase tracking-wide text-brand-blue text-center mb-8">
             Interested in this property?
           </h3>
-          {!customer ? (
-            <div className="text-center text-neutral-600">
-              <p className="mb-4">Sign in to contact us about this property.</p>
-              <div className="flex items-center justify-center gap-4">
-                <Link
-                  to="/login"
-                  className="px-6 py-3 rounded-full bg-brand-blue text-white font-serif tracking-wider uppercase text-xs hover:bg-brand-blue/90 transition-colors"
-                >
-                  Sign In
-                </Link>
-                <Link
-                  to="/register"
-                  className="px-6 py-3 rounded-full border border-brand-blue text-brand-blue font-serif tracking-wider uppercase text-xs hover:bg-brand-blue/5 transition-colors"
-                >
-                  Register
-                </Link>
-              </div>
-            </div>
-          ) : inquirySuccess || alreadyInquired ? (
+          {inquirySuccess ? (
             <p className="text-center text-green-600 font-medium">
-              You&apos;ve already sent an inquiry for this property. We will be in touch shortly.
+              Thank you &mdash; we will be in touch shortly about this property.
             </p>
           ) : (
-            <form onSubmit={handleInquirySubmit} className="space-y-5">
+            <form onSubmit={handleInquirySubmit} className="space-y-4">
+              {!isAuthed && (
+                <>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <input
+                      type="text"
+                      required
+                      placeholder="Name*"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      className="w-full border border-neutral-300 px-4 py-3 text-sm focus:outline-none focus:border-brand-blue"
+                    />
+                    <input
+                      type="email"
+                      required
+                      placeholder="Email*"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="w-full border border-neutral-300 px-4 py-3 text-sm focus:outline-none focus:border-brand-blue"
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <input
+                      type="tel"
+                      placeholder="Phone number"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      className="w-full border border-neutral-300 px-4 py-3 text-sm focus:outline-none focus:border-brand-blue"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Country of origin"
+                      value={country}
+                      onChange={(e) => setCountry(e.target.value)}
+                      className="w-full border border-neutral-300 px-4 py-3 text-sm focus:outline-none focus:border-brand-blue"
+                    />
+                  </div>
+                </>
+              )}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <input
+                  type="number"
+                  min={0}
+                  placeholder="Your budget (optional)"
+                  value={budget}
+                  onChange={(e) => setBudget(e.target.value)}
+                  className="w-full border border-neutral-300 px-4 py-3 text-sm focus:outline-none focus:border-brand-blue"
+                />
+                <input
+                  type="number"
+                  min={0}
+                  placeholder="Bedrooms wanted (optional)"
+                  value={bedrooms}
+                  onChange={(e) => setBedrooms(e.target.value)}
+                  className="w-full border border-neutral-300 px-4 py-3 text-sm focus:outline-none focus:border-brand-blue"
+                />
+              </div>
               <textarea
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
@@ -213,17 +308,15 @@ export default function PropertyDetailPage() {
                 placeholder="Tell us what you'd like to know about this property..."
                 className="w-full border border-neutral-300 px-4 py-3 text-sm focus:outline-none focus:border-brand-blue"
               />
-              {createInquiry.isError && (
-                <p className="text-sm text-red-600">
-                  Something went wrong sending your message. Please try again.
-                </p>
+              {inquiryError && (
+                <p className="text-sm text-red-600">{inquiryError}</p>
               )}
               <button
                 type="submit"
-                disabled={createInquiry.isPending}
-                className="w-full px-6 py-3 rounded-full bg-brand-blue text-white font-serif tracking-wider uppercase text-xs hover:bg-brand-blue/90 transition-colors disabled:opacity-50"
+                disabled={sending}
+                className="w-full px-5 py-2.5 sm:px-6 sm:py-3 rounded-full bg-brand-blue text-white font-serif tracking-wider uppercase text-[11px] sm:text-xs hover:bg-brand-blue/90 transition-colors disabled:opacity-50"
               >
-                {createInquiry.isPending ? "Sending..." : "Send Message"}
+                {sending ? "Sending..." : "Send Message"}
               </button>
             </form>
           )}
@@ -275,8 +368,8 @@ export default function PropertyDetailPage() {
       {/* 5. Video reference */}
       {videos.length > 0 && (
         <section className="bg-white py-16 md:py-20 px-6">
-          <div className="mx-auto max-w-4xl">
-            <h3 className="font-serif text-xl md:text-2xl uppercase tracking-wide text-brand-blue text-center mb-10">
+          <div className="mx-auto md:mx-0 max-w-4xl">
+            <h3 className="font-serif text-lg sm:text-xl md:text-2xl uppercase tracking-wide text-brand-blue text-center mb-10">
               Video Tour
             </h3>
             <video
@@ -292,7 +385,7 @@ export default function PropertyDetailPage() {
       {related.length > 0 && (
         <section className="bg-cream py-16 md:py-20">
           <div className="text-center mb-10 px-6">
-            <h3 className="font-serif text-2xl md:text-3xl text-neutral-900 uppercase tracking-wide">
+            <h3 className="font-serif text-xl sm:text-2xl md:text-3xl text-neutral-900 uppercase tracking-wide">
               You May Also Like
             </h3>
           </div>

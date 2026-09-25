@@ -43,7 +43,7 @@ export default function AboutPage() {
           <p className="text-xs sm:text-sm font-semibold uppercase tracking-[0.2em] text-white/60">
             About Horilux
           </p>
-          <h1 className="mt-4 max-w-3xl text-3xl sm:text-4xl md:text-6xl font-bold leading-tight">
+          <h1 className="mt-4 max-w-3xl text-2xl sm:text-4xl md:text-6xl font-bold leading-tight">
             A Real Estate Operating System, built from the ground up.
           </h1>
           <p className="mt-6 max-w-2xl text-base sm:text-lg text-white/80">
@@ -73,7 +73,7 @@ export default function AboutPage() {
       <section className="mx-auto max-w-7xl px-6 py-16 sm:py-24">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-16">
           <div>
-            <h2 className="text-2xl sm:text-3xl font-bold text-neutral-900">
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-neutral-900">
               Why we built this
             </h2>
           </div>
@@ -105,7 +105,7 @@ export default function AboutPage() {
       {/* Pillars */}
       <section className="bg-neutral-50 border-y border-neutral-200">
         <div className="mx-auto max-w-7xl px-6 py-16 sm:py-24">
-          <h2 className="text-2xl sm:text-3xl font-bold text-neutral-900 max-w-xl">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-neutral-900 max-w-xl">
             What makes Horilux different
           </h2>
           <div className="mt-10 sm:mt-12 grid grid-cols-1 sm:grid-cols-2 gap-8 sm:gap-10">
@@ -132,7 +132,7 @@ export default function AboutPage() {
       <section className="bg-[#003E03] text-white">
         <div className="mx-auto max-w-7xl px-6 py-16 sm:py-20 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
           <div>
-            <h2 className="text-2xl sm:text-3xl font-bold">
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold">
               Looking for a property, or a partner?
             </h2>
             <p className="mt-2 text-white/80 max-w-xl">
@@ -144,13 +144,13 @@ export default function AboutPage() {
           <div className="flex flex-col sm:flex-row gap-3 shrink-0">
             <a
               href="/listings"
-              className="inline-flex items-center justify-center rounded-full bg-white px-6 py-3 text-sm font-semibold text-[#003E03] hover:bg-white/90 transition"
+              className="inline-flex items-center justify-center rounded-full bg-white px-5 py-2.5 sm:px-6 sm:py-3 text-xs sm:text-sm font-semibold text-[#003E03] hover:bg-white/90 transition"
             >
               View Listings
             </a>
             <a
               href="/contact"
-              className="inline-flex items-center justify-center rounded-full border border-white/40 px-6 py-3 text-sm font-semibold text-white hover:bg-white/10 transition"
+              className="inline-flex items-center justify-center rounded-full border border-white/40 px-5 py-2.5 sm:px-6 sm:py-3 text-xs sm:text-sm font-semibold text-white hover:bg-white/10 transition"
             >
               Contact Us
             </a>
