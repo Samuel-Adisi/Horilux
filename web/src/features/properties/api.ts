@@ -276,7 +276,8 @@ export function useDeleteProperty() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      await apiClient.delete(`/properties/${id}/`);
+      const res = await apiClient.delete(`/properties/${id}/`);
+      return res.data as { detail?: string; archived?: boolean } | null;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: propertyKeys.all }),
   });

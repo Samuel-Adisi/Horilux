@@ -8,10 +8,11 @@ export default function Header() {
   const { pathname } = useLocation();
   const isHome = pathname === "/" || pathname.startsWith("/listings") || pathname === "/about" || pathname === "/login" || pathname === "/register";
   const [menuOpen, setMenuOpen] = useState(false);
+  const [propertiesOpen, setPropertiesOpen] = useState(false);
 
   const mobileNavLinks = [
     { to: "/", label: "Home", end: true },
-    { to: "/listings", label: "Listings", end: false },
+    { to: "/listings", label: "Properties", end: false },
     { to: "/about", label: "About", end: false },
     { to: "/contact", label: "Contact", end: false },
   ];
@@ -71,7 +72,20 @@ export default function Header() {
 
         <nav className="hidden md:flex items-center gap-8">
           <NavLink to="/" end className={navLinkClass}>Home</NavLink>
-          <NavLink to="/listings" className={navLinkClass}>Listings</NavLink>
+          <div className="relative" onMouseEnter={() => setPropertiesOpen(true)} onMouseLeave={() => setPropertiesOpen(false)}>
+            <NavLink to="/listings" className={navLinkClass}>Properties</NavLink>
+            <div
+              className={`absolute top-full left-0 pt-3 w-48 z-50 transition-all duration-200 ease-out ${
+                propertiesOpen ? "opacity-100 translate-y-0 visible" : "opacity-0 -translate-y-1 invisible pointer-events-none"
+              }`}
+            >
+              <div className="bg-white rounded-md shadow-lg border border-neutral-100 py-2">
+                <Link to="/listings" onClick={() => setPropertiesOpen(false)} className="block px-4 py-2 text-sm text-neutral-700 hover:bg-[#F4EFE6] hover:text-brand-blue transition-colors">All Properties</Link>
+                <Link to="/listings?listing_type=rent" onClick={() => setPropertiesOpen(false)} className="block px-4 py-2 text-sm text-neutral-700 hover:bg-[#F4EFE6] hover:text-brand-blue transition-colors">For Rent</Link>
+                <Link to="/listings?listing_type=sale" onClick={() => setPropertiesOpen(false)} className="block px-4 py-2 text-sm text-neutral-700 hover:bg-[#F4EFE6] hover:text-brand-blue transition-colors">For Sale</Link>
+              </div>
+            </div>
+          </div>
           <NavLink to="/about" className={navLinkClass}>About</NavLink>
           <NavLink to="/contact" className={navLinkClass}>Contact</NavLink>
         </nav>
@@ -148,6 +162,11 @@ export default function Header() {
                 {link.label}
               </NavLink>
             ))}
+            <div className="flex gap-5 px-4 pb-4 -mt-1">
+              <Link to="/listings" onClick={() => setMenuOpen(false)} className="text-xs uppercase tracking-[0.15em] text-brand-blue/60 hover:text-brand-blue">All</Link>
+              <Link to="/listings?listing_type=rent" onClick={() => setMenuOpen(false)} className="text-xs uppercase tracking-[0.15em] text-brand-blue/60 hover:text-brand-blue">Rent</Link>
+              <Link to="/listings?listing_type=sale" onClick={() => setMenuOpen(false)} className="text-xs uppercase tracking-[0.15em] text-brand-blue/60 hover:text-brand-blue">Sale</Link>
+            </div>
             <div className="my-1 border-t border-neutral-100" />
             {customer ? (
               <NavLink

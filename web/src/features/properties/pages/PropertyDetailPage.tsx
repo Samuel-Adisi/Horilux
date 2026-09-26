@@ -189,9 +189,14 @@ function PropertyView({ property: p }: { property: PropertyDetail }) {
 
   async function remove() {
     try {
-      await del.mutateAsync(p.id);
-      toast.success("Property deleted");
-      navigate("/properties", { replace: true });
+      const result = await del.mutateAsync(p.id);
+      if (result?.archived) {
+        toast.success("Property archived", result.detail ?? "This property has linked transactions, so it was archived instead of deleted.");
+        setConfirmDelete(false);
+      } else {
+        toast.success("Property deleted");
+        navigate("/properties", { replace: true });
+      }
     } catch (err) {
       toast.error("Couldn't delete", getErrorMessage(err));
       setConfirmDelete(false);
@@ -373,7 +378,7 @@ function PropertyView({ property: p }: { property: PropertyDetail }) {
         onClose={() => setConfirmDelete(false)}
         onConfirm={remove}
         title="Delete this property?"
-        description="This removes the listing, its photos and documents for good. Listings tied to transactions can't be deleted — archive them instead."
+        description="This removes the listing, its photos and documents for good. Listings tied to transactions will be archived instead of deleted."
         confirmLabel="Delete"
         tone="danger"
         loading={del.isPending}

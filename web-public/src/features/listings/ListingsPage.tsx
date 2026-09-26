@@ -31,6 +31,8 @@ export default function ListingsPage() {
     if (bathrooms) f.bathrooms = Number(bathrooms);
     const search = searchParams.get("search");
     if (search) f.search = search;
+    const listingType = searchParams.get("listing_type");
+    if (listingType === "sale" || listingType === "rent") f.listing_type = listingType;
     return f;
   }, [searchParams]);
 
