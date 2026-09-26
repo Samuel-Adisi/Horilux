@@ -12,7 +12,6 @@ export default function Header() {
 
   const mobileNavLinks = [
     { to: "/", label: "Home", end: true },
-    { to: "/listings", label: "Properties", end: false },
     { to: "/about", label: "About", end: false },
     { to: "/contact", label: "Contact", end: false },
   ];
@@ -118,7 +117,10 @@ export default function Header() {
           )}
           <button
             type="button"
-            onClick={() => setMenuOpen((v) => !v)}
+            onClick={() => {
+              setMenuOpen((v) => !v);
+              setPropertiesOpen(false);
+            }}
             aria-label={menuOpen ? "Close menu" : "Open menu"}
             aria-expanded={menuOpen}
             className={`md:hidden flex flex-col justify-center items-center gap-1.5 w-9 h-9 shrink-0 ${
@@ -147,7 +149,45 @@ export default function Header() {
       {menuOpen && (
         <div className="md:hidden absolute top-full left-0 w-full bg-white shadow-2xl">
           <nav className="flex flex-col px-8 py-2">
-            {mobileNavLinks.map((link) => (
+            <NavLink
+              to="/"
+              end
+              onClick={() => setMenuOpen(false)}
+              className={({ isActive }) =>
+                `-mx-4 px-4 py-5 text-[15px] uppercase tracking-[0.15em] font-medium rounded-md transition-colors ${
+                  isActive ? "bg-[#F4EFE6] text-brand-blue" : "text-brand-blue/90 hover:bg-[#F4EFE6]"
+                }`
+              }
+            >
+              Home
+            </NavLink>
+
+            <button
+              type="button"
+              onClick={() => setPropertiesOpen((v) => !v)}
+              aria-expanded={propertiesOpen}
+              className="-mx-4 px-4 py-5 flex items-center justify-between text-[15px] uppercase tracking-[0.15em] font-medium rounded-md transition-colors text-brand-blue/90 hover:bg-[#F4EFE6]"
+            >
+              Properties
+              <svg
+                className={`h-4 w-4 transition-transform ${propertiesOpen ? "rotate-180" : ""}`}
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            {propertiesOpen && (
+              <div className="flex flex-col pl-4 pb-2">
+                <Link to="/listings" onClick={() => setMenuOpen(false)} className="px-4 py-3 text-sm uppercase tracking-[0.1em] text-brand-blue/70 hover:text-brand-blue">All Properties</Link>
+                <Link to="/listings?listing_type=rent" onClick={() => setMenuOpen(false)} className="px-4 py-3 text-sm uppercase tracking-[0.1em] text-brand-blue/70 hover:text-brand-blue">For Rent</Link>
+                <Link to="/listings?listing_type=sale" onClick={() => setMenuOpen(false)} className="px-4 py-3 text-sm uppercase tracking-[0.1em] text-brand-blue/70 hover:text-brand-blue">For Sale</Link>
+              </div>
+            )}
+
+            {mobileNavLinks.slice(1).map((link) => (
               <NavLink
                 key={link.to}
                 to={link.to}
@@ -162,11 +202,6 @@ export default function Header() {
                 {link.label}
               </NavLink>
             ))}
-            <div className="flex gap-5 px-4 pb-4 -mt-1">
-              <Link to="/listings" onClick={() => setMenuOpen(false)} className="text-xs uppercase tracking-[0.15em] text-brand-blue/60 hover:text-brand-blue">All</Link>
-              <Link to="/listings?listing_type=rent" onClick={() => setMenuOpen(false)} className="text-xs uppercase tracking-[0.15em] text-brand-blue/60 hover:text-brand-blue">Rent</Link>
-              <Link to="/listings?listing_type=sale" onClick={() => setMenuOpen(false)} className="text-xs uppercase tracking-[0.15em] text-brand-blue/60 hover:text-brand-blue">Sale</Link>
-            </div>
             <div className="my-1 border-t border-neutral-100" />
             {customer ? (
               <NavLink

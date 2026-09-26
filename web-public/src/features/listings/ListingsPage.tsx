@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useProperties } from "./hooks/use-properties";
 import type { PropertyFilters } from "./api/properties";
 import type { PropertyListItem } from "@/lib/types";
@@ -7,55 +7,6 @@ import PropertyCard from "@/features/shared/PropertyCard";
 import SearchBar from "@/features/home/SearchBar";
 import LoadingSpinner from "@/components/shared/LoadingSpinner";
 import logo from "@/assets/logo.png";
-
-const SECTION_PREVIEW_COUNT = 4;
-
-function PropertySection({
-  title,
-  filters,
-  viewAllHref,
-}: {
-  title: string;
-  filters: PropertyFilters;
-  viewAllHref: string;
-}) {
-  const { data, isLoading } = useProperties({
-    ...filters,
-    page: 1,
-    staleTime: 2 * 60_000,
-    gcTime: 5 * 60_000,
-  });
-
-  const items = (data?.results ?? []).slice(0, SECTION_PREVIEW_COUNT);
-
-  if (!isLoading && items.length === 0) return null;
-
-  return (
-    <div className="mb-16 px-6 md:px-0">
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="font-serif text-lg sm:text-xl md:text-2xl uppercase tracking-[0.15em] text-brand-blue">
-          {title}
-        </h3>
-        <Link
-          to={viewAllHref}
-          className="text-xs sm:text-sm uppercase tracking-wider text-neutral-600 hover:text-brand-blue transition-colors whitespace-nowrap ml-4"
-        >
-          View all
-        </Link>
-      </div>
-
-      {isLoading ? (
-        <LoadingSpinner />
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {items.map((property) => (
-            <PropertyCard key={property.id} property={property} size="lg" />
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
 
 export default function ListingsPage() {
   const [searchParams] = useSearchParams();
@@ -87,7 +38,6 @@ export default function ListingsPage() {
   }, [searchParams]);
 
   const filtersKey = JSON.stringify(filters);
-  const hasActiveFilters = Object.keys(filters).length > 1;
 
   const [page, setPage] = useState(1);
   const [items, setItems] = useState<PropertyListItem[]>([]);
@@ -155,30 +105,7 @@ export default function ListingsPage() {
         </div>
       </section>
 
-      {!hasActiveFilters ? (
-        <section className="bg-cream pb-20 pt-4 max-w-6xl mx-auto">
-          <PropertySection
-            title="For Rent"
-            filters={{ ordering: "-published_at", listing_type: "rent" }}
-            viewAllHref="/listings?listing_type=rent"
-          />
-          <PropertySection
-            title="For Sale"
-            filters={{ ordering: "-published_at", listing_type: "sale" }}
-            viewAllHref="/listings?listing_type=sale"
-          />
-          <PropertySection
-            title="Residential"
-            filters={{ ordering: "-published_at", property_type: "residential" }}
-            viewAllHref="/listings?property_type=residential"
-          />
-          <PropertySection
-            title="Commercial"
-            filters={{ ordering: "-published_at", property_type: "commercial" }}
-            viewAllHref="/listings?property_type=commercial"
-          />
-        </section>
-      ) : (
+      {
         <section className="bg-cream pb-20">
           {showInitialLoading && <LoadingSpinner />}
 
@@ -235,7 +162,7 @@ export default function ListingsPage() {
             )
           )}
         </section>
-      )}
+      }
     </div>
   );
 }
