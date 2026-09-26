@@ -3,6 +3,7 @@ from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, generics, filters, status, permissions
 from rest_framework.decorators import action
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -22,10 +23,16 @@ from .serializers import (
 from .models import Customer, SavedProperty, PropertyInquiry, ContactSubmission
 
 
+class PublicPropertyPagination(PageNumberPagination):
+    """Fixed page size for the public listings grid (2-col layout wants an even count)."""
+    page_size = 26
+
+
 class PublicPropertyViewSet(viewsets.ReadOnlyModelViewSet):
     """No auth required — only marketable-status properties, no RBAC scoping."""
     permission_classes = [permissions.AllowAny]
     authentication_classes = []
+    pagination_class = PublicPropertyPagination
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ["region", "property_type", "listing_type", "bedrooms", "bathrooms"]
     search_fields = ["title", "region", "description"]
