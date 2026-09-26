@@ -4,6 +4,8 @@ import { useProperty, useProperties } from "@/features/listings/hooks/use-proper
 import PropertyCard from "@/features/shared/PropertyCard";
 import LoadingSpinner from "@/components/shared/LoadingSpinner";
 import { useAuthStore } from "@/lib/auth-store";
+import { useToggleSavedProperty } from "@/features/favorites/hooks/use-saved-properties";
+import { Heart } from "lucide-react";
 import { api } from "@/lib/api";
 import { getAmenityIcon } from "./amenity-icons";
 import { BedDouble, Bath, Ruler, LandPlot, Tag, MapPin, Home } from "lucide-react";
@@ -38,6 +40,7 @@ export default function PropertyDetailPage() {
 
   const customer = useAuthStore((s) => s.customer);
   const isAuthed = !!customer;
+  const { isSaved, toggle: toggleSaved, isPending: savePending } = useToggleSavedProperty();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -168,6 +171,20 @@ export default function PropertyDetailPage() {
           </div>
         </div>
 
+        {customer && (
+          <button
+            type="button"
+            onClick={() => !savePending && toggleSaved(property.id)}
+            aria-label={isSaved(property.id) ? "Remove from favorites" : "Add to favorites"}
+            disabled={savePending}
+            className="absolute top-6 right-6 md:top-10 md:right-12 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-black/30 backdrop-blur-sm hover:bg-black/50 transition-colors disabled:opacity-60"
+          >
+            <Heart
+              className={`h-5 w-5 transition-colors ${isSaved(property.id) ? "fill-pink-500 text-pink-500" : "text-white"}`}
+              strokeWidth={1.75}
+            />
+          </button>
+        )}
       </section>
 
       {/* 2 + 3. Description + property details */}

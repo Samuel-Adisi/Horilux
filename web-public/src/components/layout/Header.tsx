@@ -6,7 +6,7 @@ import logo from "@/assets/logo.png";
 export default function Header() {
   const customer = useAuthStore((s) => s.customer);
   const { pathname } = useLocation();
-  const isHome = pathname === "/" || pathname.startsWith("/listings") || pathname === "/about" || pathname === "/login" || pathname === "/register";
+  const isHome = pathname === "/" || pathname.startsWith("/listings") || pathname === "/about" || pathname === "/login" || pathname === "/register" || pathname === "/favorites";
   const [menuOpen, setMenuOpen] = useState(false);
   const [propertiesOpen, setPropertiesOpen] = useState(false);
 
@@ -91,17 +91,27 @@ export default function Header() {
 
         <div className="flex items-center gap-3 md:gap-4 shrink-0">
           {customer ? (
-            <Link
-              to="/account"
-              className={
-                (isHome
-                  ? "text-xs sm:text-sm font-semibold text-white border border-white/60 px-4 py-1.5 sm:px-5 sm:py-2 rounded-full hover:bg-white/10 transition-colors"
-                  : "text-xs sm:text-sm font-semibold text-white bg-brand-blue px-4 py-1.5 sm:px-5 sm:py-2 rounded-full hover:opacity-90 transition-opacity") +
-                " hidden md:inline-block"
-              }
-            >
-              {customer.first_name || "Account"}
-            </Link>
+            <>
+              <Link
+                to="/favorites"
+                className={`hidden md:inline-block text-sm uppercase tracking-wide transition-colors ${
+                  isHome ? "text-white/75 hover:text-white" : "text-neutral-600 hover:text-brand-blue"
+                }`}
+              >
+                Favorites
+              </Link>
+              <Link
+                to="/account"
+                className={
+                  (isHome
+                    ? "text-xs sm:text-sm font-semibold text-white border border-white/60 px-4 py-1.5 sm:px-5 sm:py-2 rounded-full hover:bg-white/10 transition-colors"
+                    : "text-xs sm:text-sm font-semibold text-white bg-brand-blue px-4 py-1.5 sm:px-5 sm:py-2 rounded-full hover:opacity-90 transition-opacity") +
+                  " hidden md:inline-block"
+                }
+              >
+                {customer.first_name || "Account"}
+              </Link>
+            </>
           ) : (
             <Link
               to="/login"
@@ -204,17 +214,30 @@ export default function Header() {
             ))}
             <div className="my-1 border-t border-neutral-100" />
             {customer ? (
-              <NavLink
-                to="/account"
-                onClick={() => setMenuOpen(false)}
-                className={({ isActive }) =>
-                  `-mx-4 px-4 py-5 text-[15px] uppercase tracking-[0.15em] font-medium rounded-md transition-colors ${
-                    isActive ? "bg-[#F4EFE6] text-brand-blue" : "text-brand-blue/90 hover:bg-[#F4EFE6]"
-                  }`
-                }
-              >
-                {customer.first_name || "My Account"}
-              </NavLink>
+              <>
+                <NavLink
+                  to="/favorites"
+                  onClick={() => setMenuOpen(false)}
+                  className={({ isActive }) =>
+                    `-mx-4 px-4 py-5 text-[15px] uppercase tracking-[0.15em] font-medium rounded-md transition-colors ${
+                      isActive ? "bg-[#F4EFE6] text-brand-blue" : "text-brand-blue/90 hover:bg-[#F4EFE6]"
+                    }`
+                  }
+                >
+                  Favorites
+                </NavLink>
+                <NavLink
+                  to="/account"
+                  onClick={() => setMenuOpen(false)}
+                  className={({ isActive }) =>
+                    `-mx-4 px-4 py-5 text-[15px] uppercase tracking-[0.15em] font-medium rounded-md transition-colors ${
+                      isActive ? "bg-[#F4EFE6] text-brand-blue" : "text-brand-blue/90 hover:bg-[#F4EFE6]"
+                    }`
+                  }
+                >
+                  {customer.first_name || "My Account"}
+                </NavLink>
+              </>
             ) : (
               <NavLink
                 to="/login"

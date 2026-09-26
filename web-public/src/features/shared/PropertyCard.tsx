@@ -1,6 +1,9 @@
 import { Link } from "react-router-dom";
 import { useState } from "react";
+import { Heart } from "lucide-react";
 import type { PropertyListItem } from "@/lib/types";
+import { useAuthStore } from "@/lib/auth-store";
+import { useToggleSavedProperty } from "@/features/favorites/hooks/use-saved-properties";
 
 function formatPrice(price: string, currency: string) {
   const n = Number(price);
@@ -19,6 +22,17 @@ export default function PropertyCard({
   const aspect = size === "lg" ? "aspect-[4/3] sm:aspect-[16/9]" : "aspect-[4/3]";
   const titleClass = size === "lg" ? "text-lg sm:text-xl md:text-2xl" : "text-lg";
   const priceClass = size === "lg" ? "text-lg sm:text-xl md:text-2xl" : "text-xl";
+
+  const customer = useAuthStore((s) => s.customer);
+  const { isSaved, toggle, isPending } = useToggleSavedProperty();
+  const saved = !!isSaved(property.id);
+
+  function handleToggleSave(e: React.MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!customer || isPending) return;
+    toggle(property.id);
+  }
 
   return (
     <Link
@@ -51,6 +65,21 @@ export default function PropertyCard({
 
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent transition-opacity duration-300" />
       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors duration-300" />
+
+      {customer && (
+        <button
+          type="button"
+          onClick={handleToggleSave}
+          aria-label={saved ? "Remove from favorites" : "Add to favorites"}
+          disabled={isPending}
+          className="absolute top-3 left-3 sm:top-4 sm:left-4 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-black/30 backdrop-blur-sm hover:bg-black/50 transition-colors disabled:opacity-60"
+        >
+          <Heart
+            className={`h-4 w-4 transition-colors ${saved ? "fill-pink-500 text-pink-500" : "text-white"}`}
+            strokeWidth={1.75}
+          />
+        </button>
+      )}
 
       {(property.bedrooms != null || property.bathrooms != null) && (
         <div className="absolute top-3 right-3 sm:top-4 sm:right-4 rounded-full bg-black/30 backdrop-blur-sm px-3 py-1 text-xs text-white/90 whitespace-nowrap">

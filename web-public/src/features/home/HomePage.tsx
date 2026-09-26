@@ -23,7 +23,7 @@ export default function HomePage() {
           className="absolute inset-0 bg-cover bg-center"
           style={{
             backgroundImage:
-              "linear-gradient(to top, rgba(10,10,20,0.75), rgba(10,10,20,0.15)), url('https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=2000&auto=format&fit=crop')",
+              "linear-gradient(to top, rgba(10,10,20,0.75), rgba(10,10,20,0.15)), url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2000&auto=format&fit=crop')",
           }}
         />
         <div className="relative z-10 max-w-3xl">
