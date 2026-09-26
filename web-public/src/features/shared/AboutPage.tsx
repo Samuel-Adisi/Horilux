@@ -1,37 +1,29 @@
-import { Building2, Home, ShieldCheck, Users2 } from "lucide-react";
+import { Target, Eye, Gem, Check, ShieldCheck, Home, Users2, FileCheck, Settings2 } from "lucide-react";
 
-const STATS = [
-  { value: "100+", label: "Properties Managed" },
-  { value: "6", label: "Departments, One Platform" },
-  { value: "100%", label: "GH₵-Native Workflow" },
-  { value: "24/7", label: "Real-Time Operations" },
-];
+const MVV = [
+  {
+    icon: Target,
+    title: "Our Mission",
+    body:
+      "To provide exceptional real estate services that create value, build wealth and make property ownership accessible and stress-free for our clients.",
+  },
+  {
+    icon: Eye,
+    title: "Our Vision",
+    body:
+      "To be Ghana's most trusted and respected real estate company, known for professionalism, innovation and lasting impact.",
+  },
+]
 
-const PILLARS = [
-  {
-    icon: Building2,
-    title: "Built for the Full Property Lifecycle",
-    body:
-      "From first listing to closed transaction, Horilux tracks every property, lead, viewing, and deal in one system — so nothing falls through the cracks between departments.",
-  },
-  {
-    icon: Users2,
-    title: "One Platform, Every Team",
-    body:
-      "Listing, Sales, Marketing, Finance, and Operations each work from role-based consoles built around how they actually work — not a generic dashboard bolted onto a spreadsheet.",
-  },
-  {
-    icon: ShieldCheck,
-    title: "Accountability by Design",
-    body:
-      "Every action is tied to a role and an audit trail. Leadership sees real activity across the business, not a summary someone compiled the night before.",
-  },
-  {
-    icon: Home,
-    title: "Made for the Ghanaian Market",
-    body:
-      "Pricing, workflows, and reporting run in Ghana Cedis from the ground up — built around how real estate actually moves in Accra and beyond, not adapted from a foreign template.",
-  },
+const VALUES = ["Trust", "Transparency", "Integrity", "Honesty", "Customer-Centric"];
+
+const WHY_CHOOSE = [
+  { icon: ShieldCheck, label: "Verified & vetted properties" },
+  { icon: Home, label: "Wide range of properties across Ghana" },
+  { icon: Users2, label: "Expert guidance and support" },
+  { icon: Settings2, label: "After-sales and property management" },
+  { icon: FileCheck, label: "Secure and transparent transactions" },
+  { icon: Users2, label: "A dedicated team that puts you first" },
 ];
 
 export default function AboutPage() {
@@ -44,84 +36,80 @@ export default function AboutPage() {
             About Horilux
           </p>
           <h1 className="mt-4 max-w-3xl text-2xl sm:text-4xl md:text-6xl font-bold leading-tight">
-            A Real Estate Operating System, built from the ground up.
+            More Than a Real Estate Company.
           </h1>
           <p className="mt-6 max-w-2xl text-base sm:text-lg text-white/80">
-            Horilux exists because real estate businesses don't run on listings alone.
-            They run on leads, viewings, contracts, finance, and follow-through — all
-            happening at once, across teams that rarely see the same picture. We built
-            Horilux to be that picture.
+            We are a team, a process and a platform — built to make real estate simpler, safer and more rewarding for everyone.
           </p>
         </div>
       </section>
 
-      {/* Stats strip */}
-      <section className="border-b border-neutral-200">
-        <div className="mx-auto max-w-7xl px-6 py-10 sm:py-12 grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8">
-          {STATS.map((stat) => (
-            <div key={stat.label}>
-              <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#240270]">
-                {stat.value}
-              </div>
-              <div className="mt-1 text-xs sm:text-sm text-neutral-500">{stat.label}</div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Story */}
+      {/* Our Story */}
       <section className="mx-auto max-w-7xl px-6 py-16 sm:py-24">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-16">
           <div>
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-neutral-900">
-              Why we built this
+            <p className="text-xs sm:text-sm font-semibold uppercase tracking-[0.2em] text-[#7A6D0C]">
+              Our Story
+            </p>
+            <h2 className="mt-3 text-xl sm:text-2xl md:text-3xl font-bold text-neutral-900">
+              Built on Vision. Driven by People.
             </h2>
           </div>
           <div className="md:col-span-2 space-y-5 text-neutral-600 text-base sm:text-lg leading-relaxed">
             <p>
-              Most real estate teams operate across a patchwork of spreadsheets, phone
-              calls, and disconnected tools — one for listings, another for leads,
-              a notebook for viewings, and finance finding out about a closed deal days
-              later. Horilux was built to close that gap.
+              Horilux Estates was founded with a simple belief: real estate should create opportunity, build wealth and improve lives. What started as a passion for property has grown into a professional real estate company focused on delivering exceptional service, trusted partnerships and long-term value.
             </p>
             <p>
-              We built Horilux as a complete operating system for real estate
-              businesses: a shared source of truth where Listing, Sales, Marketing,
-              Finance, and Operations all work from the same live data, with the roles,
-              permissions, and reporting that a real company — not a demo —
-              actually needs.
-            </p>
-            <p>
-              Every property, lead, viewing, and transaction on this platform runs
-              through the same system your team uses internally every day. This
-              website is the public front door to that operating system — the
-              same platform, the same data, built for the people looking for their
-              next home.
+              We exist to connect people with the right properties — whether you're buying, selling, renting or investing. And we do it with integrity, transparency and a deep understanding of the Ghanaian real estate market.
             </p>
           </div>
         </div>
       </section>
 
-      {/* Pillars */}
+      {/* Mission / Vision / Values */}
+      <section className="bg-[#240270] text-white">
+        <div className="mx-auto max-w-7xl px-6 py-16 sm:py-20 grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-12">
+          {MVV.map((item) => (
+            <div key={item.title}>
+              <item.icon className="h-7 w-7 text-[#7A6D0C]" strokeWidth={1.5} />
+              <h3 className="mt-4 text-lg sm:text-xl font-bold">{item.title}</h3>
+              <p className="mt-2 text-sm sm:text-base text-white/75 leading-relaxed">{item.body}</p>
+            </div>
+          ))}
+          <div>
+            <Gem className="h-7 w-7 text-[#7A6D0C]" strokeWidth={1.5} />
+            <h3 className="mt-4 text-lg sm:text-xl font-bold">Our Values</h3>
+            <ul className="mt-2 space-y-1.5">
+              {VALUES.map((value) => (
+                <li key={value} className="flex items-center gap-2 text-sm sm:text-base text-white/75">
+                  <Check className="h-4 w-4 shrink-0 text-[#7A6D0C]" />
+                  {value}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      {/* Why Choose Horilux */}
       <section className="bg-neutral-50 border-y border-neutral-200">
         <div className="mx-auto max-w-7xl px-6 py-16 sm:py-24">
-          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-neutral-900 max-w-xl">
-            What makes Horilux different
+          <p className="text-xs sm:text-sm font-semibold uppercase tracking-[0.2em] text-[#7A6D0C]">
+            Why Choose Horilux
+          </p>
+          <h2 className="mt-3 text-xl sm:text-2xl md:text-3xl font-bold text-neutral-900 max-w-xl">
+            A Better Real Estate Experience.
           </h2>
-          <div className="mt-10 sm:mt-12 grid grid-cols-1 sm:grid-cols-2 gap-8 sm:gap-10">
-            {PILLARS.map((pillar) => (
-              <div key={pillar.title} className="flex gap-4">
+          <p className="mt-4 max-w-2xl text-sm sm:text-base text-neutral-600 leading-relaxed">
+            We combine local expertise with a structured, professional approach to give you more than just a property — we give you peace of mind. From your first enquiry to final handover, our team is with you every step of the way.
+          </p>
+          <div className="mt-10 sm:mt-12 grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8">
+            {WHY_CHOOSE.map((item) => (
+              <div key={item.label} className="flex items-center gap-4">
                 <div className="shrink-0 flex h-11 w-11 items-center justify-center rounded-full bg-[#240270]/10 text-[#240270]">
-                  <pillar.icon className="h-5 w-5" />
+                  <item.icon className="h-5 w-5" />
                 </div>
-                <div>
-                  <h3 className="font-semibold text-neutral-900 text-base sm:text-lg">
-                    {pillar.title}
-                  </h3>
-                  <p className="mt-2 text-sm sm:text-base text-neutral-600 leading-relaxed">
-                    {pillar.body}
-                  </p>
-                </div>
+                <p className="text-sm sm:text-base text-neutral-700">{item.label}</p>
               </div>
             ))}
           </div>
@@ -132,13 +120,14 @@ export default function AboutPage() {
       <section className="bg-[#003E03] text-white">
         <div className="mx-auto max-w-7xl px-6 py-16 sm:py-20 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
           <div>
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold">
-              Looking for a property, or a partner?
+            <p className="text-xs sm:text-sm font-semibold uppercase tracking-[0.2em] text-white/60">
+              The Horilux Standard
+            </p>
+            <h2 className="mt-2 text-xl sm:text-2xl md:text-3xl font-bold">
+              Your Goals. Our Commitment.
             </h2>
             <p className="mt-2 text-white/80 max-w-xl">
-              Browse live listings, or reach out to our team directly — we're
-              building this platform in the open, one property and one client at a
-              time.
+              Whether you're looking for your dream home, a smart investment or a profitable rental, Horilux Estates is here to help you make the right move.
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-3 shrink-0">
@@ -146,13 +135,13 @@ export default function AboutPage() {
               href="/listings"
               className="inline-flex items-center justify-center rounded-full bg-white px-5 py-2.5 sm:px-6 sm:py-3 text-xs sm:text-sm font-semibold text-[#003E03] hover:bg-white/90 transition"
             >
-              View Listings
+              Explore Properties
             </a>
             <a
               href="/contact"
               className="inline-flex items-center justify-center rounded-full border border-white/40 px-5 py-2.5 sm:px-6 sm:py-3 text-xs sm:text-sm font-semibold text-white hover:bg-white/10 transition"
             >
-              Contact Us
+              Get in Touch
             </a>
           </div>
         </div>
@@ -160,3 +149,4 @@ export default function AboutPage() {
     </div>
   );
 }
+
