@@ -11,7 +11,7 @@ export default function LoadingSpinner({
     <img
       src={logo}
       alt="Loading"
-      className={`h-12 w-12 animate-pulse object-contain ${className}`}
+      className={`h-20 w-20 object-contain [animation:horilux-fade_1.4s_ease-in-out_infinite] ${className}`}
     />
   );
 
@@ -23,5 +23,5 @@ export default function LoadingSpinner({
     );
   }
 
-  return <div className="flex items-center justify-center py-16">{spinner}</div>;
+  return <div className="flex items-center justify-center py-24">{spinner}</div>;
 }
