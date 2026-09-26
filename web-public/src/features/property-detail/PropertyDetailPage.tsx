@@ -37,6 +37,16 @@ export default function PropertyDetailPage() {
   });
 
   const carouselRef = useRef<HTMLDivElement>(null);
+  const heroSwipeRef = useRef<HTMLDivElement>(null);
+  const [heroSlide, setHeroSlide] = useState(0);
+  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
+
+  function handleHeroScroll() {
+    const el = heroSwipeRef.current;
+    if (!el) return;
+    const index = Math.round(el.scrollLeft / el.clientWidth);
+    setHeroSlide(index);
+  }
 
   const customer = useAuthStore((s) => s.customer);
   const isAuthed = !!customer;
@@ -65,6 +75,8 @@ export default function PropertyDetailPage() {
     setBedrooms("");
     setInquiryError(null);
     setInquirySuccess(false);
+    setHeroSlide(0);
+    setLightboxUrl(null);
   }, [id]);
 
   async function handleInquirySubmit(e: React.FormEvent) {
@@ -142,7 +154,7 @@ export default function PropertyDetailPage() {
   ].filter(Boolean) as { label: string; value: string }[];
 
   return (
-    <div>
+    <div className="bg-white">
       <Link
         to="/contact"
         className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 md:bottom-8 md:right-8 z-30 animate-float px-4 py-2 sm:px-6 sm:py-3 rounded-full bg-brand-blue text-white font-serif tracking-wider uppercase text-[10px] sm:text-xs md:text-sm shadow-lg hover:bg-brand-blue/90 transition-colors"
@@ -152,7 +164,36 @@ export default function PropertyDetailPage() {
 
       {/* 1. Hero / cover */}
       <section className="relative min-h-screen flex items-end px-6 md:px-12 pb-16">
-        <div className="absolute inset-0 bg-cover bg-center" style={heroStyle} />
+        {/* Desktop: static cover image */}
+        <div className="hidden md:block absolute inset-0 bg-cover bg-center" style={heroStyle} />
+
+        {/* Mobile: swipeable cover carousel, no arrows, dot indicator only */}
+        <div
+          ref={heroSwipeRef}
+          onScroll={handleHeroScroll}
+          className="md:hidden absolute inset-0 flex overflow-x-auto scroll-smooth snap-x snap-mandatory [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+        >
+          {(photos.length > 0 ? photos : [{ id: "cover", url: property.cover_image }]).map((photo) => (
+            <div
+              key={photo.id}
+              className="shrink-0 w-full h-full snap-start bg-cover bg-center"
+              style={{ backgroundImage: heroOverlay + ", url(" + JSON.stringify(photo.url) + ")" }}
+            />
+          ))}
+        </div>
+
+        {photos.length > 1 && (
+          <div className="md:hidden absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex gap-1.5">
+            {photos.map((photo, i) => (
+              <span
+                key={photo.id}
+                className={`h-1.5 rounded-full transition-all ${
+                  i === heroSlide ? "w-5 bg-white" : "w-1.5 bg-white/50"
+                }`}
+              />
+            ))}
+          </div>
+        )}
         <div className="relative z-10 max-w-4xl">
           <p className="text-white/80 uppercase tracking-[0.3em] text-xs md:text-sm mb-4">
             {property.region}
@@ -249,8 +290,59 @@ export default function PropertyDetailPage() {
         </div>
       </section>
 
+      {/* 4. Image carousel */}
+      {carouselPhotos.length > 0 && (
+        <section className="hidden md:block bg-white py-16 md:py-20">
+          <h3 className="px-6 md:px-12 font-serif text-lg sm:text-xl md:text-2xl uppercase tracking-wide text-brand-blue mb-8">
+            Related Images
+          </h3>
+          <div className="relative w-full">
+            <div
+              ref={carouselRef}
+              className="flex gap-4 overflow-x-auto scroll-smooth snap-x snap-mandatory px-6 md:px-12 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+            >
+              {carouselPhotos.map((photo) => (
+                <button
+                  key={photo.id}
+                  type="button"
+                  onClick={() => setLightboxUrl(photo.url)}
+                  className="shrink-0 w-[85%] sm:w-[60%] md:w-[45%] aspect-[4/3] snap-start overflow-hidden cursor-zoom-in group"
+                >
+                  <img
+                    src={photo.url ?? undefined}
+                    alt=""
+                    className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  />
+                </button>
+              ))}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => scrollCarousel("left")}
+              aria-label="Previous image"
+              className="hidden md:flex absolute left-2 top-1/2 -translate-y-1/2 h-11 w-11 items-center justify-center rounded-full bg-white/90 shadow-lg hover:bg-white transition-colors"
+            >
+              <svg viewBox="0 0 20 20" fill="none" className="h-5 w-5 text-brand-blue">
+                <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
+            <button
+              type="button"
+              onClick={() => scrollCarousel("right")}
+              aria-label="Next image"
+              className="hidden md:flex absolute right-2 top-1/2 -translate-y-1/2 h-11 w-11 items-center justify-center rounded-full bg-white/90 shadow-lg hover:bg-white transition-colors"
+            >
+              <svg viewBox="0 0 20 20" fill="none" className="h-5 w-5 text-brand-blue">
+                <path d="M7.5 5L12.5 10L7.5 15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
+          </div>
+        </section>
+      )}
+
       {/* 3.5 Inquiry / contact this property */}
-      <section className="bg-neutral-50 px-6 md:px-12 py-16 md:py-24 border-t border-neutral-100">
+      <section className="bg-white px-6 md:px-12 py-16 md:py-24 border-t border-neutral-100">
         <div className="mx-auto max-w-2xl">
           <div className="text-center mb-10">
             <h3 className="font-serif text-2xl sm:text-3xl uppercase tracking-wide text-brand-blue mb-3">
@@ -357,48 +449,6 @@ export default function PropertyDetailPage() {
         </div>
       </section>
 
-      {/* 4. Image carousel */}
-      {carouselPhotos.length > 0 && (
-        <section className="bg-cream py-16 md:py-20">
-          <div className="relative mx-auto max-w-7xl px-6 md:px-12">
-            <div
-              ref={carouselRef}
-              className="flex gap-4 overflow-x-auto scroll-smooth snap-x snap-mandatory [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
-            >
-              {carouselPhotos.map((photo) => (
-                <div
-                  key={photo.id}
-                  className="shrink-0 w-[85%] sm:w-[60%] md:w-[45%] aspect-[4/3] snap-start overflow-hidden"
-                >
-                  <img src={photo.url ?? undefined} alt="" className="h-full w-full object-cover" />
-                </div>
-              ))}
-            </div>
-
-            <button
-              type="button"
-              onClick={() => scrollCarousel("left")}
-              aria-label="Previous image"
-              className="hidden md:flex absolute left-2 top-1/2 -translate-y-1/2 h-11 w-11 items-center justify-center rounded-full bg-white/90 shadow-lg hover:bg-white transition-colors"
-            >
-              <svg viewBox="0 0 20 20" fill="none" className="h-5 w-5 text-brand-blue">
-                <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </button>
-            <button
-              type="button"
-              onClick={() => scrollCarousel("right")}
-              aria-label="Next image"
-              className="hidden md:flex absolute right-2 top-1/2 -translate-y-1/2 h-11 w-11 items-center justify-center rounded-full bg-white/90 shadow-lg hover:bg-white transition-colors"
-            >
-              <svg viewBox="0 0 20 20" fill="none" className="h-5 w-5 text-brand-blue">
-                <path d="M7.5 5L12.5 10L7.5 15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </button>
-          </div>
-        </section>
-      )}
-
       {/* 5. Video reference */}
       {videos.length > 0 && (
         <section className="bg-white py-16 md:py-20 px-6">
@@ -417,7 +467,7 @@ export default function PropertyDetailPage() {
 
       {/* 6. Related properties */}
       {related.length > 0 && (
-        <section className="bg-cream py-16 md:py-20">
+        <section className="bg-white py-16 md:py-20">
           <div className="text-center mb-10 px-6">
             <h3 className="font-serif text-xl sm:text-2xl md:text-3xl text-neutral-900 uppercase tracking-wide">
               You May Also Like
@@ -429,6 +479,29 @@ export default function PropertyDetailPage() {
             ))}
           </div>
         </section>
+      )}
+      {lightboxUrl && (
+        <div
+          className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center px-4 py-8 sm:px-10 sm:py-12"
+          onClick={() => setLightboxUrl(null)}
+        >
+          <button
+            type="button"
+            onClick={() => setLightboxUrl(null)}
+            aria-label="Close"
+            className="absolute top-4 right-4 sm:top-6 sm:right-6 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors"
+          >
+            <svg viewBox="0 0 20 20" fill="none" className="h-5 w-5">
+              <path d="M5 5L15 15M15 5L5 15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            </svg>
+          </button>
+          <img
+            src={lightboxUrl}
+            alt=""
+            onClick={(e) => e.stopPropagation()}
+            className="max-h-full max-w-full object-contain"
+          />
+        </div>
       )}
     </div>
   );
