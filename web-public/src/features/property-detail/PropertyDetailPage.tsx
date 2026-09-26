@@ -171,7 +171,8 @@ export default function PropertyDetailPage() {
         <div
           ref={heroSwipeRef}
           onScroll={handleHeroScroll}
-          className="md:hidden absolute inset-0 flex overflow-x-auto scroll-smooth snap-x snap-mandatory [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+          className="md:hidden absolute inset-0 flex overflow-x-auto snap-x snap-mandatory touch-pan-x [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+          style={{ WebkitOverflowScrolling: "touch" }}
         >
           {(photos.length > 0 ? photos : [{ id: "cover", url: property.cover_image }]).map((photo) => (
             <div
@@ -198,8 +199,22 @@ export default function PropertyDetailPage() {
           <p className="text-white/80 uppercase tracking-[0.3em] text-xs md:text-sm mb-4">
             {property.region}
           </p>
-          <h1 className="font-serif text-2xl sm:text-4xl md:text-6xl text-white leading-tight uppercase">
-            {property.title}
+          <h1 className="font-serif text-2xl sm:text-4xl md:text-6xl text-white leading-tight uppercase flex items-center gap-3 sm:gap-4">
+            <span>{property.title}</span>
+            {customer && (
+              <button
+                type="button"
+                onClick={() => !savePending && toggleSaved(property.id)}
+                aria-label={isSaved(property.id) ? "Remove from favorites" : "Add to favorites"}
+                disabled={savePending}
+                className="shrink-0 flex h-8 w-8 sm:h-10 sm:w-10 md:h-11 md:w-11 items-center justify-center rounded-full bg-black/30 backdrop-blur-sm hover:bg-black/50 transition-colors disabled:opacity-60"
+              >
+                <Heart
+                  className={`h-4 w-4 sm:h-5 sm:w-5 transition-colors ${isSaved(property.id) ? "fill-pink-500 text-pink-500" : "text-white"}`}
+                  strokeWidth={1.75}
+                />
+              </button>
+            )}
           </h1>
           <p className="mt-4 font-serif text-2xl md:text-3xl text-white">
             {formatPrice(property.price, property.currency)}
@@ -212,20 +227,6 @@ export default function PropertyDetailPage() {
           </div>
         </div>
 
-        {customer && (
-          <button
-            type="button"
-            onClick={() => !savePending && toggleSaved(property.id)}
-            aria-label={isSaved(property.id) ? "Remove from favorites" : "Add to favorites"}
-            disabled={savePending}
-            className="absolute top-6 right-6 md:top-10 md:right-12 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-black/30 backdrop-blur-sm hover:bg-black/50 transition-colors disabled:opacity-60"
-          >
-            <Heart
-              className={`h-5 w-5 transition-colors ${isSaved(property.id) ? "fill-pink-500 text-pink-500" : "text-white"}`}
-              strokeWidth={1.75}
-            />
-          </button>
-        )}
       </section>
 
       {/* 2 + 3. Description + property details */}
