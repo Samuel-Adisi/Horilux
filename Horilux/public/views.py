@@ -36,7 +36,7 @@ class PublicPropertyViewSet(viewsets.ReadOnlyModelViewSet):
         return {"request": self.request}
 
     def get_queryset(self):
-        qs = Property.objects.filter(status__in=MARKETABLE_STATUSES)
+        qs = Property.objects.filter(status__in=MARKETABLE_STATUSES).prefetch_related("media")
         params = self.request.query_params
         min_price, max_price = params.get("min_price"), params.get("max_price")
         if min_price:

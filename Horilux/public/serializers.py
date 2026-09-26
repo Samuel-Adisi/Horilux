@@ -17,7 +17,8 @@ class PublicPropertyListSerializer(serializers.ModelSerializer):
         ]
 
     def get_cover_image(self, obj):
-        first = obj.media.first() if hasattr(obj, "media") else None
+        media_list = list(obj.media.all()) if hasattr(obj, "media") else []
+        first = media_list[0] if media_list else None
         if first and first.file:
             request = self.context.get("request")
             return request.build_absolute_uri(first.file.url) if request else first.file.url
