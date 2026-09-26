@@ -5,7 +5,7 @@ export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 60_000,
-      gcTime: 24 * 60 * 60_000,
+      gcTime: 10 * 60_000,
       retry: 1,
     },
   },
@@ -13,5 +13,5 @@ export const queryClient = new QueryClient({
 
 export const queryPersister = createSyncStoragePersister({
   storage: window.localStorage,
-  key: "horilux-public-query-cache",
+  key: "horilux-public-query-cache-v2",
 });

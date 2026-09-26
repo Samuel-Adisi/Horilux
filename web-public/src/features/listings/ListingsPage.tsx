@@ -51,8 +51,8 @@ export default function ListingsPage() {
   const { data, isLoading, isError, isFetching } = useProperties({
     ...filters,
     page,
-    staleTime: 5 * 60_000,
-    gcTime: 15 * 60_000,
+    staleTime: 2 * 60_000,
+    gcTime: 5 * 60_000,
   });
 
   useEffect(() => {

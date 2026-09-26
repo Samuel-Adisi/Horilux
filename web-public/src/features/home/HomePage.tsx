@@ -9,8 +9,8 @@ import Reveal from "@/components/shared/Reveal";
 export default function HomePage() {
   const { data: propertiesPage, isLoading, isError } = useProperties({
     ordering: "-published_at",
-    staleTime: 5 * 60_000,
-    gcTime: 15 * 60_000,
+    staleTime: 2 * 60_000,
+    gcTime: 5 * 60_000,
   });
   const featured = propertiesPage?.results;
   const [subscribed, setSubscribed] = useState(false);

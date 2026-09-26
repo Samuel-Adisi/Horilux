@@ -30,8 +30,8 @@ export default function PropertyDetailPage() {
   const { data: property, isLoading, isError } = useProperty(id);
   const { data: relatedPage } = useProperties({
     ordering: "-published_at",
-    staleTime: 5 * 60_000,
-    gcTime: 15 * 60_000,
+    staleTime: 2 * 60_000,
+    gcTime: 5 * 60_000,
   });
 
   const carouselRef = useRef<HTMLDivElement>(null);
