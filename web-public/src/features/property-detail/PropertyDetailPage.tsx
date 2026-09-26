@@ -171,7 +171,7 @@ export default function PropertyDetailPage() {
         <div
           ref={heroSwipeRef}
           onScroll={handleHeroScroll}
-          className="md:hidden absolute inset-0 flex overflow-x-auto snap-x snap-mandatory touch-pan-x [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+          className="md:hidden absolute inset-0 flex overflow-x-auto snap-x snap-mandatory touch-pan-x touch-pan-y [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
           style={{ WebkitOverflowScrolling: "touch" }}
         >
           {(photos.length > 0 ? photos : [{ id: "cover", url: property.cover_image }]).map((photo) => (
