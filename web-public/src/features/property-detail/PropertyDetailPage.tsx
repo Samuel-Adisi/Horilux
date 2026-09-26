@@ -233,93 +233,110 @@ export default function PropertyDetailPage() {
       </section>
 
       {/* 3.5 Inquiry / contact this property */}
-      <section className="bg-white px-6 md:px-12 py-16 md:py-20 border-t border-neutral-100">
+      <section className="bg-neutral-50 px-6 md:px-12 py-16 md:py-24 border-t border-neutral-100">
         <div className="mx-auto max-w-2xl">
-          <h3 className="font-serif text-lg sm:text-xl md:text-2xl uppercase tracking-wide text-brand-blue text-center mb-8">
-            Interested in this property?
-          </h3>
-          {inquirySuccess ? (
-            <p className="text-center text-green-600 font-medium">
-              Thank you &mdash; we will be in touch shortly about this property.
+          <div className="text-center mb-10">
+            <h3 className="font-serif text-2xl sm:text-3xl uppercase tracking-wide text-brand-blue mb-3">
+              Interested in this property?
+            </h3>
+            <p className="text-neutral-500 text-sm">
+              Fill in your details and we&apos;ll get back to you shortly.
             </p>
-          ) : (
-            <form onSubmit={handleInquirySubmit} className="space-y-4">
-              {!isAuthed && (
-                <>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <input
-                      type="text"
-                      required
-                      placeholder="Name*"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      className="w-full border border-neutral-300 px-4 py-3 text-sm focus:outline-none focus:border-brand-blue"
-                    />
-                    <input
-                      type="email"
-                      required
-                      placeholder="Email*"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="w-full border border-neutral-300 px-4 py-3 text-sm focus:outline-none focus:border-brand-blue"
-                    />
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <input
-                      type="tel"
-                      placeholder="Phone number"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      className="w-full border border-neutral-300 px-4 py-3 text-sm focus:outline-none focus:border-brand-blue"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Country of origin"
-                      value={country}
-                      onChange={(e) => setCountry(e.target.value)}
-                      className="w-full border border-neutral-300 px-4 py-3 text-sm focus:outline-none focus:border-brand-blue"
-                    />
-                  </div>
-                </>
-              )}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <input
-                  type="number"
-                  min={0}
-                  placeholder="Your budget (optional)"
-                  value={budget}
-                  onChange={(e) => setBudget(e.target.value)}
-                  className="w-full border border-neutral-300 px-4 py-3 text-sm focus:outline-none focus:border-brand-blue"
-                />
-                <input
-                  type="number"
-                  min={0}
-                  placeholder="Bedrooms wanted (optional)"
-                  value={bedrooms}
-                  onChange={(e) => setBedrooms(e.target.value)}
-                  className="w-full border border-neutral-300 px-4 py-3 text-sm focus:outline-none focus:border-brand-blue"
-                />
+          </div>
+
+          <div className="bg-white rounded-3xl shadow-xl shadow-neutral-200/60 border border-neutral-100 p-6 sm:p-8 md:p-10">
+            {inquirySuccess ? (
+              <div className="text-center py-6">
+                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-50 text-green-600">
+                  <svg viewBox="0 0 20 20" fill="none" className="h-6 w-6">
+                    <path d="M5 10.5L8.5 14L15 6.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </div>
+                <p className="text-neutral-800 font-medium">
+                  Thank you &mdash; we will be in touch shortly about this property.
+                </p>
               </div>
-              <textarea
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                required
-                rows={4}
-                placeholder="Tell us what you'd like to know about this property..."
-                className="w-full border border-neutral-300 px-4 py-3 text-sm focus:outline-none focus:border-brand-blue"
-              />
-              {inquiryError && (
-                <p className="text-sm text-red-600">{inquiryError}</p>
-              )}
-              <button
-                type="submit"
-                disabled={sending}
-                className="w-full px-5 py-2.5 sm:px-6 sm:py-3 rounded-full bg-brand-blue text-white font-serif tracking-wider uppercase text-[11px] sm:text-xs hover:bg-brand-blue/90 transition-colors disabled:opacity-50"
-              >
-                {sending ? "Sending..." : "Send Message"}
-              </button>
-            </form>
-          )}
+            ) : (
+              <form onSubmit={handleInquirySubmit} className="space-y-5">
+                {!isAuthed && (
+                  <>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <input
+                        type="text"
+                        required
+                        placeholder="Name*"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        className="w-full rounded-xl border border-neutral-200 bg-neutral-50/60 px-4 py-3.5 text-sm text-neutral-800 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue focus:bg-white transition-all"
+                      />
+                      <input
+                        type="email"
+                        required
+                        placeholder="Email*"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="w-full rounded-xl border border-neutral-200 bg-neutral-50/60 px-4 py-3.5 text-sm text-neutral-800 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue focus:bg-white transition-all"
+                      />
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <input
+                        type="tel"
+                        placeholder="Phone number"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        className="w-full rounded-xl border border-neutral-200 bg-neutral-50/60 px-4 py-3.5 text-sm text-neutral-800 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue focus:bg-white transition-all"
+                      />
+                      <input
+                        type="text"
+                        placeholder="Country of origin"
+                        value={country}
+                        onChange={(e) => setCountry(e.target.value)}
+                        className="w-full rounded-xl border border-neutral-200 bg-neutral-50/60 px-4 py-3.5 text-sm text-neutral-800 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue focus:bg-white transition-all"
+                      />
+                    </div>
+                  </>
+                )}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <input
+                    type="number"
+                    min={0}
+                    placeholder="Your budget (optional)"
+                    value={budget}
+                    onChange={(e) => setBudget(e.target.value)}
+                    className="w-full rounded-xl border border-neutral-200 bg-neutral-50/60 px-4 py-3.5 text-sm text-neutral-800 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue focus:bg-white transition-all"
+                  />
+                  <input
+                    type="number"
+                    min={0}
+                    placeholder="Bedrooms wanted (optional)"
+                    value={bedrooms}
+                    onChange={(e) => setBedrooms(e.target.value)}
+                    className="w-full rounded-xl border border-neutral-200 bg-neutral-50/60 px-4 py-3.5 text-sm text-neutral-800 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue focus:bg-white transition-all"
+                  />
+                </div>
+                <textarea
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  required
+                  rows={4}
+                  placeholder="Tell us what you'd like to know about this property..."
+                  className="w-full rounded-xl border border-neutral-200 bg-neutral-50/60 px-4 py-3.5 text-sm text-neutral-800 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue focus:bg-white transition-all resize-none"
+                />
+                {inquiryError && (
+                  <div className="rounded-xl bg-red-50 border border-red-100 px-4 py-3">
+                    <p className="text-sm text-red-600">{inquiryError}</p>
+                  </div>
+                )}
+                <button
+                  type="submit"
+                  disabled={sending}
+                  className="w-full px-6 py-3.5 rounded-xl bg-brand-blue text-white font-serif tracking-wider uppercase text-xs sm:text-sm hover:bg-brand-blue/90 hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {sending ? "Sending..." : "Send Message"}
+                </button>
+              </form>
+            )}
+          </div>
         </div>
       </section>
 

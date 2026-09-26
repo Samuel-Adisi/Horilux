@@ -1,11 +1,15 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const REGIONS = ["Greater Accra", "Ashanti", "Western", "Central", "Eastern"];
-const TYPES = [
-  { value: "residential", label: "Residential" },
-  { value: "commercial", label: "Commercial" },
+
+const TYPE_OPTIONS = [
+  { value: "listing_type:sale", label: "For Sale" },
+  { value: "listing_type:rent", label: "For Rent" },
+  { value: "property_type:residential", label: "Residential" },
+  { value: "property_type:commercial", label: "Commercial" },
 ];
+
 const BEDROOM_OPTIONS = ["1", "2", "3", "4", "5+"];
 const BATHROOM_OPTIONS = ["1", "2", "3", "4", "5+"];
 const PRICE_RANGES = [
@@ -44,11 +48,21 @@ function priceRangeIndexFromParams(params?: URLSearchParams): string {
   return idx >= 0 ? String(idx) : "";
 }
 
+function typeFilterFromParams(params?: URLSearchParams): string {
+  if (!params) return "";
+  const listingType = params.get("listing_type");
+  if (listingType === "sale" || listingType === "rent") return `listing_type:${listingType}`;
+  const propertyType = params.get("property_type");
+  if (propertyType === "residential" || propertyType === "commercial") return `property_type:${propertyType}`;
+  return "";
+}
+
 export default function SearchBar({ initialParams }: SearchBarProps = {}) {
   const navigate = useNavigate();
+  const location = useLocation();
   const [search, setSearch] = useState(initialParams?.get("search") ?? "");
   const [region, setRegion] = useState(initialParams?.get("region") ?? "");
-  const [propertyType, setPropertyType] = useState(initialParams?.get("property_type") ?? "");
+  const [typeFilter, setTypeFilter] = useState(typeFilterFromParams(initialParams));
   const [bedrooms, setBedrooms] = useState(initialParams?.get("bedrooms") ?? "");
   const [bathrooms, setBathrooms] = useState(initialParams?.get("bathrooms") ?? "");
   const [priceRange, setPriceRange] = useState(priceRangeIndexFromParams(initialParams));
@@ -57,7 +71,10 @@ export default function SearchBar({ initialParams }: SearchBarProps = {}) {
     const params = new URLSearchParams();
     if (search) params.set("search", search);
     if (region) params.set("region", region);
-    if (propertyType) params.set("property_type", propertyType);
+    if (typeFilter) {
+      const [param, value] = typeFilter.split(":");
+      params.set(param, value);
+    }
     if (bedrooms) params.set("bedrooms", bedrooms.replace("+", ""));
     if (bathrooms) params.set("bathrooms", bathrooms.replace("+", ""));
     if (priceRange) {
@@ -71,11 +88,13 @@ export default function SearchBar({ initialParams }: SearchBarProps = {}) {
   function handleReset() {
     setSearch("");
     setRegion("");
-    setPropertyType("");
+    setTypeFilter("");
     setBedrooms("");
     setBathrooms("");
     setPriceRange("");
-    navigate("/listings");
+    if (location.pathname.startsWith("/listings")) {
+      navigate("/listings");
+    }
   }
 
   return (
@@ -106,9 +125,9 @@ export default function SearchBar({ initialParams }: SearchBarProps = {}) {
       </div>
 
       <div className="relative">
-        <select value={propertyType} onChange={(e) => setPropertyType(e.target.value)} className={pillClass}>
+        <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)} className={pillClass}>
           <option value="">Property Type</option>
-          {TYPES.map((t) => (<option key={t.value} value={t.value}>{t.label}</option>))}
+          {TYPE_OPTIONS.map((t) => (<option key={t.value} value={t.value}>{t.label}</option>))}
         </select>
         <Chevron />
       </div>

@@ -1,11 +1,61 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useProperties } from "./hooks/use-properties";
 import type { PropertyFilters } from "./api/properties";
 import type { PropertyListItem } from "@/lib/types";
 import PropertyCard from "@/features/shared/PropertyCard";
 import SearchBar from "@/features/home/SearchBar";
 import LoadingSpinner from "@/components/shared/LoadingSpinner";
+import logo from "@/assets/logo.png";
+
+const SECTION_PREVIEW_COUNT = 4;
+
+function PropertySection({
+  title,
+  filters,
+  viewAllHref,
+}: {
+  title: string;
+  filters: PropertyFilters;
+  viewAllHref: string;
+}) {
+  const { data, isLoading } = useProperties({
+    ...filters,
+    page: 1,
+    staleTime: 2 * 60_000,
+    gcTime: 5 * 60_000,
+  });
+
+  const items = (data?.results ?? []).slice(0, SECTION_PREVIEW_COUNT);
+
+  if (!isLoading && items.length === 0) return null;
+
+  return (
+    <div className="mb-16 px-6 md:px-0">
+      <div className="flex items-center justify-between mb-6">
+        <h3 className="font-serif text-lg sm:text-xl md:text-2xl uppercase tracking-[0.15em] text-brand-blue">
+          {title}
+        </h3>
+        <Link
+          to={viewAllHref}
+          className="text-xs sm:text-sm uppercase tracking-wider text-neutral-600 hover:text-brand-blue transition-colors whitespace-nowrap ml-4"
+        >
+          View all
+        </Link>
+      </div>
+
+      {isLoading ? (
+        <LoadingSpinner />
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {items.map((property) => (
+            <PropertyCard key={property.id} property={property} size="lg" />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function ListingsPage() {
   const [searchParams] = useSearchParams();
@@ -37,6 +87,7 @@ export default function ListingsPage() {
   }, [searchParams]);
 
   const filtersKey = JSON.stringify(filters);
+  const hasActiveFilters = Object.keys(filters).length > 1;
 
   const [page, setPage] = useState(1);
   const [items, setItems] = useState<PropertyListItem[]>([]);
@@ -104,47 +155,87 @@ export default function ListingsPage() {
         </div>
       </section>
 
-      {/* Listings grid */}
-      <section className="bg-cream pb-20">
-        {showInitialLoading && <LoadingSpinner />}
+      {!hasActiveFilters ? (
+        <section className="bg-cream pb-20 pt-4 max-w-6xl mx-auto">
+          <PropertySection
+            title="For Rent"
+            filters={{ ordering: "-published_at", listing_type: "rent" }}
+            viewAllHref="/listings?listing_type=rent"
+          />
+          <PropertySection
+            title="For Sale"
+            filters={{ ordering: "-published_at", listing_type: "sale" }}
+            viewAllHref="/listings?listing_type=sale"
+          />
+          <PropertySection
+            title="Residential"
+            filters={{ ordering: "-published_at", property_type: "residential" }}
+            viewAllHref="/listings?property_type=residential"
+          />
+          <PropertySection
+            title="Commercial"
+            filters={{ ordering: "-published_at", property_type: "commercial" }}
+            viewAllHref="/listings?property_type=commercial"
+          />
+        </section>
+      ) : (
+        <section className="bg-cream pb-20">
+          {showInitialLoading && <LoadingSpinner />}
 
-        {isError && (
-          <p className="text-center text-neutral-500 px-6">Couldn&apos;t load properties right now.</p>
-        )}
+          {isError && (
+            <p className="text-center text-neutral-500 px-6">Couldn&apos;t load properties right now.</p>
+          )}
 
-        {!showInitialLoading && !isError && items.length === 0 && (
-          <div className="text-center px-6">
-            <p className="text-neutral-500">No properties match your search.</p>
-            <button
-              onClick={handleReset}
-              className="mt-4 inline-block px-5 py-2.5 sm:px-6 sm:py-3 rounded-full bg-brand-blue text-white font-serif tracking-[0.15em] uppercase text-[11px] sm:text-sm hover:bg-brand-blue/90 transition-colors"
-            >
-              Reset Search
-            </button>
-          </div>
-        )}
+          {!showInitialLoading && !isError && items.length === 0 && (
+            <div className="text-center px-6">
+              <p className="text-neutral-500">No properties match your search.</p>
+              <button
+                onClick={handleReset}
+                className="mt-4 inline-block px-5 py-2.5 sm:px-6 sm:py-3 rounded-full bg-brand-blue text-white font-serif tracking-[0.15em] uppercase text-[11px] sm:text-sm hover:bg-brand-blue/90 transition-colors"
+              >
+                Reset Search
+              </button>
+            </div>
+          )}
 
-        {items.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {items.map((property) => (
-              <PropertyCard key={property.id} property={property} size="lg" />
-            ))}
-          </div>
-        )}
+          {items.length > 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {items.map((property) => (
+                <PropertyCard key={property.id} property={property} size="lg" />
+              ))}
+            </div>
+          )}
 
-        {hasMore && (
-          <div className="mt-14 text-center">
-            <button
-              onClick={handleLoadMore}
-              disabled={isFetching}
-              className="inline-block px-6 py-3 sm:px-10 sm:py-4 rounded-full bg-neutral-800 text-white font-serif tracking-wider uppercase text-xs sm:text-sm hover:bg-neutral-700 transition-colors disabled:opacity-60"
-            >
-              {isFetching ? "Loading..." : "Load More"}
-            </button>
-          </div>
-        )}
-      </section>
+          {!showInitialLoading && isFetching && page > 1 && (
+            <div className="flex items-center justify-center py-10">
+              <img
+                src={logo}
+                alt="Loading more"
+                className="h-10 w-10 object-contain brightness-0 [animation:horilux-fade_1.4s_ease-in-out_infinite]"
+              />
+            </div>
+          )}
 
+          {hasMore ? (
+            <div className="mt-14 text-center">
+              <button
+                onClick={handleLoadMore}
+                disabled={isFetching}
+                className="inline-block px-6 py-3 sm:px-10 sm:py-4 rounded-full bg-neutral-800 text-white font-serif tracking-wider uppercase text-xs sm:text-sm hover:bg-neutral-700 transition-colors disabled:opacity-60"
+              >
+                Load More
+              </button>
+            </div>
+          ) : (
+            !showInitialLoading &&
+            (data?.results?.length ?? 0) > 0 && (
+              <div className="mt-14 text-center text-sm tracking-wider uppercase text-neutral-500 font-serif">
+                You've seen all properties
+              </div>
+            )
+          )}
+        </section>
+      )}
     </div>
   );
 }
