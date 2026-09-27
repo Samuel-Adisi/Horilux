@@ -56,6 +56,11 @@ export default function Header() {
               className={`text-base sm:text-xl md:text-2xl font-serif tracking-tight whitespace-nowrap truncate ${
                 isHome ? "text-white" : "text-brand-blue"
               }`}
+              style={{
+                display: "inline-block",
+                animation: "logo-spin-once 1.3s cubic-bezier(0.65, 0, 0.35, 1) both",
+                backfaceVisibility: "hidden",
+              }}
             >
               Horilux Estates
             </span>

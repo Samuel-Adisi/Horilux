@@ -56,6 +56,34 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Spotlight: 2 newest properties, each full viewport, desktop only */}
+      {featured && featured.length >= 2 && (
+        <section className="hidden md:block bg-cream pt-16 md:pt-20 pb-4">
+          <Reveal className="text-center mb-10 px-6">
+            <p className="text-xs uppercase tracking-[0.2em] text-brand-taupe font-semibold mb-2">
+              Just Listed
+            </p>
+            <h2 className="font-serif text-xl sm:text-2xl md:text-4xl text-neutral-900">
+              Fresh On The Market
+            </h2>
+          </Reveal>
+          <div className="flex flex-col">
+            {featured.slice(0, 2).map((property, index) => (
+              <div key={property.id}>
+                <div className="flex items-center justify-center gap-4 py-4 md:py-5 bg-cream">
+                  <span className="h-px w-10 md:w-16 bg-brand-taupe/40" />
+                  <span className="font-serif text-sm md:text-base tracking-[0.4em] text-brand-taupe">
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+                  <span className="h-px w-10 md:w-16 bg-brand-taupe/40" />
+                </div>
+                <PropertyCard property={property} size="hero" disableHoverEffects />
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* Intro + search */}
       <section className="bg-cream px-6 py-20">
         <div className="mx-auto max-w-4xl text-center">
@@ -95,13 +123,25 @@ export default function HomePage() {
         )}
 
         {featured && featured.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {featured.slice(0, 8).map((property, index) => (
-              <Reveal key={property.id} delay={(index % 4) * 100}>
-                <PropertyCard property={property} size="lg" />
-              </Reveal>
-            ))}
-          </div>
+          <>
+            {/* Mobile: original unshifted list (no desktop spotlight to account for) */}
+            <div className="grid grid-cols-1 gap-4 md:hidden">
+              {featured.slice(0, 8).map((property, index) => (
+                <Reveal key={property.id} delay={(index % 4) * 100}>
+                  <PropertyCard property={property} size="lg" />
+                </Reveal>
+              ))}
+            </div>
+
+            {/* Desktop: skip the 2 properties already shown in the spotlight section */}
+            <div className="hidden md:grid md:grid-cols-2 gap-4">
+              {featured.slice(2, 10).map((property, index) => (
+                <Reveal key={property.id} delay={(index % 4) * 100}>
+                  <PropertyCard property={property} size="lg" />
+                </Reveal>
+              ))}
+            </div>
+          </>
         )}
 
         <div className="mt-14 text-center">
