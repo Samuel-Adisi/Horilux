@@ -3,6 +3,7 @@ from rest_framework.routers import DefaultRouter
 from .views import (
     PublicPropertyViewSet, CustomerRegisterView, CustomerLoginView, CustomerRefreshView,
     CustomerMeView, SavedPropertyViewSet, PropertyInquiryViewSet, ContactSubmissionView,
+    VisitorView,
 )
 
 router = DefaultRouter()
@@ -15,6 +16,7 @@ urlpatterns = [
     path("auth/login/", CustomerLoginView.as_view(), name="customer-login"),
     path("auth/refresh/", CustomerRefreshView.as_view(), name="customer-refresh"),
     path("auth/me/", CustomerMeView.as_view(), name="customer-me"),
+    path("visitor/", VisitorView.as_view(), name="public-visitor"),
     path("contact/", ContactSubmissionView.as_view(), name="contact-submit"),
     path("", include(router.urls)),
 ]

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from properties.models import Property
-from .models import Customer, SavedProperty, PropertyInquiry, ContactSubmission
+from .models import Customer, SavedProperty, PropertyInquiry, ContactSubmission, AnonymousVisitor
 
 MARKETABLE_STATUSES = ["published", "under_offer", "marketing_ready", "sold_rented"]
 
@@ -75,6 +75,13 @@ class CustomerSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
+class AnonymousVisitorSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AnonymousVisitor
+        fields = ["id", "name", "email", "phone", "created_at", "last_seen_at"]
+        read_only_fields = ["id", "created_at", "last_seen_at"]
+
+
 class SavedPropertySerializer(serializers.ModelSerializer):
     property_detail = PublicPropertyListSerializer(source="property", read_only=True)
 
@@ -85,11 +92,18 @@ class SavedPropertySerializer(serializers.ModelSerializer):
 
 
 class PropertyInquirySerializer(serializers.ModelSerializer):
+    # Not model fields — collected here so an anonymous visitor's inquiry can
+    # still create a proper CRM Lead. Popped off in the view before save().
+    contact_name = serializers.CharField(max_length=200, required=False, allow_blank=True, write_only=True)
+    contact_email = serializers.EmailField(required=False, allow_blank=True, write_only=True)
+    contact_phone = serializers.CharField(max_length=30, required=False, allow_blank=True, write_only=True)
+
     class Meta:
         model = PropertyInquiry
         fields = [
             "id", "property", "message", "requested_viewing",
             "requested_viewing_date", "created_at",
+            "contact_name", "contact_email", "contact_phone",
         ]
         read_only_fields = ["id", "created_at"]
 

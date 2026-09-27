@@ -13,7 +13,6 @@ export default function ContactPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
-  const [country, setCountry] = useState("");
   const [message, setMessage] = useState("");
   const [consent, setConsent] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -31,7 +30,6 @@ export default function ContactPage() {
         name,
         email,
         phone,
-        country,
         message,
       });
       setSubmitted(true);
@@ -87,22 +85,13 @@ export default function ContactPage() {
                     />
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <input
-                      type="tel"
-                      placeholder="Phone number"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      className={inputClass}
-                    />
-                    <input
-                      type="text"
-                      placeholder="Country of origin"
-                      value={country}
-                      onChange={(e) => setCountry(e.target.value)}
-                      className={inputClass}
-                    />
-                  </div>
+                  <input
+                    type="tel"
+                    placeholder="Phone number"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    className={inputClass}
+                  />
               </>
 
               <textarea

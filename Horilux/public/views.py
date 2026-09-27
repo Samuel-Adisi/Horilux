@@ -10,15 +10,16 @@ from rest_framework.views import APIView
 from properties.models import Property
 from crm.models import Lead, Client
 from viewings.models import Viewing
-from .models import Customer, SavedProperty, PropertyInquiry
+from .models import Customer, SavedProperty, PropertyInquiry, AnonymousVisitor
 from .authentication import issue_tokens, refresh_access_token, CustomerJWTAuthentication
+from .visitor import resolve_visitor, get_visitor_cookie_kwargs, VISITOR_COOKIE_NAME
 from django.conf import settings
 from django.core.mail import send_mail
 from .serializers import (
     PublicPropertyListSerializer, PublicPropertyDetailSerializer,
     CustomerRegisterSerializer, CustomerLoginSerializer, CustomerSerializer,
     SavedPropertySerializer, PropertyInquirySerializer, MARKETABLE_STATUSES,
-    ContactSubmissionSerializer,
+    ContactSubmissionSerializer, AnonymousVisitorSerializer,
 )
 from .models import Customer, SavedProperty, PropertyInquiry, ContactSubmission
 
@@ -57,6 +58,7 @@ class PublicPropertyViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class CustomerRegisterView(generics.CreateAPIView):
+    """Kept dormant — not linked from the frontend, sign-up UI removed."""
     permission_classes = [permissions.AllowAny]
     authentication_classes = []
     serializer_class = CustomerRegisterSerializer
@@ -73,6 +75,7 @@ class CustomerRegisterView(generics.CreateAPIView):
 
 
 class CustomerLoginView(APIView):
+    """Kept dormant — not linked from the frontend, login UI removed."""
     permission_classes = [permissions.AllowAny]
     authentication_classes = []
 
@@ -112,52 +115,101 @@ class CustomerMeView(generics.RetrieveAPIView):
         return self.request.user
 
 
+class VisitorView(APIView):
+    """Mints (or refreshes) the anonymous visitor cookie. Frontend calls this
+    once on load; subsequent requests just carry the cookie automatically."""
+    permission_classes = [permissions.AllowAny]
+    authentication_classes = []
+
+    def post(self, request):
+        visitor = resolve_visitor(request, required=False)
+        if visitor is None:
+            visitor = AnonymousVisitor.objects.create()
+        else:
+            visitor.save(update_fields=["last_seen_at"])  # bump last_seen_at via auto_now
+
+        response = Response(AnonymousVisitorSerializer(visitor).data, status=status.HTTP_200_OK)
+        response.set_cookie(VISITOR_COOKIE_NAME, str(visitor.id), **get_visitor_cookie_kwargs(request))
+        return response
+
+    def patch(self, request):
+        """Optional: let the frontend attach a name/email/phone to the visitor
+        once known (e.g. right before an inquiry submit), so future Leads
+        created from this visitor aren't blank."""
+        visitor = resolve_visitor(request, required=True)
+        for field in ("name", "email", "phone"):
+            if field in request.data:
+                setattr(visitor, field, request.data[field])
+        visitor.save()
+        return Response(AnonymousVisitorSerializer(visitor).data)
+
+
 class SavedPropertyViewSet(viewsets.ModelViewSet):
-    permission_classes = [permissions.IsAuthenticated]
-    authentication_classes = [CustomerJWTAuthentication]
+    permission_classes = [permissions.AllowAny]
+    authentication_classes = []
     serializer_class = SavedPropertySerializer
     http_method_names = ["get", "post", "delete"]
 
     def get_queryset(self):
-        return SavedProperty.objects.filter(customer=self.request.user).select_related("property")
+        visitor = resolve_visitor(self.request, required=True)
+        return SavedProperty.objects.filter(visitor=visitor).select_related("property")
 
     def perform_create(self, serializer):
-        serializer.save(customer=self.request.user)
+        visitor = resolve_visitor(self.request, required=True)
+        serializer.save(visitor=visitor)
 
 
 class PropertyInquiryViewSet(viewsets.ModelViewSet):
-    permission_classes = [permissions.IsAuthenticated]
-    authentication_classes = [CustomerJWTAuthentication]
+    permission_classes = [permissions.AllowAny]
+    authentication_classes = []
     serializer_class = PropertyInquirySerializer
     http_method_names = ["get", "post"]
 
     def get_queryset(self):
-        return PropertyInquiry.objects.filter(customer=self.request.user).select_related("property")
+        visitor = resolve_visitor(self.request, required=True)
+        return PropertyInquiry.objects.filter(visitor=visitor).select_related("property")
 
     @transaction.atomic
     def perform_create(self, serializer):
-        customer = self.request.user
+        visitor = resolve_visitor(self.request, required=True)
         prop = serializer.validated_data["property"]
 
-        lead, _ = Lead.objects.get_or_create(
-            email=customer.email,
-            defaults={
-                "name": customer.full_name,
-                "phone": customer.phone,
-                "source": "public_website",
-                "purpose": "buy" if prop.listing_type == "sale" else "rent",
-                "location_preference": prop.region,
-                "property_type_preference": prop.property_type,
-                "notes": f"Auto-created from public website inquiry on {prop.title}.",
-            },
-        )
+        contact_name = serializer.validated_data.pop("contact_name", "") or visitor.name
+        contact_email = serializer.validated_data.pop("contact_email", "") or visitor.email
+        contact_phone = serializer.validated_data.pop("contact_phone", "") or visitor.phone
+
+        # Keep the visitor record filled in for future inquiries/leads.
+        changed = False
+        if contact_name and not visitor.name:
+            visitor.name, changed = contact_name, True
+        if contact_email and not visitor.email:
+            visitor.email, changed = contact_email, True
+        if contact_phone and not visitor.phone:
+            visitor.phone, changed = contact_phone, True
+        if changed:
+            visitor.save()
+
+        lead = None
+        if contact_email:
+            lead, _ = Lead.objects.get_or_create(
+                email=contact_email,
+                defaults={
+                    "name": contact_name,
+                    "phone": contact_phone,
+                    "source": "public_website",
+                    "purpose": "buy" if prop.listing_type == "sale" else "rent",
+                    "location_preference": prop.region,
+                    "property_type_preference": prop.property_type,
+                    "notes": f"Auto-created from public website inquiry on {prop.title}.",
+                },
+            )
 
         viewing = None
-        if serializer.validated_data.get("requested_viewing"):
+        if serializer.validated_data.get("requested_viewing") and lead is not None:
             client = getattr(lead, "client", None)
             if client is None:
                 client = Client.objects.create(
-                    lead=lead, name=customer.full_name, phone=customer.phone, email=customer.email,
+                    lead=lead, name=contact_name, phone=contact_phone, email=contact_email,
                 )
             req_dt = serializer.validated_data.get("requested_viewing_date")
             viewing = Viewing.objects.create(
@@ -168,7 +220,7 @@ class PropertyInquiryViewSet(viewsets.ModelViewSet):
                 notes="Requested via public website inquiry.",
             )
 
-        serializer.save(customer=customer, lead=lead, viewing=viewing)
+        serializer.save(visitor=visitor, lead=lead, viewing=viewing)
 
 
 class ContactSubmissionView(generics.CreateAPIView):

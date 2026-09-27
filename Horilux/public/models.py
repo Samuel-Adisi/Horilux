@@ -1,3 +1,4 @@
+import uuid
 from django.db import models
 from django.contrib.auth.hashers import make_password, check_password
 from properties.models import Property
@@ -34,18 +35,45 @@ class Customer(models.Model):
         return self.email
 
 
+class AnonymousVisitor(models.Model):
+    """A cookie-identified public-site visitor, used in place of a Customer
+    account for saving properties and submitting inquiries without sign-up."""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=200, blank=True)
+    email = models.EmailField(blank=True)
+    phone = models.CharField(max_length=30, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_seen_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Visitor {self.id}"
+
+
 class SavedProperty(models.Model):
-    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name="saved_properties")
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name="saved_properties", null=True, blank=True)
+    visitor = models.ForeignKey(AnonymousVisitor, on_delete=models.CASCADE, related_name="saved_properties", null=True, blank=True)
     property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name="saved_by")
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ("customer", "property")
+        constraints = [
+            models.UniqueConstraint(fields=["customer", "property"], name="unique_customer_saved_property", condition=models.Q(customer__isnull=False)),
+            models.UniqueConstraint(fields=["visitor", "property"], name="unique_visitor_saved_property", condition=models.Q(visitor__isnull=False)),
+            models.CheckConstraint(
+                check=(
+                    models.Q(customer__isnull=False, visitor__isnull=True)
+                    | models.Q(customer__isnull=True, visitor__isnull=False)
+                ),
+                name="saved_property_exactly_one_owner",
+            ),
+        ]
 
 
 class PropertyInquiry(models.Model):
-    """Public inquiry submission — links to the Customer and the real CRM Lead it creates."""
-    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name="inquiries")
+    """Public inquiry submission — links to the Customer or AnonymousVisitor
+    and the real CRM Lead it creates."""
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name="inquiries", null=True, blank=True)
+    visitor = models.ForeignKey(AnonymousVisitor, on_delete=models.CASCADE, related_name="inquiries", null=True, blank=True)
     property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name="public_inquiries")
     message = models.TextField(blank=True)
     requested_viewing = models.BooleanField(default=False)
@@ -53,6 +81,17 @@ class PropertyInquiry(models.Model):
     lead = models.ForeignKey("crm.Lead", on_delete=models.SET_NULL, null=True, blank=True, related_name="public_inquiry")
     viewing = models.ForeignKey("viewings.Viewing", on_delete=models.SET_NULL, null=True, blank=True, related_name="public_inquiry")
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                check=(
+                    models.Q(customer__isnull=False, visitor__isnull=True)
+                    | models.Q(customer__isnull=True, visitor__isnull=False)
+                ),
+                name="inquiry_exactly_one_owner",
+            ),
+        ]
 
 
 class ContactSubmission(models.Model):

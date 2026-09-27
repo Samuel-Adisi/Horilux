@@ -52,10 +52,7 @@ export default function PropertyDetailPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
-  const [country, setCountry] = useState("");
   const [message, setMessage] = useState("");
-  const [budget, setBudget] = useState("");
-  const [bedrooms, setBedrooms] = useState("");
   const [sending, setSending] = useState(false);
   const [inquiryError, setInquiryError] = useState<string | null>(null);
   const [inquirySuccess, setInquirySuccess] = useState(false);
@@ -67,10 +64,7 @@ export default function PropertyDetailPage() {
     setName("");
     setEmail("");
     setPhone("");
-    setCountry("");
     setMessage("");
-    setBudget("");
-    setBedrooms("");
     setInquiryError(null);
     setInquirySuccess(false);
     setHeroSlide(0);
@@ -87,16 +81,11 @@ export default function PropertyDetailPage() {
         name,
         email,
         phone,
-        country,
         message,
         property: property.id,
-        budget: budget ? budget : null,
-        bedrooms_preference: bedrooms ? Number(bedrooms) : null,
       });
       setInquirySuccess(true);
       setMessage("");
-      setBudget("");
-      setBedrooms("");
     } catch {
       setInquiryError("Something went wrong sending your message. Please try again.");
     } finally {
@@ -417,41 +406,14 @@ export default function PropertyDetailPage() {
                         className="w-full rounded-xl border border-neutral-200 bg-neutral-50/60 px-4 py-3.5 text-sm text-neutral-800 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue focus:bg-white transition-all"
                       />
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <input
-                        type="tel"
-                        placeholder="Phone number"
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
-                        className="w-full rounded-xl border border-neutral-200 bg-neutral-50/60 px-4 py-3.5 text-sm text-neutral-800 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue focus:bg-white transition-all"
-                      />
-                      <input
-                        type="text"
-                        placeholder="Country of origin"
-                        value={country}
-                        onChange={(e) => setCountry(e.target.value)}
-                        className="w-full rounded-xl border border-neutral-200 bg-neutral-50/60 px-4 py-3.5 text-sm text-neutral-800 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue focus:bg-white transition-all"
-                      />
-                    </div>
+                    <input
+                      type="tel"
+                      placeholder="Phone number"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      className="w-full rounded-xl border border-neutral-200 bg-neutral-50/60 px-4 py-3.5 text-sm text-neutral-800 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue focus:bg-white transition-all"
+                    />
                 </>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <input
-                    type="number"
-                    min={0}
-                    placeholder="Your budget (optional)"
-                    value={budget}
-                    onChange={(e) => setBudget(e.target.value)}
-                    className="w-full rounded-xl border border-neutral-200 bg-neutral-50/60 px-4 py-3.5 text-sm text-neutral-800 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue focus:bg-white transition-all"
-                  />
-                  <input
-                    type="number"
-                    min={0}
-                    placeholder="Bedrooms wanted (optional)"
-                    value={bedrooms}
-                    onChange={(e) => setBedrooms(e.target.value)}
-                    className="w-full rounded-xl border border-neutral-200 bg-neutral-50/60 px-4 py-3.5 text-sm text-neutral-800 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue focus:bg-white transition-all"
-                  />
-                </div>
                 <textarea
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
