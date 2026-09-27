@@ -66,7 +66,7 @@ export default function PropertyCard({
         </div>
       )}
 
-      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent transition-opacity duration-300" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-black/0 to-transparent transition-opacity duration-300" />
       <div
         className={`absolute inset-0 bg-black/0 transition-colors duration-300 ${
           disableHoverEffects ? "" : "group-hover:bg-black/30"

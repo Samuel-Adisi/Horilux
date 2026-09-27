@@ -99,7 +99,7 @@ export default function ListingsPage() {
           className="absolute inset-0 bg-cover bg-center"
           style={{
             backgroundImage:
-              `linear-gradient(to top, rgba(10,10,20,0.75), rgba(10,10,20,0.15)), url('${coverImage}')`,
+              `linear-gradient(to top, rgba(10,10,20,0.28), rgba(10,10,20,0.03)), url('${coverImage}')`,
           }}
         />
         <div className="relative z-10 max-w-3xl">

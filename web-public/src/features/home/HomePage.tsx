@@ -42,7 +42,7 @@ export default function HomePage() {
             }`}
             style={{
               backgroundImage:
-                "linear-gradient(to top, rgba(10,10,20,0.75), rgba(10,10,20,0.15)), url('" + src + "')",
+                "linear-gradient(to top, rgba(10,10,20,0.28), rgba(10,10,20,0.03)), url('" + src + "')",
             }}
           />
         ))}
@@ -160,7 +160,7 @@ export default function HomePage() {
           className="absolute inset-0 bg-cover bg-center"
           style={{
             backgroundImage:
-              "linear-gradient(to bottom, rgba(10,10,20,0.55), rgba(10,10,20,0.35)), url('https://images.unsplash.com/photo-1613977257363-707ba9348227?q=80&w=2000&auto=format&fit=crop')",
+              "linear-gradient(to bottom, rgba(10,10,20,0.25), rgba(10,10,20,0.12)), url('https://images.unsplash.com/photo-1613977257363-707ba9348227?q=80&w=2000&auto=format&fit=crop')",
           }}
         />
         <div className="relative z-10 max-w-3xl mx-auto text-center">
