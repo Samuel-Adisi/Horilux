@@ -2,7 +2,6 @@ import { Link } from "react-router-dom";
 import { useState } from "react";
 import { Heart } from "lucide-react";
 import type { PropertyListItem } from "@/lib/types";
-import { useAuthStore } from "@/lib/auth-store";
 import { useToggleSavedProperty } from "@/features/favorites/hooks/use-saved-properties";
 
 function formatPrice(price: string, currency: string) {
@@ -27,7 +26,6 @@ export default function PropertyCard({
   const priceClass = size === "hero" ? "text-2xl md:text-3xl" : size === "lg" ? "text-lg sm:text-xl md:text-2xl" : "text-xl";
   const padClass = size === "hero" ? "p-8 sm:p-12 md:p-16" : "p-4 sm:p-5";
 
-  const customer = useAuthStore((s) => s.customer);
   const { isSaved, toggle, isPending } = useToggleSavedProperty();
   const saved = !!isSaved(property.id);
   const pending = isPending(property.id);
@@ -35,7 +33,7 @@ export default function PropertyCard({
   function handleToggleSave(e: React.MouseEvent) {
     e.preventDefault();
     e.stopPropagation();
-    if (!customer || pending) return;
+    if (pending) return;
     toggle(property.id);
   }
 
@@ -75,7 +73,8 @@ export default function PropertyCard({
         }`}
       />
 
-      {customer && size !== "hero" && (
+      {size !== "hero" && (
+        // Anonymous visitors can save too, via the horilux_visitor cookie
         <button
           type="button"
           onClick={handleToggleSave}
@@ -104,7 +103,8 @@ export default function PropertyCard({
           <p className={`font-serif leading-snug tracking-wide uppercase truncate ${titleClass}`}>
             {property.title}
           </p>
-          {customer && size === "hero" && (
+          {size === "hero" && (
+            // Anonymous visitors can save too, via the horilux_visitor cookie
             <button
               type="button"
               onClick={handleToggleSave}

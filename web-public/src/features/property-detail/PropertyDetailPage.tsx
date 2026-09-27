@@ -3,7 +3,6 @@ import { useParams, Link } from "react-router-dom";
 import { useProperty, useProperties } from "@/features/listings/hooks/use-properties";
 import PropertyCard from "@/features/shared/PropertyCard";
 import LoadingSpinner from "@/components/shared/LoadingSpinner";
-import { useAuthStore } from "@/lib/auth-store";
 import { useToggleSavedProperty } from "@/features/favorites/hooks/use-saved-properties";
 import { Heart } from "lucide-react";
 import { api } from "@/lib/api";
@@ -48,8 +47,6 @@ export default function PropertyDetailPage() {
     setHeroSlide(index);
   }
 
-  const customer = useAuthStore((s) => s.customer);
-  const isAuthed = !!customer;
   const { isSaved, toggle: toggleSaved, isPending: isSavePending } = useToggleSavedProperty();
   const savePending = property ? isSavePending(property.id) : false;
   const [name, setName] = useState("");
@@ -87,10 +84,10 @@ export default function PropertyDetailPage() {
     setSending(true);
     try {
       await api.post("/public/contact/", {
-        name: isAuthed ? customer!.full_name : name,
-        email: isAuthed ? customer!.email : email,
-        phone: isAuthed ? customer!.phone : phone,
-        country: isAuthed ? "" : country,
+        name,
+        email,
+        phone,
+        country,
         message,
         property: property.id,
         budget: budget ? budget : null,
@@ -173,7 +170,7 @@ export default function PropertyDetailPage() {
             </p>
             <h1 className="font-serif text-2xl sm:text-4xl md:text-6xl text-white leading-tight uppercase flex items-center gap-3 sm:gap-4">
               <span>{property.title}</span>
-              {customer && (
+              {true && (
                 <button
                   type="button"
                   onClick={() => !savePending && toggleSaved(property.id)}
@@ -204,24 +201,24 @@ export default function PropertyDetailPage() {
         <div
           ref={heroSwipeRef}
           onScroll={handleHeroScroll}
-          className="md:hidden relative flex overflow-x-auto snap-x snap-mandatory touch-pan-x touch-pan-y [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden aspect-[4/3]"
+          className="md:hidden relative flex overflow-x-auto snap-x snap-mandatory touch-pan-x touch-pan-y [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden h-[560px]"
           style={{ WebkitOverflowScrolling: "touch" }}
         >
           {(photos.length > 0 ? photos : [{ id: "cover", url: property.cover_image }]).map((photo) => (
             <div
               key={photo.id}
-              className="relative shrink-0 w-full h-full snap-start bg-contain bg-no-repeat bg-center bg-neutral-900"
+              className="relative shrink-0 w-full h-full snap-start bg-cover bg-no-repeat bg-center bg-neutral-900"
               style={{ backgroundImage: heroOverlay + ", url(" + JSON.stringify(photo.url) + ")" }}
             />
           ))}
 
-          <div className="absolute inset-x-0 bottom-0 z-10 max-w-4xl px-6 md:px-12 pb-16">
-            <p className="text-white/80 uppercase tracking-[0.3em] text-xs md:text-sm mb-4">
+          <div className="absolute inset-x-0 bottom-0 z-10 max-w-4xl px-6 md:px-12 pb-10">
+            <p className="text-white/80 uppercase tracking-[0.3em] text-xs md:text-sm mb-2">
               {property.region}
             </p>
             <h1 className="font-serif text-2xl sm:text-4xl md:text-6xl text-white leading-tight uppercase flex items-center gap-3 sm:gap-4">
               <span>{property.title}</span>
-              {customer && (
+              {true && (
                 <button
                   type="button"
                   onClick={() => !savePending && toggleSaved(property.id)}
@@ -236,10 +233,10 @@ export default function PropertyDetailPage() {
                 </button>
               )}
             </h1>
-            <p className="mt-4 font-serif text-2xl md:text-3xl text-white">
+            <p className="mt-3 font-serif text-xl md:text-3xl text-white">
               {formatPrice(property.price, property.currency)}
             </p>
-            <div className="mt-4 flex flex-wrap gap-x-6 gap-y-1 text-white/85 text-sm">
+            <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-white/85 text-xs">
               {property.bedrooms != null && <span>{String(property.bedrooms).padStart(2, "0")} Bedrooms</span>}
               {property.bathrooms != null && <span>{String(property.bathrooms).padStart(2, "0")} Bathrooms</span>}
               {property.building_size && <span>Floor Area {property.building_size}</span>}
@@ -401,8 +398,7 @@ export default function PropertyDetailPage() {
               </div>
             ) : (
               <form onSubmit={handleInquirySubmit} className="space-y-5">
-                {!isAuthed && (
-                  <>
+                <>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <input
                         type="text"
@@ -437,8 +433,7 @@ export default function PropertyDetailPage() {
                         className="w-full rounded-xl border border-neutral-200 bg-neutral-50/60 px-4 py-3.5 text-sm text-neutral-800 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue focus:bg-white transition-all"
                       />
                     </div>
-                  </>
-                )}
+                </>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <input
                     type="number"

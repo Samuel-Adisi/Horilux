@@ -1,15 +1,12 @@
 import { useState, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { fetchSavedProperties, saveProperty, unsaveProperty } from "../api/saved-properties";
-import { useAuthStore } from "@/lib/auth-store";
 import type { SavedProperty } from "@/lib/types";
 
 export function useSavedProperties() {
-  const customer = useAuthStore((s) => s.customer);
   return useQuery({
     queryKey: ["saved-properties"],
     queryFn: fetchSavedProperties,
-    enabled: !!customer,
   });
 }
 

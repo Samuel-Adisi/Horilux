@@ -1,11 +1,8 @@
 import { Routes, Route } from "react-router-dom";
 import PublicLayout from "@/components/layout/PublicLayout";
-import RequireAuth from "./RequireAuth";
 import HomePage from "@/features/home/HomePage";
 import ListingsPage from "@/features/listings/ListingsPage";
 import PropertyDetailPage from "@/features/property-detail/PropertyDetailPage";
-import LoginPage from "@/features/auth/LoginPage";
-import RegisterPage from "@/features/auth/RegisterPage";
 import FavoritesPage from "@/features/favorites/FavoritesPage";
 import AboutPage from "@/features/shared/AboutPage";
 import ContactPage from "@/features/shared/ContactPage";
@@ -18,14 +15,10 @@ export default function AppRouter() {
         <Route path="/" element={<HomePage />} />
         <Route path="/listings" element={<ListingsPage />} />
         <Route path="/listings/:id" element={<PropertyDetailPage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/contact" element={<ContactPage />} />
 
-        <Route element={<RequireAuth />}>
-          <Route path="/favorites" element={<FavoritesPage />} />
-        </Route>
+        <Route path="/favorites" element={<FavoritesPage />} />
 
         <Route path="*" element={<NotFoundPage />} />
       </Route>

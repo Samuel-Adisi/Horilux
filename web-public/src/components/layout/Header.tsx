@@ -1,21 +1,10 @@
 import { useState } from "react";
-import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
-import { useAuthStore } from "@/lib/auth-store";
+import { Link, NavLink, useLocation } from "react-router-dom";
 import logo from "@/assets/logo.png";
 
 export default function Header() {
-  const customer = useAuthStore((s) => s.customer);
-  const logout = useAuthStore((s) => s.logout);
-  const navigate = useNavigate();
   const { pathname } = useLocation();
-  const [accountMenuOpen, setAccountMenuOpen] = useState(false);
-
-  function handleLogout() {
-    logout();
-    setAccountMenuOpen(false);
-    navigate("/");
-  }
-  const isHome = pathname === "/" || pathname.startsWith("/listings") || pathname === "/about" || pathname === "/login" || pathname === "/register" || pathname === "/favorites";
+  const isHome = pathname === "/" || pathname.startsWith("/listings") || pathname === "/about" || pathname === "/favorites";
   const [menuOpen, setMenuOpen] = useState(false);
   const [propertiesOpen, setPropertiesOpen] = useState(false);
 
@@ -143,57 +132,14 @@ export default function Header() {
         </nav>
 
         <div className="flex items-center gap-3 md:gap-4 shrink-0">
-          {customer ? (
-            <>
-              <Link
-                to="/favorites"
-                className={`hidden md:inline-block text-sm uppercase tracking-wide transition-colors ${
-                  isHome ? "text-white/75 hover:text-white" : "text-neutral-600 hover:text-brand-blue"
-                }`}
-              >
-                Favorites
-              </Link>
-              <div
-                className="relative hidden md:block"
-                onMouseEnter={() => setAccountMenuOpen(true)}
-                onMouseLeave={() => setAccountMenuOpen(false)}
-              >
-                <button
-                  type="button"
-                  className={
-                    isHome
-                      ? "text-xs sm:text-sm font-semibold text-white border border-white/60 px-4 py-1.5 sm:px-5 sm:py-2 rounded-full hover:bg-white/10 transition-colors"
-                      : "text-xs sm:text-sm font-semibold text-white bg-brand-blue px-4 py-1.5 sm:px-5 sm:py-2 rounded-full hover:opacity-90 transition-opacity"
-                  }
-                >
-                  {customer.first_name || "Account"}
-                </button>
-                {accountMenuOpen && (
-                  <div className="absolute right-0 top-full pt-2 z-50">
-                    <button
-                      type="button"
-                      onClick={handleLogout}
-                      className="whitespace-nowrap rounded-xl bg-white px-5 py-2.5 text-sm text-neutral-700 shadow-lg ring-1 ring-black/10 hover:bg-neutral-50 transition-colors"
-                    >
-                      Logout
-                    </button>
-                  </div>
-                )}
-              </div>
-            </>
-          ) : (
-            <Link
-              to="/login"
-              className={
-                (isHome
-                  ? "text-xs sm:text-sm font-semibold text-white border border-white/60 px-4 py-1.5 sm:px-5 sm:py-2 rounded-full hover:bg-white/10 transition-colors"
-                  : "text-xs sm:text-sm font-semibold text-white bg-brand-blue px-4 py-1.5 sm:px-5 sm:py-2 rounded-full hover:opacity-90 transition-opacity") +
-                " hidden md:inline-block"
-              }
-            >
-              Sign in
-            </Link>
-          )}
+          <Link
+            to="/favorites"
+            className={`hidden md:inline-block text-sm uppercase tracking-wide transition-colors ${
+              isHome ? "text-white/75 hover:text-white" : "text-neutral-600 hover:text-brand-blue"
+            }`}
+          >
+            Favorites
+          </Link>
           <button
             type="button"
             onClick={() => {
@@ -282,43 +228,17 @@ export default function Header() {
               </NavLink>
             ))}
             <div className="my-1 border-t border-neutral-100" />
-            {customer ? (
-              <>
-                <NavLink
-                  to="/favorites"
-                  onClick={() => setMenuOpen(false)}
-                  className={({ isActive }) =>
-                    `-mx-4 px-4 py-5 text-[15px] uppercase tracking-[0.15em] font-medium rounded-md transition-colors ${
-                      isActive ? "bg-[#F4EFE6] text-brand-blue" : "text-brand-blue/90 hover:bg-[#F4EFE6]"
-                    }`
-                  }
-                >
-                  Favorites
-                </NavLink>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMenuOpen(false);
-                    handleLogout();
-                  }}
-                  className="-mx-4 px-4 py-5 text-left text-[15px] uppercase tracking-[0.15em] font-medium rounded-md text-brand-blue/90 hover:bg-[#F4EFE6] transition-colors"
-                >
-                  Logout
-                </button>
-              </>
-            ) : (
-              <NavLink
-                to="/login"
-                onClick={() => setMenuOpen(false)}
-                className={({ isActive }) =>
-                  `-mx-4 px-4 py-5 text-[15px] uppercase tracking-[0.15em] font-medium rounded-md transition-colors ${
-                    isActive ? "bg-[#F4EFE6] text-brand-blue" : "text-brand-blue/90 hover:bg-[#F4EFE6]"
-                  }`
-                }
-              >
-                Sign in
-              </NavLink>
-            )}
+            <NavLink
+              to="/favorites"
+              onClick={() => setMenuOpen(false)}
+              className={({ isActive }) =>
+                `-mx-4 px-4 py-5 text-[15px] uppercase tracking-[0.15em] font-medium rounded-md transition-colors ${
+                  isActive ? "bg-[#F4EFE6] text-brand-blue" : "text-brand-blue/90 hover:bg-[#F4EFE6]"
+                }`
+              }
+            >
+              Favorites
+            </NavLink>
           </nav>
         </div>
       )}

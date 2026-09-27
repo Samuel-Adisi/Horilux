@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../../lib/api";
-import { useAuthStore } from "../../lib/auth-store";
 import { Mail, Phone } from "lucide-react";
 
 const CONTACT_EMAIL = "horiluxestates@gmail.com";
@@ -11,8 +10,6 @@ const inputClass =
 
 export default function ContactPage() {
   const navigate = useNavigate();
-  const customer = useAuthStore((s) => s.customer);
-  const isAuthed = !!customer;
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -31,10 +28,10 @@ export default function ContactPage() {
 
     try {
       await api.post("/public/contact/", {
-        name: isAuthed ? customer!.full_name : name,
-        email: isAuthed ? customer!.email : email,
-        phone: isAuthed ? customer!.phone : phone,
-        country: isAuthed ? "" : country,
+        name,
+        email,
+        phone,
+        country,
         message,
       });
       setSubmitted(true);
@@ -70,8 +67,7 @@ export default function ContactPage() {
             </p>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
-              {!isAuthed && (
-                <>
+              <>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <input
                       type="text"
@@ -107,8 +103,7 @@ export default function ContactPage() {
                       className={inputClass}
                     />
                   </div>
-                </>
-              )}
+              </>
 
               <textarea
                 placeholder="Message"
