@@ -50,7 +50,8 @@ export default function PropertyDetailPage() {
 
   const customer = useAuthStore((s) => s.customer);
   const isAuthed = !!customer;
-  const { isSaved, toggle: toggleSaved, isPending: savePending } = useToggleSavedProperty();
+  const { isSaved, toggle: toggleSaved, isPending: isSavePending } = useToggleSavedProperty();
+  const savePending = property ? isSavePending(property.id) : false;
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -134,10 +135,6 @@ export default function PropertyDetailPage() {
 
   const heroOverlay =
     "linear-gradient(to top, rgba(10,10,20,0.75) 0%, rgba(10,10,20,0.3) 14%, rgba(10,10,20,0) 32%)";
-  const heroBackgroundImage = heroImageUrl
-    ? heroOverlay + ", url(" + JSON.stringify(heroImageUrl) + ")"
-    : "linear-gradient(to top, rgba(10,10,20,0.8), rgba(10,10,20,0.4))";
-  const heroStyle = { backgroundImage: heroBackgroundImage };
 
   const related = (relatedPage?.results || []).filter((p) => p.id !== property.id).slice(0, 2);
 
@@ -163,24 +160,92 @@ export default function PropertyDetailPage() {
       </Link>
 
       {/* 1. Hero / cover */}
-      <section className="relative min-h-screen flex items-end px-6 md:px-12 pb-16">
-        {/* Desktop: static cover image */}
-        <div className="hidden md:block absolute inset-0 bg-cover bg-center" style={heroStyle} />
+      <section className="relative">
+        {/* Desktop: real image at its own natural aspect ratio, full width, no crop */}
+        <div className="hidden md:block relative w-full bg-neutral-900">
+          {heroImageUrl && (
+            <img src={heroImageUrl} alt={property.title} className="w-full h-auto block" />
+          )}
+          <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: heroOverlay }} />
+          <div className="absolute inset-x-0 bottom-0 z-10 max-w-4xl px-6 md:px-12 pb-16">
+            <p className="text-white/80 uppercase tracking-[0.3em] text-xs md:text-sm mb-4">
+              {property.region}
+            </p>
+            <h1 className="font-serif text-2xl sm:text-4xl md:text-6xl text-white leading-tight uppercase flex items-center gap-3 sm:gap-4">
+              <span>{property.title}</span>
+              {customer && (
+                <button
+                  type="button"
+                  onClick={() => !savePending && toggleSaved(property.id)}
+                  aria-label={isSaved(property.id) ? "Remove from favorites" : "Add to favorites"}
+                  disabled={savePending}
+                  className="shrink-0 flex h-8 w-8 sm:h-10 sm:w-10 md:h-11 md:w-11 items-center justify-center rounded-full bg-black/30 backdrop-blur-sm hover:bg-black/50 transition-colors disabled:opacity-60"
+                >
+                  <Heart
+                    className={`h-4 w-4 sm:h-5 sm:w-5 transition-colors ${isSaved(property.id) ? "fill-pink-500 text-pink-500" : "text-white"}`}
+                    strokeWidth={1.75}
+                  />
+                </button>
+              )}
+            </h1>
+            <p className="mt-4 font-serif text-2xl md:text-3xl text-white">
+              {formatPrice(property.price, property.currency)}
+            </p>
+            <div className="mt-4 flex flex-wrap gap-x-6 gap-y-1 text-white/85 text-sm">
+              {property.bedrooms != null && <span>{String(property.bedrooms).padStart(2, "0")} Bedrooms</span>}
+              {property.bathrooms != null && <span>{String(property.bathrooms).padStart(2, "0")} Bathrooms</span>}
+              {property.building_size && <span>Floor Area {property.building_size}</span>}
+              {property.land_size && <span>Land Area {property.land_size}</span>}
+            </div>
+          </div>
+        </div>
 
         {/* Mobile: swipeable cover carousel, no arrows, dot indicator only */}
         <div
           ref={heroSwipeRef}
           onScroll={handleHeroScroll}
-          className="md:hidden absolute inset-0 flex overflow-x-auto snap-x snap-mandatory touch-pan-x touch-pan-y [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+          className="md:hidden relative flex overflow-x-auto snap-x snap-mandatory touch-pan-x touch-pan-y [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden aspect-[4/3]"
           style={{ WebkitOverflowScrolling: "touch" }}
         >
           {(photos.length > 0 ? photos : [{ id: "cover", url: property.cover_image }]).map((photo) => (
             <div
               key={photo.id}
-              className="shrink-0 w-full h-full snap-start bg-cover bg-center"
+              className="relative shrink-0 w-full h-full snap-start bg-contain bg-no-repeat bg-center bg-neutral-900"
               style={{ backgroundImage: heroOverlay + ", url(" + JSON.stringify(photo.url) + ")" }}
             />
           ))}
+
+          <div className="absolute inset-x-0 bottom-0 z-10 max-w-4xl px-6 md:px-12 pb-16">
+            <p className="text-white/80 uppercase tracking-[0.3em] text-xs md:text-sm mb-4">
+              {property.region}
+            </p>
+            <h1 className="font-serif text-2xl sm:text-4xl md:text-6xl text-white leading-tight uppercase flex items-center gap-3 sm:gap-4">
+              <span>{property.title}</span>
+              {customer && (
+                <button
+                  type="button"
+                  onClick={() => !savePending && toggleSaved(property.id)}
+                  aria-label={isSaved(property.id) ? "Remove from favorites" : "Add to favorites"}
+                  disabled={savePending}
+                  className="shrink-0 flex h-8 w-8 sm:h-10 sm:w-10 md:h-11 md:w-11 items-center justify-center rounded-full bg-black/30 backdrop-blur-sm hover:bg-black/50 transition-colors disabled:opacity-60"
+                >
+                  <Heart
+                    className={`h-4 w-4 sm:h-5 sm:w-5 transition-colors ${isSaved(property.id) ? "fill-pink-500 text-pink-500" : "text-white"}`}
+                    strokeWidth={1.75}
+                  />
+                </button>
+              )}
+            </h1>
+            <p className="mt-4 font-serif text-2xl md:text-3xl text-white">
+              {formatPrice(property.price, property.currency)}
+            </p>
+            <div className="mt-4 flex flex-wrap gap-x-6 gap-y-1 text-white/85 text-sm">
+              {property.bedrooms != null && <span>{String(property.bedrooms).padStart(2, "0")} Bedrooms</span>}
+              {property.bathrooms != null && <span>{String(property.bathrooms).padStart(2, "0")} Bathrooms</span>}
+              {property.building_size && <span>Floor Area {property.building_size}</span>}
+              {property.land_size && <span>Land Area {property.land_size}</span>}
+            </div>
+          </div>
         </div>
 
         {photos.length > 1 && (
@@ -195,38 +260,6 @@ export default function PropertyDetailPage() {
             ))}
           </div>
         )}
-        <div className="relative z-10 max-w-4xl">
-          <p className="text-white/80 uppercase tracking-[0.3em] text-xs md:text-sm mb-4">
-            {property.region}
-          </p>
-          <h1 className="font-serif text-2xl sm:text-4xl md:text-6xl text-white leading-tight uppercase flex items-center gap-3 sm:gap-4">
-            <span>{property.title}</span>
-            {customer && (
-              <button
-                type="button"
-                onClick={() => !savePending && toggleSaved(property.id)}
-                aria-label={isSaved(property.id) ? "Remove from favorites" : "Add to favorites"}
-                disabled={savePending}
-                className="shrink-0 flex h-8 w-8 sm:h-10 sm:w-10 md:h-11 md:w-11 items-center justify-center rounded-full bg-black/30 backdrop-blur-sm hover:bg-black/50 transition-colors disabled:opacity-60"
-              >
-                <Heart
-                  className={`h-4 w-4 sm:h-5 sm:w-5 transition-colors ${isSaved(property.id) ? "fill-pink-500 text-pink-500" : "text-white"}`}
-                  strokeWidth={1.75}
-                />
-              </button>
-            )}
-          </h1>
-          <p className="mt-4 font-serif text-2xl md:text-3xl text-white">
-            {formatPrice(property.price, property.currency)}
-          </p>
-          <div className="mt-4 flex flex-wrap gap-x-6 gap-y-1 text-white/85 text-sm">
-            {property.bedrooms != null && <span>{String(property.bedrooms).padStart(2, "0")} Bedrooms</span>}
-            {property.bathrooms != null && <span>{String(property.bathrooms).padStart(2, "0")} Bathrooms</span>}
-            {property.building_size && <span>Floor Area {property.building_size}</span>}
-            {property.land_size && <span>Land Area {property.land_size}</span>}
-          </div>
-        </div>
-
       </section>
 
       {/* 2 + 3. Description + property details */}

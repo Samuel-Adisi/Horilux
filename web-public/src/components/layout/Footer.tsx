@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { MessageCircle, Phone, Mail } from "lucide-react";
 
 export default function Footer() {
   return (
@@ -37,12 +38,34 @@ export default function Footer() {
           </ul>
         </div>
 
-        <div>
+        <div className="flex flex-col">
           <h4 className="text-sm font-semibold uppercase tracking-wide text-white/60 mb-4">
             Contact
           </h4>
-          <p className="text-sm text-white/70">info@horiluxestates.com</p>
-          <p className="text-sm text-white/70">+233247628324</p>
+          <a
+            href="mailto:info@horiluxestates.com"
+            className="inline-flex items-center gap-2 text-sm text-white/70 hover:text-white transition-colors"
+          >
+            <Mail className="h-4 w-4" />
+            info@horiluxestates.com
+          </a>
+          <a
+            href="tel:+233247628324"
+            className="mt-2 inline-flex items-center gap-2 text-sm text-white/70 hover:text-white transition-colors"
+          >
+            <Phone className="h-4 w-4" />
+            +233 24 762 8324
+          </a>
+          <a
+            href="https://wa.me/233247628324"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-2 inline-flex items-center gap-2 text-sm text-white/70 hover:text-white transition-colors"
+            aria-label="Chat with us on WhatsApp"
+          >
+            <MessageCircle className="h-4 w-4" />
+            Chat on WhatsApp
+          </a>
         </div>
       </div>
 

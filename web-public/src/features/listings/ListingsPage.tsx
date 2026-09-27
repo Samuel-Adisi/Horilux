@@ -37,6 +37,26 @@ export default function ListingsPage() {
     return f;
   }, [searchParams]);
 
+  const pageTitle = useMemo(() => {
+    const listingType = searchParams.get("listing_type");
+    const propertyType = searchParams.get("property_type");
+    if (listingType === "rent") return "For Rent";
+    if (listingType === "sale") return "For Sale";
+    if (propertyType === "residential") return "Residential";
+    if (propertyType === "commercial") return "Commercial";
+    return "All Properties";
+  }, [searchParams]);
+
+  const coverImage = useMemo(() => {
+    const listingType = searchParams.get("listing_type");
+    const propertyType = searchParams.get("property_type");
+    if (listingType === "rent") return "https://images.unsplash.com/photo-1580785692949-7b5b7fd83d25?q=80&w=2000&auto=format&fit=crop";
+    if (listingType === "sale") return "https://images.unsplash.com/photo-1757361653037-dbf0d0a820ae?q=80&w=2000&auto=format&fit=crop";
+    if (propertyType === "residential") return "https://images.unsplash.com/photo-1613490493576-7fde63acd811?q=80&w=2000&auto=format&fit=crop";
+    if (propertyType === "commercial") return "https://images.unsplash.com/photo-1580741990231-4aa1c1d9a76a?q=80&w=2000&auto=format&fit=crop";
+    return "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=2000&auto=format&fit=crop";
+  }, [searchParams]);
+
   const filtersKey = JSON.stringify(filters);
 
   const [page, setPage] = useState(1);
@@ -79,7 +99,7 @@ export default function ListingsPage() {
           className="absolute inset-0 bg-cover bg-center"
           style={{
             backgroundImage:
-              "linear-gradient(to top, rgba(10,10,20,0.75), rgba(10,10,20,0.15)), url('https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=2000&auto=format&fit=crop')",
+              `linear-gradient(to top, rgba(10,10,20,0.75), rgba(10,10,20,0.15)), url('${coverImage}')`,
           }}
         />
         <div className="relative z-10 max-w-3xl">
@@ -87,7 +107,7 @@ export default function ListingsPage() {
             Ghana&apos;s Premium Real Estate
           </p>
           <h1 className="font-serif text-2xl sm:text-4xl md:text-6xl text-white leading-tight">
-            All Properties
+            {pageTitle}
           </h1>
         </div>
       </section>

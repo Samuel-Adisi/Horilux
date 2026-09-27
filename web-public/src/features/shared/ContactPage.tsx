@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../../lib/api";
 import { useAuthStore } from "../../lib/auth-store";
+import { Mail, Phone } from "lucide-react";
 
 const CONTACT_EMAIL = "horiluxestates@gmail.com";
 
@@ -164,10 +165,33 @@ export default function ContactPage() {
           <p className="text-xs uppercase tracking-[0.15em] text-white/70 mb-8">
             Live Better, Invest Smart
           </p>
-          <a href={`mailto:${CONTACT_EMAIL}`} className="underline underline-offset-4 text-lg mb-3 w-fit">
+          <a
+            href={`mailto:${CONTACT_EMAIL}`}
+            className="flex items-center gap-3 text-lg mb-3 w-fit hover:underline underline-offset-4"
+          >
+            <Mail className="h-5 w-5 shrink-0" />
             {CONTACT_EMAIL}
           </a>
-          <p className="text-lg mb-3">+233247628324</p>
+          <a
+            href="tel:+233247628324"
+            className="flex items-center gap-3 text-lg mb-3 w-fit hover:underline underline-offset-4"
+          >
+            <Phone className="h-5 w-5 shrink-0" />
+            +233 24 762 8324
+          </a>
+          <a
+            href="https://wa.me/233247628324"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-3 text-lg mb-3 w-fit hover:underline underline-offset-4"
+            aria-label="Chat with us on WhatsApp"
+          >
+            <svg viewBox="0 0 24 24" className="h-5 w-5 shrink-0 fill-current">
+              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.372-.01-.571-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.71.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" />
+              <path d="M12.05 2C6.579 2 2.13 6.448 2.13 11.92c0 1.816.487 3.517 1.334 4.984L2 22l5.242-1.438a9.83 9.83 0 0 0 4.808 1.242h.004c5.472 0 9.92-4.448 9.92-9.92 0-2.65-1.033-5.144-2.907-7.018A9.865 9.865 0 0 0 12.05 2zm0 18.033a8.1 8.1 0 0 1-4.13-1.13l-.296-.176-3.11.854.83-3.03-.192-.31a8.09 8.09 0 0 1-1.24-4.33c0-4.48 3.646-8.126 8.128-8.126a8.08 8.08 0 0 1 5.75 2.382 8.076 8.076 0 0 1 2.378 5.747c0 4.481-3.646 8.126-8.128 8.126z" />
+            </svg>
+            Chat on WhatsApp
+          </a>
           <p className="text-lg">Accra, Ghana</p>
         </div>
       </div>

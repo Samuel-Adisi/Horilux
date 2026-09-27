@@ -1,11 +1,20 @@
 import { useState } from "react";
-import { Link, NavLink, useLocation } from "react-router-dom";
+import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/lib/auth-store";
 import logo from "@/assets/logo.png";
 
 export default function Header() {
   const customer = useAuthStore((s) => s.customer);
+  const logout = useAuthStore((s) => s.logout);
+  const navigate = useNavigate();
   const { pathname } = useLocation();
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false);
+
+  function handleLogout() {
+    logout();
+    setAccountMenuOpen(false);
+    navigate("/");
+  }
   const isHome = pathname === "/" || pathname.startsWith("/listings") || pathname === "/about" || pathname === "/login" || pathname === "/register" || pathname === "/favorites";
   const [menuOpen, setMenuOpen] = useState(false);
   const [propertiesOpen, setPropertiesOpen] = useState(false);
@@ -17,7 +26,7 @@ export default function Header() {
   ];
 
   const navLinkClass = ({ isActive }: { isActive: boolean }) =>
-    `text-sm uppercase tracking-wide transition-colors ${
+    `relative inline-block pb-1 text-sm uppercase tracking-wide transition-colors group ${
       isHome
         ? isActive
           ? "text-white"
@@ -26,6 +35,17 @@ export default function Header() {
         ? "text-brand-blue"
         : "text-neutral-600 hover:text-brand-blue"
     }`;
+
+  function NavUnderline({ isActive }: { isActive: boolean }) {
+    return (
+      <span
+        aria-hidden
+        className={`pointer-events-none absolute left-0 -bottom-0.5 h-px w-full origin-center transition-transform duration-300 ease-out ${
+          isActive ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"
+        } ${isHome ? "bg-white" : "bg-brand-blue"}`}
+      />
+    );
+  }
 
   return (
     <header
@@ -75,9 +95,23 @@ export default function Header() {
         </Link>
 
         <nav className="hidden md:flex items-center gap-8">
-          <NavLink to="/" end className={navLinkClass}>Home</NavLink>
+          <NavLink to="/" end className={navLinkClass}>
+            {({ isActive }) => (
+              <>
+                Home
+                <NavUnderline isActive={isActive} />
+              </>
+            )}
+          </NavLink>
           <div className="relative" onMouseEnter={() => setPropertiesOpen(true)} onMouseLeave={() => setPropertiesOpen(false)}>
-            <NavLink to="/listings" className={navLinkClass}>Properties</NavLink>
+            <NavLink to="/listings" className={navLinkClass}>
+              {({ isActive }) => (
+                <>
+                  Properties
+                  <NavUnderline isActive={isActive || propertiesOpen} />
+                </>
+              )}
+            </NavLink>
             <div
               className={`absolute top-full left-0 pt-3 w-48 z-50 transition-all duration-200 ease-out ${
                 propertiesOpen ? "opacity-100 translate-y-0 visible" : "opacity-0 -translate-y-1 invisible pointer-events-none"
@@ -90,8 +124,22 @@ export default function Header() {
               </div>
             </div>
           </div>
-          <NavLink to="/about" className={navLinkClass}>About</NavLink>
-          <NavLink to="/contact" className={navLinkClass}>Contact</NavLink>
+          <NavLink to="/about" className={navLinkClass}>
+            {({ isActive }) => (
+              <>
+                About
+                <NavUnderline isActive={isActive} />
+              </>
+            )}
+          </NavLink>
+          <NavLink to="/contact" className={navLinkClass}>
+            {({ isActive }) => (
+              <>
+                Contact
+                <NavUnderline isActive={isActive} />
+              </>
+            )}
+          </NavLink>
         </nav>
 
         <div className="flex items-center gap-3 md:gap-4 shrink-0">
@@ -105,17 +153,33 @@ export default function Header() {
               >
                 Favorites
               </Link>
-              <Link
-                to="/account"
-                className={
-                  (isHome
-                    ? "text-xs sm:text-sm font-semibold text-white border border-white/60 px-4 py-1.5 sm:px-5 sm:py-2 rounded-full hover:bg-white/10 transition-colors"
-                    : "text-xs sm:text-sm font-semibold text-white bg-brand-blue px-4 py-1.5 sm:px-5 sm:py-2 rounded-full hover:opacity-90 transition-opacity") +
-                  " hidden md:inline-block"
-                }
+              <div
+                className="relative hidden md:block"
+                onMouseEnter={() => setAccountMenuOpen(true)}
+                onMouseLeave={() => setAccountMenuOpen(false)}
               >
-                {customer.first_name || "Account"}
-              </Link>
+                <button
+                  type="button"
+                  className={
+                    isHome
+                      ? "text-xs sm:text-sm font-semibold text-white border border-white/60 px-4 py-1.5 sm:px-5 sm:py-2 rounded-full hover:bg-white/10 transition-colors"
+                      : "text-xs sm:text-sm font-semibold text-white bg-brand-blue px-4 py-1.5 sm:px-5 sm:py-2 rounded-full hover:opacity-90 transition-opacity"
+                  }
+                >
+                  {customer.first_name || "Account"}
+                </button>
+                {accountMenuOpen && (
+                  <div className="absolute right-0 top-full pt-2 z-50">
+                    <button
+                      type="button"
+                      onClick={handleLogout}
+                      className="whitespace-nowrap rounded-xl bg-white px-5 py-2.5 text-sm text-neutral-700 shadow-lg ring-1 ring-black/10 hover:bg-neutral-50 transition-colors"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                )}
+              </div>
             </>
           ) : (
             <Link
@@ -231,17 +295,16 @@ export default function Header() {
                 >
                   Favorites
                 </NavLink>
-                <NavLink
-                  to="/account"
-                  onClick={() => setMenuOpen(false)}
-                  className={({ isActive }) =>
-                    `-mx-4 px-4 py-5 text-[15px] uppercase tracking-[0.15em] font-medium rounded-md transition-colors ${
-                      isActive ? "bg-[#F4EFE6] text-brand-blue" : "text-brand-blue/90 hover:bg-[#F4EFE6]"
-                    }`
-                  }
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMenuOpen(false);
+                    handleLogout();
+                  }}
+                  className="-mx-4 px-4 py-5 text-left text-[15px] uppercase tracking-[0.15em] font-medium rounded-md text-brand-blue/90 hover:bg-[#F4EFE6] transition-colors"
                 >
-                  {customer.first_name || "My Account"}
-                </NavLink>
+                  Logout
+                </button>
               </>
             ) : (
               <NavLink

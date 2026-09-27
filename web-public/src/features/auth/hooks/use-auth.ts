@@ -10,7 +10,7 @@ export function useLogin() {
     mutationFn: (payload: LoginPayload) => loginCustomer(payload),
     onSuccess: (data) => {
       setAuth(data.customer, data.access, data.refresh);
-      navigate("/account");
+      navigate("/");
     },
   });
 }
@@ -22,7 +22,7 @@ export function useRegister() {
     mutationFn: (payload: RegisterPayload) => registerCustomer(payload),
     onSuccess: (data) => {
       setAuth(data.customer, data.access, data.refresh);
-      navigate("/account");
+      navigate("/");
     },
   });
 }

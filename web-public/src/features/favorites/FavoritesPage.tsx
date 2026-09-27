@@ -39,9 +39,11 @@ export default function FavoritesPage() {
 
         {data && data.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {data.map((saved) => (
-              <PropertyCard key={saved.id} property={saved.property_detail} size="lg" />
-            ))}
+            {data
+              .filter((saved) => !!saved.property_detail)
+              .map((saved) => (
+                <PropertyCard key={saved.id} property={saved.property_detail} size="lg" />
+              ))}
           </div>
         )}
       </section>

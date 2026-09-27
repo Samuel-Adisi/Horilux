@@ -11,7 +11,7 @@ export default function LoadingSpinner({
     <img
       src={logo}
       alt="Loading"
-      className={`h-20 w-20 object-contain [animation:horilux-fade_1.4s_ease-in-out_infinite] ${className}`}
+      className={`h-20 w-20 object-contain brightness-0 [animation:horilux-fade_1.4s_ease-in-out_infinite] ${className}`}
     />
   );
 

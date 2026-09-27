@@ -30,11 +30,12 @@ export default function PropertyCard({
   const customer = useAuthStore((s) => s.customer);
   const { isSaved, toggle, isPending } = useToggleSavedProperty();
   const saved = !!isSaved(property.id);
+  const pending = isPending(property.id);
 
   function handleToggleSave(e: React.MouseEvent) {
     e.preventDefault();
     e.stopPropagation();
-    if (!customer || isPending) return;
+    if (!customer || pending) return;
     toggle(property.id);
   }
 
@@ -79,11 +80,11 @@ export default function PropertyCard({
           type="button"
           onClick={handleToggleSave}
           aria-label={saved ? "Remove from favorites" : "Add to favorites"}
-          disabled={isPending}
+          disabled={pending}
           className="absolute top-3 left-3 sm:top-4 sm:left-4 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-black/30 backdrop-blur-sm hover:bg-black/50 transition-colors disabled:opacity-60"
         >
           <Heart
-            className={`h-4 w-4 transition-colors ${saved ? "fill-pink-500 text-pink-500" : "text-white"}`}
+            className={`h-4 w-4 transition-colors ${pending ? "opacity-50 animate-pulse" : ""} ${saved ? "fill-pink-500 text-pink-500" : "text-white"}`}
             strokeWidth={1.75}
           />
         </button>
@@ -108,11 +109,11 @@ export default function PropertyCard({
               type="button"
               onClick={handleToggleSave}
               aria-label={saved ? "Remove from favorites" : "Add to favorites"}
-              disabled={isPending}
+              disabled={pending}
               className="shrink-0 flex h-8 w-8 md:h-9 md:w-9 items-center justify-center rounded-full bg-black/30 backdrop-blur-sm hover:bg-black/50 transition-colors disabled:opacity-60"
             >
               <Heart
-                className={`h-4 w-4 transition-colors ${saved ? "fill-pink-500 text-pink-500" : "text-white"}`}
+                className={`h-4 w-4 transition-colors ${pending ? "opacity-50 animate-pulse" : ""} ${saved ? "fill-pink-500 text-pink-500" : "text-white"}`}
                 strokeWidth={1.75}
               />
             </button>

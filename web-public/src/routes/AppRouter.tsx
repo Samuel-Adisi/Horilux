@@ -6,7 +6,6 @@ import ListingsPage from "@/features/listings/ListingsPage";
 import PropertyDetailPage from "@/features/property-detail/PropertyDetailPage";
 import LoginPage from "@/features/auth/LoginPage";
 import RegisterPage from "@/features/auth/RegisterPage";
-import AccountPage from "@/features/account/AccountPage";
 import FavoritesPage from "@/features/favorites/FavoritesPage";
 import AboutPage from "@/features/shared/AboutPage";
 import ContactPage from "@/features/shared/ContactPage";
@@ -25,7 +24,6 @@ export default function AppRouter() {
         <Route path="/contact" element={<ContactPage />} />
 
         <Route element={<RequireAuth />}>
-          <Route path="/account" element={<AccountPage />} />
           <Route path="/favorites" element={<FavoritesPage />} />
         </Route>
 
