@@ -29,14 +29,18 @@ export default function HomePage() {
   }, []);
 
   const heroSwipeRef = useRef<HTMLDivElement>(null);
-  const [heroSlideMobile, setHeroSlideMobile] = useState(0);
 
   function handleHeroScroll() {
     const el = heroSwipeRef.current;
     if (!el) return;
-    const index = Math.round(el.scrollLeft / el.clientWidth);
-    setHeroSlideMobile(index);
+    void el;
   }
+
+  useEffect(() => {
+    const el = heroSwipeRef.current;
+    if (!el) return;
+    el.scrollTo({ left: heroIndex * el.clientWidth, behavior: "smooth" });
+  }, [heroIndex]);
 
   return (
     <div>
@@ -76,18 +80,6 @@ export default function HomePage() {
           ))}
         </div>
 
-        {HERO_IMAGES.length > 1 && (
-          <div className="md:hidden absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex gap-1.5">
-            {HERO_IMAGES.map((src, i) => (
-              <span
-                key={src}
-                className={`h-1.5 rounded-full transition-all ${
-                  i === heroSlideMobile ? "w-5 bg-white" : "w-1.5 bg-white/50"
-                }`}
-              />
-            ))}
-          </div>
-        )}
         <div className="relative z-10 max-w-3xl">
           <p className="text-white/80 uppercase tracking-[0.3em] text-xs md:text-sm mb-4">
             Ghana&apos;s Premium Real Estate
