@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { useProperties } from "@/features/listings/hooks/use-properties";
 import PropertyCard from "@/features/shared/PropertyCard";
@@ -15,17 +15,79 @@ export default function HomePage() {
   const featured = propertiesPage?.results;
   const [subscribed, setSubscribed] = useState(false);
 
+  const HERO_IMAGES = [
+    "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2000&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=2000&auto=format&fit=crop",
+  ];
+  const [heroIndex, setHeroIndex] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setHeroIndex((i) => (i + 1) % HERO_IMAGES.length);
+    }, 6000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const heroSwipeRef = useRef<HTMLDivElement>(null);
+  const [heroSlideMobile, setHeroSlideMobile] = useState(0);
+
+  function handleHeroScroll() {
+    const el = heroSwipeRef.current;
+    if (!el) return;
+    const index = Math.round(el.scrollLeft / el.clientWidth);
+    setHeroSlideMobile(index);
+  }
+
   return (
     <div>
       {/* Hero */}
-      <section className="relative min-h-screen flex items-end px-6 md:px-12 pb-16">
+      <section className="relative min-h-screen flex items-end px-6 md:px-12 pb-16 overflow-hidden">
+        {/* Desktop: auto-crossfade */}
+        {HERO_IMAGES.map((src, i) => (
+          <div
+            key={src}
+            aria-hidden={i !== heroIndex}
+            className={`hidden md:block absolute inset-0 bg-cover bg-center transition-opacity duration-[1800ms] ease-in-out ${
+              i === heroIndex ? "opacity-100" : "opacity-0"
+            }`}
+            style={{
+              backgroundImage:
+                "linear-gradient(to top, rgba(10,10,20,0.75), rgba(10,10,20,0.15)), url('" + src + "')",
+            }}
+          />
+        ))}
+
+        {/* Mobile: swipeable carousel */}
         <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{
-            backgroundImage:
-              "linear-gradient(to top, rgba(10,10,20,0.75), rgba(10,10,20,0.15)), url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2000&auto=format&fit=crop')",
-          }}
-        />
+          ref={heroSwipeRef}
+          onScroll={handleHeroScroll}
+          className="md:hidden absolute inset-0 flex overflow-x-auto snap-x snap-mandatory touch-pan-x touch-pan-y [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+          style={{ WebkitOverflowScrolling: "touch" }}
+        >
+          {HERO_IMAGES.map((src) => (
+            <div
+              key={src}
+              className="shrink-0 w-full h-full snap-start bg-cover bg-center"
+              style={{
+                backgroundImage:
+                  "linear-gradient(to top, rgba(10,10,20,0.75), rgba(10,10,20,0.15)), url('" + src + "')",
+              }}
+            />
+          ))}
+        </div>
+
+        {HERO_IMAGES.length > 1 && (
+          <div className="md:hidden absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex gap-1.5">
+            {HERO_IMAGES.map((src, i) => (
+              <span
+                key={src}
+                className={`h-1.5 rounded-full transition-all ${
+                  i === heroSlideMobile ? "w-5 bg-white" : "w-1.5 bg-white/50"
+                }`}
+              />
+            ))}
+          </div>
+        )}
         <div className="relative z-10 max-w-3xl">
           <p className="text-white/80 uppercase tracking-[0.3em] text-xs md:text-sm mb-4">
             Ghana&apos;s Premium Real Estate
