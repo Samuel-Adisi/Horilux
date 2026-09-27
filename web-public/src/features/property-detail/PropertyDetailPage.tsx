@@ -120,7 +120,7 @@ export default function PropertyDetailPage() {
   const carouselPhotos = photos.slice(1);
 
   const heroOverlay =
-    "linear-gradient(to top, rgba(10,10,20,0.28) 0%, rgba(10,10,20,0.08) 14%, rgba(10,10,20,0) 32%)";
+    "linear-gradient(to top, rgba(10,10,20,0.4) 0%, rgba(10,10,20,0.15) 14%, rgba(10,10,20,0) 32%)";
 
   const related = (relatedPage?.results || []).filter((p) => p.id !== property.id).slice(0, 2);
 
