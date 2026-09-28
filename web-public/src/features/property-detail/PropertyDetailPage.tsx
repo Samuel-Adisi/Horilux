@@ -190,24 +190,13 @@ export default function PropertyDetailPage() {
         <div
           ref={heroSwipeRef}
           onScroll={handleHeroScroll}
-          className="md:hidden relative flex items-start overflow-x-auto snap-x snap-mandatory touch-pan-x touch-pan-y [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden h-[480px]"
+          className="md:hidden relative flex items-start overflow-x-auto snap-x snap-mandatory touch-pan-x touch-pan-y [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
           style={{ WebkitOverflowScrolling: "touch" }}
         >
           {(photos.length > 0 ? photos : [{ id: "cover", url: property.cover_image }]).map((photo) => (
-            <div key={photo.id} className="relative shrink-0 w-full h-full snap-start overflow-hidden bg-neutral-900">
+            <div key={photo.id} className="relative shrink-0 w-full snap-start bg-neutral-900">
               {photo.url && (
-                <>
-                  <div
-                    aria-hidden
-                    className="absolute inset-0 bg-cover bg-center blur-2xl scale-110 opacity-60"
-                    style={{ backgroundImage: "url(" + JSON.stringify(photo.url) + ")" }}
-                  />
-                  <img
-                    src={photo.url}
-                    alt={property.title}
-                    className="relative h-full w-full object-contain"
-                  />
-                </>
+                <img src={photo.url} alt={property.title} className="w-full h-auto block" />
               )}
               <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: heroOverlay }} />
             </div>
