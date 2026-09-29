@@ -20,10 +20,10 @@ const FACT_ICONS: Record<string, typeof BedDouble> = {
   "Status": Tag,
 };
 
-function formatPrice(price: string, currency: string) {
+function formatPrice(price: string, _currency: string) {
   const n = Number(price);
-  if (Number.isNaN(n)) return currency + " " + price;
-  return currency + " " + n.toLocaleString();
+  if (Number.isNaN(n)) return "GH₵ " + price;
+  return "GH₵ " + n.toLocaleString();
 }
 
 export default function PropertyDetailPage() {
@@ -154,9 +154,6 @@ export default function PropertyDetailPage() {
           )}
           <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: heroOverlay }} />
           <div className="absolute inset-x-0 bottom-0 z-10 max-w-4xl px-6 md:px-12 pb-16">
-            <p className="text-white/80 uppercase tracking-[0.3em] text-xs md:text-sm mb-4">
-              {property.region}
-            </p>
             <h1 className="font-serif text-2xl sm:text-4xl md:text-6xl text-white leading-tight uppercase flex items-center gap-3 sm:gap-4">
               <span>{property.title}</span>
               {true && (
@@ -174,9 +171,6 @@ export default function PropertyDetailPage() {
                 </button>
               )}
             </h1>
-            <p className="mt-4 font-serif text-2xl md:text-3xl text-white">
-              {formatPrice(property.price, property.currency)}
-            </p>
             <div className="mt-4 flex flex-wrap gap-x-6 gap-y-1 text-white/85 text-sm">
               {property.bedrooms != null && <span>{String(property.bedrooms).padStart(2, "0")} Bedrooms</span>}
               {property.bathrooms != null && <span>{String(property.bathrooms).padStart(2, "0")} Bathrooms</span>}
@@ -203,9 +197,6 @@ export default function PropertyDetailPage() {
           ))}
 
           <div className="absolute inset-x-0 bottom-0 z-10 max-w-4xl px-6 md:px-12 pb-10">
-            <p className="text-white/80 uppercase tracking-[0.3em] text-xs md:text-sm mb-2">
-              {property.region}
-            </p>
             <h1 className="font-serif text-2xl sm:text-4xl md:text-6xl text-white leading-tight uppercase flex items-center gap-3 sm:gap-4">
               <span>{property.title}</span>
               {true && (
@@ -223,9 +214,6 @@ export default function PropertyDetailPage() {
                 </button>
               )}
             </h1>
-            <p className="mt-3 font-serif text-xl md:text-3xl text-white">
-              {formatPrice(property.price, property.currency)}
-            </p>
             <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-white/85 text-xs">
               {property.bedrooms != null && <span>{String(property.bedrooms).padStart(2, "0")} Bedrooms</span>}
               {property.bathrooms != null && <span>{String(property.bathrooms).padStart(2, "0")} Bathrooms</span>}
@@ -252,9 +240,14 @@ export default function PropertyDetailPage() {
       {/* 2 + 3. Description + property details */}
       <section className="bg-white px-6 md:pl-12 md:pr-12 py-16 md:py-20">
         <div className="mx-auto md:mx-0 max-w-4xl">
-          <h2 className="font-serif text-xl sm:text-2xl md:text-3xl uppercase tracking-wide text-brand-blue mb-8">
-            {property.title}
-          </h2>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-3 mb-8">
+            <h2 className="font-serif text-xl sm:text-2xl md:text-3xl uppercase tracking-wide text-brand-blue">
+              {property.title}
+            </h2>
+            <span className="inline-flex items-center rounded-full bg-[#F4EFE6] border border-green-600/20 px-4 py-1.5 font-bold text-base sm:text-lg text-green-600 whitespace-nowrap">
+              {formatPrice(property.price, property.currency)}
+            </span>
+          </div>
           {property.description ? (
             <div className="space-y-5 text-neutral-600 leading-relaxed whitespace-pre-line">
               {property.description}

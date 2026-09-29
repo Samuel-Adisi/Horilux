@@ -1,105 +1,105 @@
-import { useState, useCallback } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { fetchSavedProperties, saveProperty, unsaveProperty } from "../api/saved-properties";
-import type { SavedProperty } from "@/lib/types";
+import { useCallback, useSyncExternalStore } from "react";
+import { useQueries } from "@tanstack/react-query";
+import api from "@/lib/api";
+import type { PropertyDetail } from "@/lib/types";
+
+// Anonymous favorites: property IDs live in the visitor's browser, no account needed.
+const STORAGE_KEY = "horilux-favorites";
+const listeners = new Set<() => void>();
+let cache: string[] | null = null;
+
+function readIds(): string[] {
+  if (cache) return cache;
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    cache = Array.isArray(parsed)
+      ? parsed.filter((x): x is string => typeof x === "string")
+      : [];
+  } catch {
+    cache = [];
+  }
+  return cache;
+}
+
+function writeIds(ids: string[]) {
+  cache = ids;
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(ids));
+  } catch {
+    // storage blocked or full: favorites still work for this page session
+  }
+  listeners.forEach((l) => l());
+}
+
+function subscribe(callback: () => void) {
+  listeners.add(callback);
+  const onStorage = (e: StorageEvent) => {
+    if (e.key === STORAGE_KEY) {
+      cache = null;
+      callback();
+    }
+  };
+  window.addEventListener("storage", onStorage);
+  return () => {
+    listeners.delete(callback);
+    window.removeEventListener("storage", onStorage);
+  };
+}
 
 export function useSavedProperties() {
-  return useQuery({
-    queryKey: ["saved-properties"],
-    queryFn: fetchSavedProperties,
+  const ids = useSyncExternalStore(subscribe, readIds);
+
+  const results = useQueries({
+    queries: ids.map((id) => ({
+      queryKey: ["favorite-property", id],
+      queryFn: async () => {
+        const { data } = await api.get<PropertyDetail>(`/public/properties/${id}/`);
+        return data;
+      },
+      staleTime: 2 * 60 * 1000,
+      retry: false,
+    })),
   });
+
+  const data = results.flatMap((r, i) => {
+    if (!r.data) return [];
+    const photo = [...(r.data.media ?? [])]
+      .sort((a, b) => a.order - b.order)
+      .find((m) => m.media_type === "photo" && m.url);
+    const property_detail = {
+      ...r.data,
+      cover_image: r.data.cover_image ?? photo?.url ?? null,
+    };
+    return [{ id: ids[i], property: ids[i], property_detail }];
+  });
+
+  return {
+    data,
+    isLoading: results.some((r) => r.isLoading),
+    isError: ids.length > 0 && results.every((r) => r.isError),
+  };
 }
 
 export function useToggleSavedProperty() {
-  const queryClient = useQueryClient();
-  const { data: saved } = useSavedProperties();
-  const [pendingIds, setPendingIds] = useState<Set<string>>(new Set());
+  const ids = useSyncExternalStore(subscribe, readIds);
 
-  const markPending = useCallback((propertyId: string, pending: boolean) => {
-    setPendingIds((prev) => {
-      const next = new Set(prev);
-      if (pending) next.add(propertyId);
-      else next.delete(propertyId);
-      return next;
-    });
+  const isSaved = useCallback(
+    (propertyId: string) => ids.includes(String(propertyId)),
+    [ids]
+  );
+
+  const isPending = useCallback((_propertyId: string) => false, []);
+
+  const toggle = useCallback((propertyId: string) => {
+    const id = String(propertyId);
+    const current = readIds();
+    writeIds(current.includes(id) ? current.filter((x) => x !== id) : [id, ...current]);
   }, []);
 
-  const save = useMutation({
-    mutationFn: (propertyId: string) => saveProperty(propertyId),
-    onMutate: async (propertyId: string) => {
-      markPending(propertyId, true);
-      await queryClient.cancelQueries({ queryKey: ["saved-properties"] });
-      const previous = queryClient.getQueryData<SavedProperty[]>(["saved-properties"]);
-
-      const optimistic: SavedProperty = {
-        id: -Date.now(),
-        property: propertyId,
-        property_detail: undefined as unknown as SavedProperty["property_detail"],
-        created_at: new Date().toISOString(),
-      };
-
-      queryClient.setQueryData<SavedProperty[]>(["saved-properties"], (old) => [
-        ...(old ?? []),
-        optimistic,
-      ]);
-
-      return { previous, propertyId };
-    },
-    onError: (_err, _propertyId, context) => {
-      if (context?.previous) {
-        queryClient.setQueryData(["saved-properties"], context.previous);
-      }
-    },
-    onSettled: (_data, _err, propertyId) => {
-      markPending(propertyId, false);
-      queryClient.invalidateQueries({ queryKey: ["saved-properties"] });
-    },
-  });
-
-  const unsave = useMutation({
-    mutationFn: (args: { savedPropertyId: number; propertyId: string }) =>
-      unsaveProperty(args.savedPropertyId),
-    onMutate: async ({ savedPropertyId, propertyId }) => {
-      markPending(propertyId, true);
-      await queryClient.cancelQueries({ queryKey: ["saved-properties"] });
-      const previous = queryClient.getQueryData<SavedProperty[]>(["saved-properties"]);
-
-      queryClient.setQueryData<SavedProperty[]>(["saved-properties"], (old) =>
-        (old ?? []).filter((s) => s.id !== savedPropertyId)
-      );
-
-      return { previous };
-    },
-    onError: (_err, { propertyId }, context) => {
-      if (context?.previous) {
-        queryClient.setQueryData(["saved-properties"], context.previous);
-      }
-      markPending(propertyId, false);
-    },
-    onSettled: (_data, _err, { propertyId }) => {
-      markPending(propertyId, false);
-      queryClient.invalidateQueries({ queryKey: ["saved-properties"] });
-    },
-  });
-
-  function isSaved(propertyId: string) {
-    return saved?.find((s) => s.property === propertyId);
-  }
-
-  function isPending(propertyId: string) {
-    return pendingIds.has(propertyId);
-  }
-
-  function toggle(propertyId: string) {
-    if (isPending(propertyId)) return;
-    const existing = isSaved(propertyId);
-    if (existing) {
-      if (existing.id < 0) return;
-      unsave.mutate({ savedPropertyId: existing.id, propertyId });
-    } else {
-      save.mutate(propertyId);
-    }
-  }
-
   return { isSaved, toggle, isPending };
+}
+
+export function useFavoritesCount() {
+  return useSyncExternalStore(subscribe, readIds).length;
 }

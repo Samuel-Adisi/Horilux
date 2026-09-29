@@ -4,10 +4,10 @@ import { Heart } from "lucide-react";
 import type { PropertyListItem } from "@/lib/types";
 import { useToggleSavedProperty } from "@/features/favorites/hooks/use-saved-properties";
 
-function formatPrice(price: string, currency: string) {
+function formatPrice(price: string, _currency: string) {
   const n = Number(price);
-  if (Number.isNaN(n)) return currency + " " + price;
-  return currency + " " + n.toLocaleString();
+  if (Number.isNaN(n)) return "GH₵ " + price;
+  return "GH₵ " + n.toLocaleString();
 }
 
 export default function PropertyCard({

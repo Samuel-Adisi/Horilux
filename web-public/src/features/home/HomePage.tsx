@@ -17,7 +17,9 @@ export default function HomePage() {
 
   const HERO_IMAGES = [
     "https://images.unsplash.com/photo-1757361653037-dbf0d0a820ae?q=80&w=2000&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1613490493576-7fde63acd811?q=80&w=2000&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1568822240459-9400e58f710f?q=80&w=2000&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1757362141189-8d2f7af341b0?q=80&w=2000&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1556475163-278eb3f49b1a?q=80&w=2000&auto=format&fit=crop",
   ];
   const [heroIndex, setHeroIndex] = useState(0);
 

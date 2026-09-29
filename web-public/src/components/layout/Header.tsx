@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import logo from "@/assets/logo.png";
+import { useFavoritesCount } from "@/features/favorites/hooks/use-saved-properties";
 
 export default function Header() {
   const { pathname } = useLocation();
+  const favCount = useFavoritesCount();
   const isHome = pathname === "/" || pathname.startsWith("/listings") || pathname === "/about" || pathname === "/favorites";
   const [menuOpen, setMenuOpen] = useState(false);
   const [propertiesOpen, setPropertiesOpen] = useState(false);
@@ -138,7 +140,7 @@ export default function Header() {
               isHome ? "text-white/75 hover:text-white" : "text-neutral-600 hover:text-brand-blue"
             }`}
           >
-            Favorites
+            Favorites{favCount > 0 && <span className="ml-1.5 inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-pink-500 px-1.5 text-[11px] font-semibold leading-none text-white align-middle">{favCount > 99 ? "99+" : favCount}</span>}
           </Link>
           <button
             type="button"
@@ -237,7 +239,7 @@ export default function Header() {
                 }`
               }
             >
-              Favorites
+              Favorites{favCount > 0 && <span className="ml-2 inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-pink-500 px-1.5 text-[11px] font-semibold leading-none text-white align-middle">{favCount > 99 ? "99+" : favCount}</span>}
             </NavLink>
           </nav>
         </div>
