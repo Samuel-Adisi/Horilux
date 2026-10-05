@@ -1,0 +1,49 @@
+services:
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+
+  web:
+    build: .
+    image: horilux-app
+    restart: unless-stopped
+    env_file: .env.production
+    command: sh -c "python manage.py collectstatic --noinput && gunicorn Horilux.wsgi:application --bind 0.0.0.0:8000 --workers 3 --timeout 60"
+    depends_on:
+      - redis
+
+  worker:
+    image: horilux-app
+    restart: unless-stopped
+    env_file: .env.production
+    command: celery -A Horilux worker -l info --concurrency 2
+    depends_on:
+      - web
+
+  beat:
+    image: horilux-app
+    restart: unless-stopped
+    env_file: .env.production
+    command: celery -A Horilux beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    depends_on:
+      - web
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    env_file: .env.production
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - web
+
+volumes:
+  caddy_data:
+  caddy_config:
