@@ -2,7 +2,7 @@ from rest_framework import serializers
 from properties.models import Property
 from .models import Customer, SavedProperty, PropertyInquiry, ContactSubmission, AnonymousVisitor
 
-MARKETABLE_STATUSES = ["published", "under_offer", "marketing_ready", "sold_rented"]
+MARKETABLE_STATUSES = ["published", "under_offer", "marketing_ready"]
 
 
 class PublicPropertyListSerializer(serializers.ModelSerializer):
