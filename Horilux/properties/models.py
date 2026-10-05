@@ -33,10 +33,8 @@ class Property(models.Model):
 
     class Status(models.TextChoices):
         DRAFT = "draft", "Draft"
-        ONBOARDING = "onboarding", "Onboarding"
         PENDING_VERIFICATION = "pending_verification", "Pending Verification"
         VERIFIED = "verified", "Verified"
-        PENDING_APPROVAL = "pending_approval", "Pending Approval"
         MARKETING_READY = "marketing_ready", "Marketing Ready"
         PUBLISHED = "published", "Published"
         UNDER_OFFER = "under_offer", "Under Offer"

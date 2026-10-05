@@ -7,7 +7,7 @@ import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import { CHECKLIST_ITEMS, useUpdateChecklist, type ChecklistKey, type PropertyDetail } from "../api";
 
-const EDITABLE_STATUSES = ["draft", "onboarding", "pending_verification"];
+const EDITABLE_STATUSES = ["draft", "pending_verification"];
 
 export function ChecklistPanel({ property }: { property: PropertyDetail }) {
   const can = useCan();

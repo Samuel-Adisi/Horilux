@@ -18,9 +18,9 @@ import { MediaGallery } from "../components/MediaGallery";
 import { DocumentsPanel } from "../components/DocumentsPanel";
 
 const STEPS: { key: string; label: string; statuses: PStatus[] }[] = [
-  { key: "draft", label: "Draft", statuses: ["draft", "onboarding"] },
+  { key: "draft", label: "Draft", statuses: ["draft"] },
   { key: "verify", label: "Verification", statuses: ["pending_verification"] },
-  { key: "verified", label: "Verified", statuses: ["verified", "pending_approval"] },
+  { key: "verified", label: "Verified", statuses: ["verified"] },
   { key: "ready", label: "Marketing ready", statuses: ["marketing_ready"] },
   { key: "live", label: "Published", statuses: ["published", "under_offer"] },
   { key: "done", label: "Sold / rented", statuses: ["sold_rented"] },
@@ -78,7 +78,6 @@ function nextSteps(p: PropertyDetail, can: ReturnType<typeof useCan>): NextStep[
   const photos = p.media.filter((m) => m.media_type === "photo").length;
   switch (p.status) {
     case "draft":
-    case "onboarding":
       if (can("property", "edit"))
         steps.push({
           action: "submit_for_verification",
@@ -99,7 +98,6 @@ function nextSteps(p: PropertyDetail, can: ReturnType<typeof useCan>): NextStep[
         });
       break;
     case "verified":
-    case "pending_approval":
       if (can("property", "approve"))
         steps.push({
           action: "mark_marketing_ready",

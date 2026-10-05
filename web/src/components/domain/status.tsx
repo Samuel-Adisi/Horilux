@@ -9,10 +9,8 @@ import { humanize } from "@/lib/format";
 
 const PROPERTY_TONE: Record<PropertyStatus, Tone> = {
   draft: "muted",
-  onboarding: "neutral",
   pending_verification: "warning",
   verified: "brand",
-  pending_approval: "warning",
   marketing_ready: "brand",
   published: "success",
   under_offer: "warning",

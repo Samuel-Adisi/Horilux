@@ -122,9 +122,9 @@ class PropertyViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=["post"])
     def submit_for_verification(self, request, pk=None):
-        """Listing submits a Draft/Onboarding property for verification review."""
+        """Listing submits a Draft property for verification review."""
         property_obj = self.get_object()
-        if property_obj.status not in [Property.Status.DRAFT, Property.Status.ONBOARDING]:
+        if property_obj.status != Property.Status.DRAFT:
             raise ValidationError(f"Cannot submit property in status '{property_obj.status}' for verification.")
         property_obj.status = Property.Status.PENDING_VERIFICATION
         property_obj.save(update_fields=["status", "updated_at"])

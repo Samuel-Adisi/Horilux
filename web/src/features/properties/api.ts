@@ -11,10 +11,8 @@ export type ListingType = "sale" | "rent";
 export type RentalPeriod = "daily" | "monthly" | "yearly";
 export type PropertyStatus =
   | "draft"
-  | "onboarding"
   | "pending_verification"
   | "verified"
-  | "pending_approval"
   | "marketing_ready"
   | "published"
   | "under_offer"
@@ -153,10 +151,8 @@ export interface PropertiesQuery {
 
 export const PROPERTY_STATUS_ORDER: PropertyStatus[] = [
   "draft",
-  "onboarding",
   "pending_verification",
   "verified",
-  "pending_approval",
   "marketing_ready",
   "published",
   "under_offer",
@@ -166,10 +162,8 @@ export const PROPERTY_STATUS_ORDER: PropertyStatus[] = [
 
 export const PROPERTY_STATUS_LABEL: Record<PropertyStatus, string> = {
   draft: "Draft",
-  onboarding: "Onboarding",
   pending_verification: "Pending verification",
   verified: "Verified",
-  pending_approval: "Pending approval",
   marketing_ready: "Marketing ready",
   published: "Published",
   under_offer: "Under offer",

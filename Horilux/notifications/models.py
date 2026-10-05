@@ -35,7 +35,6 @@ class NotificationPreference(models.Model):
         PROPERTY_PUBLISHED = "property.published", "Listing published"
         CAMPAIGN_PUBLISHED = "campaign.published", "Marketing campaign published"
         PROPERTY_PENDING_VERIFICATION = "property.pending_verification", "Property submitted for verification"
-        PROPERTY_PENDING_APPROVAL = "property.pending_approval", "Property awaiting approval"
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="notification_preferences")
     event_type = models.CharField(max_length=64, choices=EventType.choices)

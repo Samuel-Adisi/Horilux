@@ -18,14 +18,6 @@ def property_status_changed(sender, instance, created, **kwargs):
         )
         _create_task(instance, title=f'Verify property: {instance.title}')
 
-    elif instance.status == Property.Status.PENDING_APPROVAL:
-        _notify_operations_and_ceo(
-            instance,
-            type_="property.pending_approval",
-            message=f'Property "{instance.title}" is awaiting manager approval.',
-        )
-        _create_task(instance, title=f'Approve property: {instance.title}')
-
     elif instance.status == Property.Status.PUBLISHED:
         if instance.agent:
             create_notification(
