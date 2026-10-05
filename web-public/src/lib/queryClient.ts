@@ -13,5 +13,5 @@ export const queryClient = new QueryClient({
 
 export const queryPersister = createSyncStoragePersister({
   storage: window.localStorage,
-  key: "horilux-public-query-cache-v2",
+  key: "horilux-public-query-cache-v3",
 });
