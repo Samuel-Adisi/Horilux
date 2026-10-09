@@ -50,11 +50,11 @@ export default function ListingsPage() {
   const coverImage = useMemo(() => {
     const listingType = searchParams.get("listing_type");
     const propertyType = searchParams.get("property_type");
-    if (listingType === "rent") return "https://images.unsplash.com/photo-1580785692949-7b5b7fd83d25?q=80&w=2000&auto=format&fit=crop";
-    if (listingType === "sale") return "https://images.unsplash.com/photo-1757361653037-dbf0d0a820ae?q=80&w=2000&auto=format&fit=crop";
-    if (propertyType === "residential") return "https://images.unsplash.com/photo-1613490493576-7fde63acd811?q=80&w=2000&auto=format&fit=crop";
-    if (propertyType === "commercial") return "https://images.unsplash.com/photo-1580741990231-4aa1c1d9a76a?q=80&w=2000&auto=format&fit=crop";
-    return "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=2000&auto=format&fit=crop";
+    if (listingType === "rent") return "/covers/cover-3.jpg";
+    if (listingType === "sale") return "/covers/cover-7.jpg";
+    if (propertyType === "residential") return "/covers/cover-6.jpg";
+    if (propertyType === "commercial") return "/covers/cover-4.jpg";
+    return "/covers/cover-5.jpg";
   }, [searchParams]);
 
   const filtersKey = JSON.stringify(filters);

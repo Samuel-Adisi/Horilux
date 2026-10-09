@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { useProperties } from "@/features/listings/hooks/use-properties";
 import PropertyCard from "@/features/shared/PropertyCard";
@@ -16,12 +16,13 @@ export default function HomePage() {
   const [subscribed, setSubscribed] = useState(false);
 
   const HERO_IMAGES = [
-    "https://images.unsplash.com/photo-1757361653037-dbf0d0a820ae?q=80&w=2000&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1568822240459-9400e58f710f?q=80&w=2000&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1757362141189-8d2f7af341b0?q=80&w=2000&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1556475163-278eb3f49b1a?q=80&w=2000&auto=format&fit=crop",
+    "/covers/cover-5.jpg",
+    "/covers/cover-2.jpg",
+    "/covers/cover-3.jpg",
+    "/covers/cover-7.jpg",
   ];
   const [heroIndex, setHeroIndex] = useState(0);
+  const touchX = useRef(0);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -34,7 +35,7 @@ export default function HomePage() {
   return (
     <div>
       {/* Hero */}
-      <section className="relative min-h-screen flex items-end px-6 md:px-12 pb-16 overflow-hidden">
+      <section onTouchStart={(e) => { touchX.current = e.touches[0].clientX; }} onTouchEnd={(e) => { const dx = e.changedTouches[0].clientX - touchX.current; if (Math.abs(dx) > 40) setHeroIndex((i) => (i + (dx < 0 ? 1 : HERO_IMAGES.length - 1)) % HERO_IMAGES.length); }} className="relative min-h-screen flex items-end px-6 md:px-12 pb-16 overflow-hidden">
         {HERO_IMAGES.map((src, i) => (
           <div
             key={src}
@@ -162,7 +163,7 @@ export default function HomePage() {
           className="absolute inset-0 bg-cover bg-center"
           style={{
             backgroundImage:
-              "linear-gradient(to bottom, rgba(10,10,20,0.25), rgba(10,10,20,0.12)), url('https://images.unsplash.com/photo-1613977257363-707ba9348227?q=80&w=2000&auto=format&fit=crop')",
+              "linear-gradient(to bottom, rgba(10,10,20,0.25), rgba(10,10,20,0.12)), url('/covers/cover-4.jpg')",
           }}
         />
         <div className="relative z-10 max-w-3xl mx-auto text-center">
