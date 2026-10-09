@@ -342,7 +342,7 @@ export default function PropertyDetailPage() {
 
         </div>
 
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 max-w-4xl px-6 md:px-12 pb-10">
+          <div className="md:hidden pointer-events-none absolute inset-x-0 bottom-0 z-10 max-w-4xl px-6 md:px-12 pb-10">
             <h1 className="font-serif text-2xl sm:text-4xl md:text-6xl text-white leading-tight uppercase flex items-center gap-3 sm:gap-4 pointer-events-auto">
               <span>{property.title}</span>
               <ShareButton id={property.id} title={property.title} />
