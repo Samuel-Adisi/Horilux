@@ -332,9 +332,9 @@ export default function PropertyDetailPage() {
           style={{ WebkitOverflowScrolling: "touch" }}
         >
           {(photos.length > 0 ? photos : [{ id: "cover", url: property.cover_image }]).map((photo, i) => (
-            <div key={photo.id} className="relative shrink-0 w-full h-[75svh] snap-start bg-neutral-900">
+            <div key={photo.id} className="relative shrink-0 w-full snap-start bg-neutral-900">
               {photo.url && (
-                <img src={photo.url} alt={property.title} onClick={() => setLightboxIndex(i)} className="h-full w-full object-contain block cursor-zoom-in" />
+                <img src={photo.url} alt={property.title} onClick={() => setLightboxIndex(i)} className="w-full h-auto block cursor-zoom-in" />
               )}
               <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: heroOverlay }} />
             </div>
@@ -465,12 +465,12 @@ export default function PropertyDetailPage() {
                   key={photo.id}
                   type="button"
                   onClick={() => setLightboxIndex(idx + 1)}
-                  className="shrink-0 w-[85%] sm:w-[60%] md:w-[38%] aspect-[4/5] snap-start overflow-hidden cursor-zoom-in group bg-neutral-200"
+                  className="shrink-0 w-[85%] sm:w-[60%] md:w-[45%] aspect-[4/3] snap-start overflow-hidden cursor-zoom-in group"
                 >
                   <img
                     src={photo.url ?? undefined}
                     alt=""
-                    className="h-full w-full object-contain transition-transform duration-300 group-hover:scale-105"
+                    className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                   />
                 </button>
               ))}
