@@ -332,16 +332,18 @@ export default function PropertyDetailPage() {
           style={{ WebkitOverflowScrolling: "touch" }}
         >
           {(photos.length > 0 ? photos : [{ id: "cover", url: property.cover_image }]).map((photo, i) => (
-            <div key={photo.id} className="relative shrink-0 w-full snap-start bg-neutral-900">
+            <div key={photo.id} className="relative shrink-0 w-full aspect-[2/3] max-h-[85svh] snap-start bg-neutral-900">
               {photo.url && (
-                <img src={photo.url} alt={property.title} onClick={() => setLightboxIndex(i)} className="w-full h-auto block cursor-zoom-in" />
+                <img src={photo.url} alt={property.title} onClick={() => setLightboxIndex(i)} className="h-full w-full object-cover block cursor-zoom-in" />
               )}
               <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: heroOverlay }} />
             </div>
           ))}
 
-          <div className="absolute inset-x-0 bottom-0 z-10 max-w-4xl px-6 md:px-12 pb-10">
-            <h1 className="font-serif text-2xl sm:text-4xl md:text-6xl text-white leading-tight uppercase flex items-center gap-3 sm:gap-4">
+        </div>
+
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 max-w-4xl px-6 md:px-12 pb-10">
+            <h1 className="font-serif text-2xl sm:text-4xl md:text-6xl text-white leading-tight uppercase flex items-center gap-3 sm:gap-4 pointer-events-auto">
               <span>{property.title}</span>
               <ShareButton id={property.id} title={property.title} />
               {true && (
@@ -366,7 +368,6 @@ export default function PropertyDetailPage() {
               {property.land_size && <span>Land Area {property.land_size}</span>}
             </div>
           </div>
-        </div>
 
         {photos.length > 1 && (
           <div className="md:hidden absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex gap-1.5">
