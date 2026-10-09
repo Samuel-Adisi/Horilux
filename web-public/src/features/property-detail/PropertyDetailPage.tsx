@@ -332,9 +332,9 @@ export default function PropertyDetailPage() {
           style={{ WebkitOverflowScrolling: "touch" }}
         >
           {(photos.length > 0 ? photos : [{ id: "cover", url: property.cover_image }]).map((photo, i) => (
-            <div key={photo.id} className="relative shrink-0 w-full snap-start bg-neutral-900">
+            <div key={photo.id} className="relative shrink-0 w-full h-[75svh] snap-start bg-neutral-900">
               {photo.url && (
-                <img src={photo.url} alt={property.title} onClick={() => setLightboxIndex(i)} className="w-full h-auto block cursor-zoom-in" />
+                <img src={photo.url} alt={property.title} onClick={() => setLightboxIndex(i)} className="h-full w-full object-contain block cursor-zoom-in" />
               )}
               <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: heroOverlay }} />
             </div>
