@@ -465,12 +465,12 @@ export default function PropertyDetailPage() {
                   key={photo.id}
                   type="button"
                   onClick={() => setLightboxIndex(idx + 1)}
-                  className="shrink-0 w-[85%] sm:w-[60%] md:w-[45%] aspect-[4/3] snap-start overflow-hidden cursor-zoom-in group"
+                  className="shrink-0 w-[85%] sm:w-[60%] md:w-[38%] aspect-[4/5] snap-start overflow-hidden cursor-zoom-in group bg-neutral-200"
                 >
                   <img
                     src={photo.url ?? undefined}
                     alt=""
-                    className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    className="h-full w-full object-contain transition-transform duration-300 group-hover:scale-105"
                   />
                 </button>
               ))}
