@@ -4,7 +4,7 @@ import { useProperty, useProperties } from "@/features/listings/hooks/use-proper
 import PropertyCard from "@/features/shared/PropertyCard";
 import LoadingSpinner from "@/components/shared/LoadingSpinner";
 import { useToggleSavedProperty } from "@/features/favorites/hooks/use-saved-properties";
-import { Heart } from "lucide-react";
+import { Heart, Share2, Check } from "lucide-react";
 import { api } from "@/lib/api";
 import { getAmenityIcon } from "./amenity-icons";
 import { BedDouble, Bath, Ruler, LandPlot, Tag, MapPin, Home } from "lucide-react";
@@ -24,6 +24,45 @@ function formatPrice(price: string, _currency: string) {
   const n = Number(price);
   if (Number.isNaN(n)) return "GH₵ " + price;
   return "GH₵ " + n.toLocaleString();
+}
+
+function ShareButton({ id, title }: { id: string | number; title: string }) {
+  const [copied, setCopied] = useState(false);
+
+  async function handleShare() {
+    const url = window.location.origin + "/listings/" + id;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: title, text: title + " - Horilux Estates", url: url });
+        return;
+      }
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // share sheet dismissed or clipboard blocked: nothing to do
+    }
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={handleShare}
+      aria-label="Share this property"
+      className="relative shrink-0 flex h-8 w-8 sm:h-10 sm:w-10 md:h-11 md:w-11 items-center justify-center rounded-full bg-black/30 backdrop-blur-sm hover:bg-black/50 transition-colors"
+    >
+      {copied ? (
+        <Check className="h-4 w-4 sm:h-5 sm:w-5 text-white" strokeWidth={1.75} />
+      ) : (
+        <Share2 className="h-4 w-4 sm:h-5 sm:w-5 text-white" strokeWidth={1.75} />
+      )}
+      {copied && (
+        <span className="absolute top-full mt-2 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-black/80 px-3 py-1 text-xs font-sans normal-case tracking-normal text-white">
+          Link copied
+        </span>
+      )}
+    </button>
+  );
 }
 
 export default function PropertyDetailPage() {
@@ -156,6 +195,7 @@ export default function PropertyDetailPage() {
           <div className="absolute inset-x-0 bottom-0 z-10 max-w-4xl px-6 md:px-12 pb-16">
             <h1 className="font-serif text-2xl sm:text-4xl md:text-6xl text-white leading-tight uppercase flex items-center gap-3 sm:gap-4">
               <span>{property.title}</span>
+              <ShareButton id={property.id} title={property.title} />
               {true && (
                 <button
                   type="button"
@@ -199,6 +239,7 @@ export default function PropertyDetailPage() {
           <div className="absolute inset-x-0 bottom-0 z-10 max-w-4xl px-6 md:px-12 pb-10">
             <h1 className="font-serif text-2xl sm:text-4xl md:text-6xl text-white leading-tight uppercase flex items-center gap-3 sm:gap-4">
               <span>{property.title}</span>
+              <ShareButton id={property.id} title={property.title} />
               {true && (
                 <button
                   type="button"
