@@ -65,6 +65,104 @@ function ShareButton({ id, title }: { id: string | number; title: string }) {
   );
 }
 
+function Lightbox({ urls, startIndex, onClose }: { urls: string[]; startIndex: number; onClose: () => void }) {
+  const trackRef = useRef<HTMLDivElement>(null);
+  const [index, setIndex] = useState(startIndex);
+
+  function go(dir: number) {
+    const el = trackRef.current;
+    if (!el) return;
+    el.scrollBy({ left: dir * el.clientWidth, behavior: "smooth" });
+  }
+
+  function handleScroll() {
+    const el = trackRef.current;
+    if (!el) return;
+    setIndex(Math.round(el.scrollLeft / el.clientWidth));
+  }
+
+  useEffect(() => {
+    const el = trackRef.current;
+    if (el) el.scrollLeft = startIndex * el.clientWidth;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") onClose();
+      if (e.key === "ArrowLeft") go(-1);
+      if (e.key === "ArrowRight") go(1);
+    }
+    window.addEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prevOverflow;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return (
+    <div className="fixed inset-0 z-[100] bg-black/95">
+      <div
+        ref={trackRef}
+        onScroll={handleScroll}
+        className="flex h-full w-full overflow-x-auto snap-x snap-mandatory [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+        style={{ WebkitOverflowScrolling: "touch" }}
+      >
+        {urls.map((url, i) => (
+          <div
+            key={i}
+            onClick={(e) => {
+              if (e.target === e.currentTarget) onClose();
+            }}
+            className="shrink-0 w-full h-full snap-center snap-always flex items-center justify-center px-2 sm:px-16"
+          >
+            <img src={url} alt="" draggable={false} className="max-h-full max-w-full object-contain select-none" />
+          </div>
+        ))}
+      </div>
+
+      <button
+        type="button"
+        onClick={onClose}
+        aria-label="Close"
+        className="absolute top-4 right-4 sm:top-6 sm:right-6 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors"
+      >
+        <svg viewBox="0 0 20 20" fill="none" className="h-5 w-5">
+          <path d="M5 5L15 15M15 5L5 15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        </svg>
+      </button>
+
+      <div className="absolute top-5 left-4 sm:top-7 sm:left-6 z-10 rounded-full bg-white/10 px-3 py-1 text-xs text-white">
+        {index + 1} / {urls.length}
+      </div>
+
+      {urls.length > 1 && (
+        <>
+          <button
+            type="button"
+            onClick={() => go(-1)}
+            aria-label="Previous image"
+            className="hidden md:flex absolute left-4 top-1/2 -translate-y-1/2 z-10 h-12 w-12 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors"
+          >
+            <svg viewBox="0 0 20 20" fill="none" className="h-5 w-5">
+              <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
+          <button
+            type="button"
+            onClick={() => go(1)}
+            aria-label="Next image"
+            className="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 z-10 h-12 w-12 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors"
+          >
+            <svg viewBox="0 0 20 20" fill="none" className="h-5 w-5">
+              <path d="M7.5 5L12.5 10L7.5 15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
+        </>
+      )}
+    </div>
+  );
+}
+
 export default function PropertyDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { data: property, isLoading, isError } = useProperty(id);
@@ -77,7 +175,7 @@ export default function PropertyDetailPage() {
   const carouselRef = useRef<HTMLDivElement>(null);
   const heroSwipeRef = useRef<HTMLDivElement>(null);
   const [heroSlide, setHeroSlide] = useState(0);
-  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   function handleHeroScroll() {
     const el = heroSwipeRef.current;
@@ -107,7 +205,7 @@ export default function PropertyDetailPage() {
     setInquiryError(null);
     setInquirySuccess(false);
     setHeroSlide(0);
-    setLightboxUrl(null);
+    setLightboxIndex(null);
   }, [id]);
 
   async function handleInquirySubmit(e: React.FormEvent) {
@@ -157,6 +255,12 @@ export default function PropertyDetailPage() {
   const videos = property.media.filter((m) => m.media_type === "video" && m.url);
   const heroImageUrl = photos[0]?.url || property.cover_image;
   const carouselPhotos = photos.slice(1);
+  const galleryUrls: string[] =
+    photos.length > 0
+      ? photos.map((m) => m.url as string)
+      : heroImageUrl
+        ? [heroImageUrl]
+        : [];
 
   const heroOverlay =
     "linear-gradient(to top, rgba(10,10,20,0.4) 0%, rgba(10,10,20,0.15) 14%, rgba(10,10,20,0) 32%)";
@@ -189,7 +293,7 @@ export default function PropertyDetailPage() {
         {/* Desktop: real image at its own natural aspect ratio, full width, no crop */}
         <div className="hidden md:block relative w-full bg-neutral-900">
           {heroImageUrl && (
-            <img src={heroImageUrl} alt={property.title} className="w-full h-auto block" />
+            <img src={heroImageUrl} alt={property.title} onClick={() => setLightboxIndex(0)} className="w-full h-auto block cursor-zoom-in" />
           )}
           <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: heroOverlay }} />
           <div className="absolute inset-x-0 bottom-0 z-10 max-w-4xl px-6 md:px-12 pb-16">
@@ -227,10 +331,10 @@ export default function PropertyDetailPage() {
           className="md:hidden relative flex items-start overflow-x-auto snap-x snap-mandatory touch-pan-x touch-pan-y [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
           style={{ WebkitOverflowScrolling: "touch" }}
         >
-          {(photos.length > 0 ? photos : [{ id: "cover", url: property.cover_image }]).map((photo) => (
+          {(photos.length > 0 ? photos : [{ id: "cover", url: property.cover_image }]).map((photo, i) => (
             <div key={photo.id} className="relative shrink-0 w-full snap-start bg-neutral-900">
               {photo.url && (
-                <img src={photo.url} alt={property.title} className="w-full h-auto block" />
+                <img src={photo.url} alt={property.title} onClick={() => setLightboxIndex(i)} className="w-full h-auto block cursor-zoom-in" />
               )}
               <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: heroOverlay }} />
             </div>
@@ -356,11 +460,11 @@ export default function PropertyDetailPage() {
               ref={carouselRef}
               className="flex gap-4 overflow-x-auto scroll-smooth snap-x snap-mandatory px-6 md:px-12 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
             >
-              {carouselPhotos.map((photo) => (
+              {carouselPhotos.map((photo, idx) => (
                 <button
                   key={photo.id}
                   type="button"
-                  onClick={() => setLightboxUrl(photo.url)}
+                  onClick={() => setLightboxIndex(idx + 1)}
                   className="shrink-0 w-[85%] sm:w-[60%] md:w-[45%] aspect-[4/3] snap-start overflow-hidden cursor-zoom-in group"
                 >
                   <img
@@ -506,28 +610,8 @@ export default function PropertyDetailPage() {
           </div>
         </section>
       )}
-      {lightboxUrl && (
-        <div
-          className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center px-4 py-8 sm:px-10 sm:py-12"
-          onClick={() => setLightboxUrl(null)}
-        >
-          <button
-            type="button"
-            onClick={() => setLightboxUrl(null)}
-            aria-label="Close"
-            className="absolute top-4 right-4 sm:top-6 sm:right-6 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors"
-          >
-            <svg viewBox="0 0 20 20" fill="none" className="h-5 w-5">
-              <path d="M5 5L15 15M15 5L5 15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-            </svg>
-          </button>
-          <img
-            src={lightboxUrl}
-            alt=""
-            onClick={(e) => e.stopPropagation()}
-            className="max-h-full max-w-full object-contain"
-          />
-        </div>
+      {lightboxIndex !== null && galleryUrls.length > 0 && (
+        <Lightbox urls={galleryUrls} startIndex={lightboxIndex} onClose={() => setLightboxIndex(null)} />
       )}
     </div>
   );
