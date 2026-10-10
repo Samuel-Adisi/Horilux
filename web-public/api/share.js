@@ -67,10 +67,6 @@ export default async function handler(req, res) {
       if (img) {
         var v = sized(img, origin + "/logo.png");
         image = v.plain;
-        try {
-          var h = await fetch(v.branded, { method: "HEAD" });
-          if (h.ok) image = v.branded;
-        } catch (e) {}
       }
     }
   } catch (e) {}
@@ -79,6 +75,9 @@ export default async function handler(req, res) {
     "<!doctype html>",
     "<html lang=\"en\"><head>",
     "<meta charset=\"utf-8\">",
+    "<link rel=\"icon\" type=\"image/png\" href=\"" + origin + "/favicon.png\">",
+    "<link rel=\"shortcut icon\" href=\"" + origin + "/favicon.png\">",
+    "<link rel=\"apple-touch-icon\" href=\"" + origin + "/apple-touch-icon.png\">",
     "<title>" + esc(title) + "</title>",
     "<meta name=\"description\" content=\"" + esc(desc) + "\">",
     "<link rel=\"canonical\" href=\"" + esc(pageUrl) + "\">",
