@@ -131,6 +131,15 @@ function nextSteps(p: PropertyDetail, can: ReturnType<typeof useCan>): NextStep[
         });
       break;
   }
+  if (["draft", "pending_verification", "verified"].includes(p.status) && can("property", "publish")) {
+    steps.push({
+      action: "publish_now",
+      label: "Publish now",
+      confirm: "Skips verification and makes this listing live on the public website immediately.",
+      disabled: photos === 0 ? "Add at least one photo before publishing." : undefined,
+      variant: "success",
+    });
+  }
   return steps;
 }
 

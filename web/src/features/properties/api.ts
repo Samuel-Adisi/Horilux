@@ -176,6 +176,7 @@ export type PropertyAction =
   | "approve"
   | "mark_marketing_ready"
   | "publish"
+  | "publish_now"
   | "mark_under_offer"
   | "mark_sold"
   | "archive";

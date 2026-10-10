@@ -87,6 +87,7 @@ class PropertyViewSet(viewsets.ModelViewSet):
         "submit_for_verification": "edit",
         "approve": "approve",
         "publish": "publish",
+        "publish_now": "publish",
         "mark_marketing_ready": "approve",
         "mark_under_offer": "edit",
         "mark_sold": "edit",
@@ -158,6 +159,32 @@ class PropertyViewSet(viewsets.ModelViewSet):
         property_obj = self.get_object()
         if property_obj.status != Property.Status.MARKETING_READY:
             raise ValidationError(f"Property must be Marketing Ready to publish, currently '{property_obj.status}'.")
+        property_obj.status = Property.Status.PUBLISHED
+        property_obj.published_at = timezone.now()
+        property_obj.save(update_fields=["status", "published_at", "updated_at"])
+        return Response(PropertyDetailSerializer(property_obj).data)
+
+    @action(detail=True, methods=["post"])
+    def publish_now(self, request, pk=None):
+        """CEO fast path: any pre-live status -> published in one click.
+        Skips the checklist and the price-threshold check. Needs the publish permission."""
+        property_obj = self.get_object()
+        allowed = [
+            Property.Status.DRAFT,
+            Property.Status.PENDING_VERIFICATION,
+            Property.Status.VERIFIED,
+            Property.Status.MARKETING_READY,
+        ]
+        if property_obj.status not in allowed:
+            raise ValidationError(f"Cannot publish a property in status '{property_obj.status}'.")
+
+        checklist = getattr(property_obj, "verification", None)
+        if checklist and not checklist.manager_approved:
+            checklist.manager_approved = True
+            checklist.approved_by = request.user
+            checklist.approved_at = timezone.now()
+            checklist.save(update_fields=["manager_approved", "approved_by", "approved_at"])
+
         property_obj.status = Property.Status.PUBLISHED
         property_obj.published_at = timezone.now()
         property_obj.save(update_fields=["status", "published_at", "updated_at"])
