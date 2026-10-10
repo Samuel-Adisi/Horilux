@@ -152,7 +152,7 @@ function PropertyForm({ property }: { property?: PropertyDetail }) {
   const ownerOptions = (owners.data ?? []).map((o) => ({ value: o.id, label: o.name, hint: [o.phone, o.email].filter(Boolean).join(" · ") }));
 
   return (
-    <Page width="narrow">
+    <Page width="form">
       <PageHeader
         title={isEdit ? "Edit property" : "New property"}
         description={isEdit ? property.title : "Captured as a draft. Nothing is public until it's verified and published."}

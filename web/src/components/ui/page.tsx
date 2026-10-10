@@ -3,9 +3,9 @@ import { Link } from "react-router-dom";
 import { ChevronLeft, Search, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export function Page({ children, className, width = "wide" }: { children: ReactNode; className?: string; width?: "wide" | "narrow" }) {
+export function Page({ children, className, width = "wide" }: { children: ReactNode; className?: string; width?: "wide" | "narrow" | "form" }) {
   return (
-    <div className={cn("mx-auto w-full px-4 py-6 sm:px-6 lg:px-8", width === "narrow" ? "max-w-3xl" : "max-w-[1400px]", className)}>
+    <div className={cn("mx-auto w-full px-4 py-6 sm:px-6 lg:px-8", width === "narrow" ? "max-w-3xl" : width === "form" ? "max-w-5xl" : "max-w-[1400px]", className)}>
       {children}
     </div>
   );
