@@ -22,8 +22,8 @@ export default function HomePage() {
     }
     return arr;
   };
-  const desktopGrid = useMemo(() => shuffle((propertiesPage?.results || []).slice(2)).slice(0, 8), [propertiesPage]);
-  const mobileGrid = useMemo(() => shuffle(propertiesPage?.results || []).slice(0, 8), [propertiesPage]);
+  const desktopGrid = useMemo(() => shuffle((propertiesPage?.results || []).slice(2)).slice(0, 12), [propertiesPage]);
+  const mobileGrid = useMemo(() => shuffle(propertiesPage?.results || []).slice(0, 12), [propertiesPage]);
   const [subscribed, setSubscribed] = useState(false);
 
   const HERO_IMAGES = [
