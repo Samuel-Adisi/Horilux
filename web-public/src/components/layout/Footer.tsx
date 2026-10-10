@@ -112,14 +112,14 @@ export default function Footer() {
             info@horiluxestates.com
           </a>
             <a
-            href="tel:+233247628324"
+            href="tel:+233591368760"
             className="mt-2 inline-flex items-center gap-2 text-sm text-white/70 hover:text-white transition-colors"
           >
             <Phone className="h-4 w-4" />
-            +233 24 762 8324
+            +233 59 136 8760
           </a>
             <a
-            href="https://wa.me/233247628324"
+            href="https://wa.me/233591368760"
             target="_blank"
             rel="noopener noreferrer"
             className="mt-2 inline-flex items-center gap-2 text-sm text-white/70 hover:text-white transition-colors"

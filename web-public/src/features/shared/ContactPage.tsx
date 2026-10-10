@@ -157,14 +157,14 @@ export default function ContactPage() {
             {CONTACT_EMAIL}
           </a>
           <a
-            href="tel:+233247628324"
+            href="tel:+233591368760"
             className="flex items-center gap-3 text-lg mb-3 w-fit hover:underline underline-offset-4"
           >
             <Phone className="h-5 w-5 shrink-0" />
-            +233 24 762 8324
+            +233 59 136 8760
           </a>
           <a
-            href="https://wa.me/233247628324"
+            href="https://wa.me/233591368760"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-3 text-lg mb-3 w-fit hover:underline underline-offset-4"
