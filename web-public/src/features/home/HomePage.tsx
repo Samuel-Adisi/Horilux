@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useProperties } from "@/features/listings/hooks/use-properties";
 import PropertyCard from "@/features/shared/PropertyCard";
@@ -13,6 +13,17 @@ export default function HomePage() {
     gcTime: 5 * 60_000,
   });
   const featured = propertiesPage?.results;
+
+  const shuffle = <T,>(list: T[]): T[] => {
+    const arr = [...list];
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  };
+  const desktopGrid = useMemo(() => shuffle((propertiesPage?.results || []).slice(2)).slice(0, 8), [propertiesPage]);
+  const mobileGrid = useMemo(() => shuffle(propertiesPage?.results || []).slice(0, 8), [propertiesPage]);
   const [subscribed, setSubscribed] = useState(false);
 
   const HERO_IMAGES = [
@@ -134,7 +145,7 @@ export default function HomePage() {
           <>
             {/* Mobile: original unshifted list (no desktop spotlight to account for) */}
             <div className="grid grid-cols-1 gap-4 md:hidden">
-              {featured.slice(0, 8).map((property, index) => (
+              {mobileGrid.map((property, index) => (
                 <Reveal key={property.id} delay={(index % 4) * 100}>
                   <PropertyCard property={property} size="lg" />
                 </Reveal>
@@ -143,7 +154,7 @@ export default function HomePage() {
 
             {/* Desktop: skip the 2 properties already shown in the spotlight section */}
             <div className="hidden md:grid md:grid-cols-2 gap-4">
-              {featured.slice(2, 10).map((property, index) => (
+              {desktopGrid.map((property, index) => (
                 <Reveal key={property.id} delay={(index % 4) * 100}>
                   <PropertyCard property={property} size="lg" />
                 </Reveal>
