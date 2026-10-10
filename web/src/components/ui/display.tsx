@@ -72,6 +72,7 @@ export function Panel({
   className,
   bodyClassName,
   flush,
+  allowOverflow,
 }: {
   title?: ReactNode;
   description?: ReactNode;
@@ -81,9 +82,11 @@ export function Panel({
   bodyClassName?: string;
   /** Remove body padding (tables, lists). */
   flush?: boolean;
+  /** Let children such as dropdowns extend past the card edge. */
+  allowOverflow?: boolean;
 }) {
   return (
-    <section className={cn("overflow-hidden rounded-lg border border-line bg-surface shadow-card", className)}>
+    <section className={cn(!allowOverflow && "overflow-hidden", "rounded-lg border border-line bg-surface shadow-card", className)}>
       {(title || actions) && (
         <header className="flex items-start justify-between gap-3 border-b border-line px-5 py-3.5">
           <div className="min-w-0">

@@ -300,7 +300,7 @@ function PropertyForm({ property }: { property?: PropertyDetail }) {
           </Field>
         </Panel>
 
-        <Panel title="Owner" description="The landlord or seller you're representing.">
+        <Panel title="Owner" allowOverflow description="The landlord or seller you're representing.">
           <Field label="Owner" error={errors.owner}>
             {(p) => (
               <Combobox
