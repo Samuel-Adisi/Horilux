@@ -1,6 +1,7 @@
 import { useRef, useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useProperty, useProperties } from "@/features/listings/hooks/use-properties";
+import type { PropertyListItem } from "@/lib/types";
 import PropertyCard from "@/features/shared/PropertyCard";
 import LoadingSpinner from "@/components/shared/LoadingSpinner";
 import { useToggleSavedProperty } from "@/features/favorites/hooks/use-saved-properties";
@@ -172,8 +173,18 @@ export default function PropertyDetailPage() {
     document.title = property.title + " | Horilux Estates";
     return () => { document.title = prev; };
   }, [property?.title]);
-  const { data: relatedPage } = useProperties({
+  const { data: sameTypePage } = useProperties({
+    listing_type: property?.listing_type,
     ordering: "-published_at",
+    enabled: !!property?.listing_type,
+    staleTime: 2 * 60_000,
+    gcTime: 5 * 60_000,
+  });
+  const { data: sameRegionPage } = useProperties({
+    listing_type: property?.listing_type,
+    region: property?.region,
+    ordering: "-published_at",
+    enabled: !!property?.listing_type && !!property?.region,
     staleTime: 2 * 60_000,
     gcTime: 5 * 60_000,
   });
@@ -273,7 +284,41 @@ export default function PropertyDetailPage() {
   const heroOverlay =
     "linear-gradient(to top, rgba(10,10,20,0.4) 0%, rgba(10,10,20,0.15) 14%, rgba(10,10,20,0) 32%)";
 
-  const related = (relatedPage?.results || []).filter((p) => p.id !== property.id).slice(0, 2);
+  const related = (() => {
+    const pool = new Map<string, PropertyListItem>();
+    [...(sameRegionPage?.results || []), ...(sameTypePage?.results || [])].forEach((p) => {
+      if (p.id !== property.id) pool.set(p.id, p);
+    });
+    const basePrice = Number(property.price) || 0;
+    const hash = (str: string) => {
+      let h = 0;
+      for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) | 0;
+      return Math.abs(h);
+    };
+    const score = (p: PropertyListItem) => {
+      let sc = 0;
+      if (p.region === property.region) sc += 4;
+      if (p.property_type === property.property_type) sc += 3;
+      const price = Number(p.price) || 0;
+      if (basePrice > 0 && price > 0) {
+        const diff = Math.abs(price - basePrice) / basePrice;
+        if (diff <= 0.25) sc += 3;
+        else if (diff <= 0.5) sc += 2;
+        else if (diff <= 1) sc += 1;
+      }
+      if (p.bedrooms != null && property.bedrooms != null) {
+        const d = Math.abs(p.bedrooms - property.bedrooms);
+        if (d === 0) sc += 2;
+        else if (d === 1) sc += 1;
+      }
+      return sc;
+    };
+    return Array.from(pool.values())
+      .map((p) => ({ p, sc: score(p), r: hash(property.id + p.id) }))
+      .sort((a, b) => b.sc - a.sc || a.r - b.r)
+      .slice(0, 2)
+      .map((x) => x.p);
+  })();
 
   const waLink = "https://wa.me/233591368760?text=" + encodeURIComponent("Hi, I am interested in " + property.title + " (" + window.location.href + ")");
 

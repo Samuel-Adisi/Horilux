@@ -1,14 +1,15 @@
 import { useQuery } from "@tanstack/react-query";
 import { fetchProperties, fetchPropertyById, type PropertyFilters } from "../api/properties";
 
-type UsePropertiesOptions = PropertyFilters & { staleTime?: number; gcTime?: number };
+type UsePropertiesOptions = PropertyFilters & { staleTime?: number; gcTime?: number; enabled?: boolean };
 
-export function useProperties({ staleTime, gcTime, ...filters }: UsePropertiesOptions = {}) {
+export function useProperties({ staleTime, gcTime, enabled, ...filters }: UsePropertiesOptions = {}) {
   return useQuery({
     queryKey: ["properties", filters],
     queryFn: () => fetchProperties(filters),
     staleTime,
     gcTime,
+    enabled,
   });
 }
 
