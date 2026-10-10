@@ -318,9 +318,9 @@ export default function PropertyDetailPage() {
     return Array.from(pool.values())
       .map((p) => ({ p, sc: score(p), r: hash(String(relatedSeed) + p.id) }))
       .sort((a, b) => b.sc - a.sc || a.r - b.r)
-      .slice(0, 5)
+      .slice(0, 12)
       .sort((a, b) => a.r - b.r)
-      .slice(0, 2)
+      .slice(0, 6)
       .map((x) => x.p);
   })();
 
