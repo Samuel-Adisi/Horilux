@@ -30,7 +30,7 @@ function sized(url) {
   return url;
 }
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   var id = req.query.id;
   var host = req.headers["x-forwarded-host"] || req.headers.host;
   var origin = "https://" + host;
