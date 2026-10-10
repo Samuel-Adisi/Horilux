@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useProperty, useProperties } from "@/features/listings/hooks/use-properties";
 import type { PropertyListItem } from "@/lib/types";
@@ -189,6 +189,8 @@ export default function PropertyDetailPage() {
     gcTime: 5 * 60_000,
   });
 
+  const relatedSeed = useMemo(() => Math.random(), [property?.id]);
+
   const heroSwipeRef = useRef<HTMLDivElement>(null);
   const [heroSlide, setHeroSlide] = useState(0);
   const deskSwipeRef = useRef<HTMLDivElement>(null);
@@ -314,8 +316,10 @@ export default function PropertyDetailPage() {
       return sc;
     };
     return Array.from(pool.values())
-      .map((p) => ({ p, sc: score(p), r: hash(property.id + p.id) }))
+      .map((p) => ({ p, sc: score(p), r: hash(String(relatedSeed) + p.id) }))
       .sort((a, b) => b.sc - a.sc || a.r - b.r)
+      .slice(0, 5)
+      .sort((a, b) => a.r - b.r)
       .slice(0, 2)
       .map((x) => x.p);
   })();
