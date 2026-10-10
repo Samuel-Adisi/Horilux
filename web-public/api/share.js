@@ -35,7 +35,7 @@ function sized(url, logo) {
   var plain = url.replace("/upload/", "/upload/" + base + ",q_auto,f_jpg/");
   var branded = url.replace(
     "/upload/",
-    "/upload/" + base + "/e_brightness:-15/l_fetch:" + b64url(logo) + "/c_scale,w_240/fl_layer_apply,g_south_west,x_40,y_36/q_auto,f_jpg/"
+    "/upload/" + base + "/e_brightness:-15/l_horilux_logo/c_scale,w_240/fl_layer_apply,g_south_west,x_40,y_36/q_auto,f_jpg/"
   );
   return { plain: plain, branded: branded };
 }
