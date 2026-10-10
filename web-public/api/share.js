@@ -23,11 +23,21 @@ function pickImage(p) {
   return first || null;
 }
 
-function sized(url) {
-  if (url.indexOf("/upload/") !== -1 && url.indexOf("res.cloudinary.com") !== -1) {
-    return url.replace("/upload/", "/upload/c_fill,w_1200,h_630,q_auto,f_jpg/");
+function b64url(str) {
+  return Buffer.from(str).toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+function sized(url, logo) {
+  if (url.indexOf("/upload/") === -1 || url.indexOf("res.cloudinary.com") === -1) {
+    return { plain: url, branded: url };
   }
-  return url;
+  var base = "c_fill,w_1200,h_630";
+  var plain = url.replace("/upload/", "/upload/" + base + ",q_auto,f_jpg/");
+  var branded = url.replace(
+    "/upload/",
+    "/upload/" + base + "/e_brightness:-15/l_fetch:" + b64url(logo) + "/c_scale,w_240/fl_layer_apply,g_south_west,x_40,y_36/q_auto,f_jpg/"
+  );
+  return { plain: plain, branded: branded };
 }
 
 export default async function handler(req, res) {
@@ -54,7 +64,14 @@ export default async function handler(req, res) {
       if (loc) bits.push(loc);
       desc = bits.length ? bits.join(" · ") : desc;
       var img = pickImage(p);
-      if (img) image = sized(img);
+      if (img) {
+        var v = sized(img, origin + "/logo.png");
+        image = v.plain;
+        try {
+          var h = await fetch(v.branded, { method: "HEAD" });
+          if (h.ok) image = v.branded;
+        } catch (e) {}
+      }
     }
   } catch (e) {}
 
