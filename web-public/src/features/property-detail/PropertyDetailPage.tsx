@@ -329,6 +329,7 @@ export default function PropertyDetailPage() {
   const facts = [
     { label: "Property Type", value: property.property_type },
     { label: "Listing Type", value: property.listing_type === "sale" ? "For Sale" : "For Rent" },
+    property.location && { label: "Location", value: property.location },
     { label: "Region", value: property.region },
     property.address && { label: "Address", value: property.address },
     property.bedrooms != null && { label: "Bedrooms", value: String(property.bedrooms) },
@@ -461,7 +462,7 @@ export default function PropertyDetailPage() {
             </div>
           ) : (
             <p className="text-neutral-500 leading-relaxed">
-              A {property.property_type.toLowerCase()} located in {property.region}, offered{" "}
+              A {property.property_type.toLowerCase()} located in {property.location && property.location !== property.region ? property.location + ", " : ""}{property.region}, offered{" "}
               {property.listing_type === "sale" ? "for sale" : "for rent"}.
             </p>
           )}
