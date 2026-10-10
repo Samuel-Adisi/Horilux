@@ -16,10 +16,14 @@ export default function HomePage() {
   const [subscribed, setSubscribed] = useState(false);
 
   const HERO_IMAGES = [
+    "/covers/cover-0.png",
+    "/covers/cover-9.jpg",
+    "/covers/cover-10.jpg",
     "/covers/cover-5.jpg",
-    "/covers/cover-2.jpg",
-    "/covers/cover-3.jpg",
-    "/covers/cover-7.jpg",
+    "/covers/cover-11.jpg",
+    "/covers/cover-12.jpg",
+    "/covers/cover-11.jpg",
+    "/covers/cover-12.jpg",
   ];
   const [heroIndex, setHeroIndex] = useState(0);
   const touchX = useRef(0);
@@ -35,7 +39,7 @@ export default function HomePage() {
   return (
     <div>
       {/* Hero */}
-      <section onTouchStart={(e) => { touchX.current = e.touches[0].clientX; }} onTouchEnd={(e) => { const dx = e.changedTouches[0].clientX - touchX.current; if (Math.abs(dx) > 40) setHeroIndex((i) => (i + (dx < 0 ? 1 : HERO_IMAGES.length - 1)) % HERO_IMAGES.length); }} className="relative min-h-screen flex items-end px-6 md:px-12 pb-16 overflow-hidden">
+      <section onTouchStart={(e) => { touchX.current = e.touches[0].clientX; }} onTouchEnd={(e) => { const dx = e.changedTouches[0].clientX - touchX.current; if (Math.abs(dx) > 40) setHeroIndex((i) => (i + (dx < 0 ? 1 : HERO_IMAGES.length - 1)) % HERO_IMAGES.length); }} className="relative flex items-end aspect-[4/5] md:aspect-auto md:h-[100svh] px-6 md:px-12 pb-16 overflow-hidden">
         {HERO_IMAGES.map((src, i) => (
           <div
             key={src}
@@ -46,10 +50,11 @@ export default function HomePage() {
             style={{
               backgroundImage:
                 "linear-gradient(to top, rgba(10,10,20,0.28), rgba(10,10,20,0.03)), url('" + src + "')",
+              backgroundPosition: src.includes("cover-0") ? "center 40%" : "center",
             }}
           />
         ))}
-        <div className="relative z-10 max-w-3xl">
+        <div className={`relative z-10 max-w-3xl transition-opacity duration-[1200ms] ${heroIndex === 0 ? "opacity-0 pointer-events-none" : "opacity-100"}`}>
           <p className="text-white/80 uppercase tracking-[0.3em] text-xs md:text-sm mb-4">
             Ghana&apos;s Premium Real Estate
           </p>
