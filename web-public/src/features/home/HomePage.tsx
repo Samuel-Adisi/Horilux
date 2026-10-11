@@ -5,6 +5,7 @@ import PropertyCard from "@/features/shared/PropertyCard";
 import SearchBar from "./SearchBar";
 import LoadingSpinner from "@/components/shared/LoadingSpinner";
 import Reveal from "@/components/shared/Reveal";
+import WiggleHeading from "@/components/shared/WiggleHeading";
 
 export default function HomePage() {
   const { data: propertiesPage, isLoading, isError } = useProperties({
@@ -106,9 +107,7 @@ export default function HomePage() {
       <section className="bg-cream px-6 py-20">
         <div className="mx-auto max-w-4xl text-center">
           <Reveal>
-            <h2 className="font-serif text-xl sm:text-2xl md:text-4xl tracking-[0.15em] uppercase text-brand-blue">
-              Luxury Lives Here
-            </h2>
+            <WiggleHeading text="Luxury Lives Here" className="font-serif text-xl sm:text-2xl md:text-4xl tracking-[0.15em] uppercase text-brand-blue" />
             <p className="mt-6 text-neutral-600 leading-relaxed max-w-2xl mx-auto">
               Horilux Estates brings deep local expertise to Ghana&apos;s real estate market,
               connecting discerning buyers and tenants with verified, exceptional homes from

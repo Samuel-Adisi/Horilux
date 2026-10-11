@@ -44,3 +44,15 @@ body {
     transform: rotateY(360deg);
   }
 }
+
+@keyframes letter-jiggle {
+  0% { opacity: 0; transform: translateY(24px) rotate(-10deg) scale(0.8); }
+  40% { opacity: 1; transform: translateY(-12px) rotate(7deg) scale(1.1); }
+  60% { transform: translateY(5px) rotate(-5deg) scale(0.97); }
+  80% { transform: translateY(-3px) rotate(2deg) scale(1.02); }
+  100% { opacity: 1; transform: translateY(0) rotate(0) scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wiggle-letter { animation: none !important; opacity: 1 !important; }
+}
