@@ -28,6 +28,7 @@ import {
   type LeadStatus as LS,
 } from "../api";
 import { LeadFormDialog } from "../components/LeadFormDialog";
+import { LeadViewingsPanel } from "../components/LeadViewingsPanel";
 import { ActivityTimeline } from "../components/ActivityTimeline";
 import { StartTransactionLink } from "../components/StartTransactionLink";
 
@@ -219,6 +220,7 @@ function LeadView({ lead }: { lead: Lead }) {
           <ActivityTimeline lead={lead.id} />
         </div>
         <div className="space-y-6">
+          {client.data && <LeadViewingsPanel clientId={client.data.id} />}
           {lead.offer && (
             <Panel title="Offer">
               <div className="space-y-2 text-sm">

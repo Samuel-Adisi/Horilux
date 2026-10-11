@@ -8,6 +8,7 @@ class LeadSerializer(serializers.ModelSerializer):
     status_label = serializers.CharField(source="get_status_display", read_only=True)
     property_interest_title = serializers.SerializerMethodField()
     offer = serializers.SerializerMethodField()
+    viewing_request = serializers.SerializerMethodField()
 
     class Meta:
         model = Lead
@@ -16,7 +17,7 @@ class LeadSerializer(serializers.ModelSerializer):
             "location_preference", "property_type_preference", "bedrooms_preference",
             "purpose", "property_interest", "property_interest_title",
             "assigned_agent", "assigned_agent_name", "status", "status_label",
-            "last_contact", "next_follow_up", "notes", "created_at", "offer",
+            "last_contact", "next_follow_up", "notes", "created_at", "offer", "viewing_request",
         ]
         read_only_fields = ["id", "status", "created_at"]
 
@@ -49,6 +50,27 @@ class LeadSerializer(serializers.ModelSerializer):
             "property_price": str(o.property.price),
             "property_currency": o.property.currency,
             "client_id": str(o.client_id),
+        }
+
+    def get_viewing_request(self, obj):
+        from viewings.models import Viewing
+        v = (
+            Viewing.objects.filter(client__lead_id=obj.pk)
+            .exclude(status=Viewing.Status.CANCELLED)
+            .select_related("property")
+            .order_by("-created_at")
+            .first()
+        )
+        if v is None:
+            return None
+        return {
+            "id": str(v.id),
+            "status": v.status,
+            "date": v.date.isoformat(),
+            "time": v.time.strftime("%H:%M"),
+            "property_id": str(v.property_id),
+            "property_title": v.property.title,
+            "client_id": str(v.client_id),
         }
 
 

@@ -48,6 +48,16 @@ export interface LeadOffer {
   client_id: string;
 }
 
+export interface LeadViewing {
+  id: string;
+  status: string;
+  date: string;
+  time: string;
+  property_id: string;
+  property_title: string;
+  client_id: string;
+}
+
 export interface Lead {
   id: string;
   name: string;
@@ -67,6 +77,7 @@ export interface Lead {
   status: LeadStatus;
   status_label: string;
   offer?: LeadOffer | null;
+  viewing_request?: LeadViewing | null;
   last_contact: string | null;
   next_follow_up: string | null;
   notes: string;

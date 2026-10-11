@@ -50,6 +50,14 @@ class ViewingViewSet(viewsets.ModelViewSet):
         if date_to:
             qs = qs.filter(date__lte=date_to)
 
+        client_param = params.get("client")
+        if client_param:
+            import uuid
+            try:
+                qs = qs.filter(client_id=uuid.UUID(client_param))
+            except ValueError:
+                qs = qs.none()
+
         return qs.order_by("-date", "-time")
 
     def perform_create(self, serializer):

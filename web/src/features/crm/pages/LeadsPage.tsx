@@ -131,6 +131,11 @@ export function LeadsPage() {
                             {l.phone}
                             {l.source && ` · ${l.source}`}
                           </p>
+                          {l.viewing_request && (
+                            <p className="text-xs font-semibold text-sky-400">
+                              Viewing requested · {l.viewing_request.property_title} · {l.viewing_request.date} {l.viewing_request.time}
+                            </p>
+                          )}
                           {l.offer && (
                             <p className="num text-xs font-semibold text-brand-fg">
                               Offer {formatMoney(l.offer.amount, l.offer.property_currency, { compact: true })} · {l.offer.property_title}

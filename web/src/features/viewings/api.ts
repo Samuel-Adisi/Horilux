@@ -48,6 +48,7 @@ export interface ViewingsQuery {
   status?: string;
   date_from?: string;
   date_to?: string;
+  client?: string;
 }
 
 export interface FollowUp {
@@ -81,7 +82,7 @@ export function useViewings(q: ViewingsQuery, opts: { enabled?: boolean } = {}) 
     queryFn: async () =>
       (
         await apiClient.get<Paginated<Viewing>>("/viewings/", {
-          params: cleanParams({ page: q.page ?? 1, status: q.status, date_from: q.date_from, date_to: q.date_to }),
+          params: cleanParams({ page: q.page ?? 1, status: q.status, date_from: q.date_from, date_to: q.date_to, client: q.client }),
         })
       ).data,
     placeholderData: keepPreviousData,
