@@ -162,6 +162,7 @@ export default function HomePage() {
           </>
         )}
 
+        {featured && featured.length > 0 && (
         <div className="mt-14 text-center">
           <Link
             to="/listings"
@@ -170,6 +171,7 @@ export default function HomePage() {
             View More
           </Link>
         </div>
+        )}
       </section>
 
       {/* Newsletter + stats */}
