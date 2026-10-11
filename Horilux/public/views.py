@@ -259,6 +259,9 @@ class ContactSubmissionView(generics.CreateAPIView):
                 from rest_framework.exceptions import ValidationError
                 raise ValidationError("Choose both a viewing date and a time.")
             if vdate and vtime:
+                if not (submission.phone or "").strip():
+                    from rest_framework.exceptions import ValidationError
+                    raise ValidationError({"phone": "A phone number is required to request a viewing."})
                 from django.utils import timezone
                 if vdate < timezone.localdate():
                     from rest_framework.exceptions import ValidationError
