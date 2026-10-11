@@ -90,6 +90,7 @@ class PropertyViewSet(viewsets.ModelViewSet):
         "publish_now": "publish",
         "mark_marketing_ready": "approve",
         "set_commission": "edit",
+        "offers": "view",
         "approve_commission": "approve",
         "mark_under_offer": "edit",
         "mark_sold": "edit",
@@ -157,6 +158,25 @@ class PropertyViewSet(viewsets.ModelViewSet):
         property_obj.status = Property.Status.VERIFIED
         property_obj.save(update_fields=["status", "updated_at"])
         return Response(PropertyDetailSerializer(property_obj).data)
+
+    @action(detail=True, methods=["get"])
+    def offers(self, request, pk=None):
+        property_obj = self.get_object()
+        rows = property_obj.offers.select_related("client").order_by("-amount", "created_at")
+        return Response([
+            {
+                "id": str(o.id),
+                "amount": str(o.amount),
+                "message": o.message,
+                "status": o.status,
+                "created_at": o.created_at,
+                "client_id": str(o.client_id),
+                "client_name": o.client.name,
+                "client_phone": o.client.phone,
+                "client_email": o.client.email,
+            }
+            for o in rows
+        ])
 
     @staticmethod
     def _has_role(user, names):

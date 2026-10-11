@@ -295,6 +295,39 @@ class ContactSubmissionView(generics.CreateAPIView):
                             create_notification(u, "viewing.requested", msg, related_obj=prop)
                 except Exception:
                     pass
+            offer = submission.offer_amount
+            if offer is not None:
+                from rest_framework.exceptions import ValidationError
+                if offer <= 0:
+                    raise ValidationError({"offer_amount": "Offer must be greater than zero."})
+                if not (submission.phone or "").strip():
+                    raise ValidationError({"phone": "A phone number is required to make an offer."})
+                from .models import PropertyOffer
+                offer_client = Client.objects.filter(lead=lead).first()
+                if offer_client is None:
+                    offer_client = Client.objects.create(
+                        lead=lead,
+                        name=submission.name,
+                        phone=(submission.phone or "")[:20],
+                        email=submission.email,
+                        assigned_agent=prop.agent,
+                    )
+                PropertyOffer.objects.create(
+                    property=prop, client=offer_client, amount=offer, message=submission.message or ""
+                )
+                try:
+                    from accounts.models import User
+                    from notifications.tasks import create_notification
+                    omsg = f"New offer of GHS {offer} on {prop.title} from {submission.name}."
+                    opeople = {}
+                    if prop.agent:
+                        opeople[prop.agent.pk] = prop.agent
+                    for u in User.objects.filter(user_roles__role__name__in=["Operations", "CEO"]).distinct():
+                        opeople[u.pk] = u
+                    for u in opeople.values():
+                        create_notification(u, "property.offer_received", omsg, related_obj=prop)
+                except Exception:
+                    pass
         else:
             Lead.objects.create(
                 name=submission.name,

@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Page, PageHeader } from "@/components/ui/page";
 import { Button } from "@/components/ui/button";
@@ -21,7 +21,7 @@ export function TransactionFormPage() {
   const can = useCan();
   const [params] = useSearchParams();
   const create = useCreateTransaction();
-  const [f, setF] = useState({ property: "", client: params.get("client") ?? "", owner: "", ownerName: "", agent: "", price: "", commission_percent: "5" });
+  const [f, setF] = useState({ property: "", client: params.get("client") ?? "", owner: "", ownerName: "", agent: "", price: params.get("price") ?? "", commission_percent: "5" });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
   const [loadingOwner, setLoadingOwner] = useState(false);
@@ -44,6 +44,12 @@ export function TransactionFormPage() {
       setLoadingOwner(false);
     }
   }
+
+  useEffect(() => {
+    const pid = params.get("property");
+    if (pid) void pickProperty(pid);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const price = Number(f.price) || 0;
   const pct = Number(f.commission_percent) || 0;

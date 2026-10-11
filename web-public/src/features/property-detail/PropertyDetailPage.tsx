@@ -219,6 +219,7 @@ export default function PropertyDetailPage() {
   const [website, setWebsite] = useState("");
   const [viewingDate, setViewingDate] = useState("");
   const [viewingTime, setViewingTime] = useState("");
+  const [offerAmount, setOfferAmount] = useState("");
   const [sending, setSending] = useState(false);
   const [inquiryError, setInquiryError] = useState<string | null>(null);
   const [inquirySuccess, setInquirySuccess] = useState(false);
@@ -231,6 +232,7 @@ export default function PropertyDetailPage() {
     setEmail("");
     setPhone("");
     setMessage("");
+    setOfferAmount("");
     setViewingDate("");
     setViewingTime("");
     setInquiryError(null);
@@ -260,10 +262,12 @@ export default function PropertyDetailPage() {
         phone,
         message,
         property: property.id,
+        ...(offerAmount ? { offer_amount: offerAmount } : {}),
         ...(viewingDate && viewingTime ? { requested_viewing_date: viewingDate, requested_viewing_time: viewingTime } : {}),
       });
       setInquirySuccess(true);
       setMessage("");
+      setOfferAmount("");
       setViewingDate("");
       setViewingTime("");
     } catch {
@@ -590,6 +594,10 @@ export default function PropertyDetailPage() {
                     <input type="date" min={new Date().toISOString().slice(0, 10)} value={viewingDate} onChange={(e) => setViewingDate(e.target.value)} className="w-full rounded-xl border border-neutral-200 bg-neutral-50/60 px-4 py-3.5 text-base sm:text-sm text-neutral-800 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue focus:bg-white transition-all" />
                     <input type="time" value={viewingTime} onChange={(e) => setViewingTime(e.target.value)} className="w-full rounded-xl border border-neutral-200 bg-neutral-50/60 px-4 py-3.5 text-base sm:text-sm text-neutral-800 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue focus:bg-white transition-all" />
                   </div>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-xs uppercase tracking-wider text-neutral-500">Make an offer (optional)</p>
+                  <input type="number" min="1" step="any" placeholder="Your offer in GH₵" value={offerAmount} onChange={(e) => setOfferAmount(e.target.value)} className="w-full rounded-xl border border-neutral-200 bg-neutral-50/60 px-4 py-3.5 text-base sm:text-sm text-neutral-800 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue focus:bg-white transition-all" />
                 </div>
                 <textarea
                   value={message}

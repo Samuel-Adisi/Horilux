@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 import { PROPERTY_STATUS_LABEL, useDeleteProperty, useProperty, usePropertyAction, type PropertyAction, type PropertyDetail, type PropertyStatus as PStatus } from "../api";
 import { ChecklistPanel } from "../components/ChecklistPanel";
 import { CommissionPanel } from "../components/CommissionPanel";
+import { OffersPanel } from "../components/OffersPanel";
 import { MediaGallery } from "../components/MediaGallery";
 import { DocumentsPanel } from "../components/DocumentsPanel";
 
@@ -327,6 +328,7 @@ function PropertyView({ property: p }: { property: PropertyDetail }) {
 
         <div className="space-y-6">
           <CommissionPanel property={p} />
+          <OffersPanel property={p} />
           <ChecklistPanel property={p} />
 
           <Panel title="Owner">

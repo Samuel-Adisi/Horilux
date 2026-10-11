@@ -107,9 +107,26 @@ class ContactSubmission(models.Model):
     )
     requested_viewing_date = models.DateField(null=True, blank=True)
     requested_viewing_time = models.TimeField(null=True, blank=True)
+    offer_amount = models.DecimalField(max_digits=14, decimal_places=2, null=True, blank=True)
     budget = models.DecimalField(max_digits=14, decimal_places=2, null=True, blank=True)
     bedrooms_preference = models.PositiveIntegerField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.name} <{self.email}>"
+
+
+class PropertyOffer(models.Model):
+    class Status(models.TextChoices):
+        OPEN = "open", "Open"
+        CONVERTED = "converted", "Converted to transaction"
+
+    property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name="offers")
+    client = models.ForeignKey("crm.Client", on_delete=models.CASCADE, related_name="offers")
+    amount = models.DecimalField(max_digits=14, decimal_places=2)
+    message = models.TextField(blank=True)
+    status = models.CharField(max_length=15, choices=Status.choices, default=Status.OPEN)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.client} offered {self.amount} on {self.property}"
