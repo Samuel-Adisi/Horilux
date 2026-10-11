@@ -11,7 +11,6 @@ import {
   KeyRound,
   LineChart,
   MapPin,
-  PieChart,
   ScrollText,
   Settings,
   Target,
@@ -84,7 +83,6 @@ export const NAV: NavGroup[] = [
       { label: "Sales pipeline", path: "/insights/pipeline", icon: LineChart, color: "text-sky-400", requires: [["executive_insights", "view"]] },
       { label: "Listing performance", path: "/insights/properties", icon: BarChart3, color: "text-indigo-400", requires: [["property_insights", "view"]] },
       { label: "Agents", path: "/insights/agents", icon: Trophy, color: "text-emerald-400", requires: [["executive_insights", "view"]] },
-      { label: "Lead sources", path: "/insights/lead-sources", icon: PieChart, color: "text-cyan-400", requires: [["lead_source_stats", "view"]] },
       { label: "Locations", path: "/insights/locations", icon: MapPin, color: "text-rose-400", requires: [["property_insights", "view"]] },
       {
         label: "Reports",
