@@ -11,7 +11,6 @@ import {
   KeyRound,
   LineChart,
   MapPin,
-  Megaphone,
   PieChart,
   ScrollText,
   Settings,
@@ -76,7 +75,6 @@ export const NAV: NavGroup[] = [
     label: "Deals",
     items: [
       { label: "Transactions", path: "/transactions", icon: Handshake, color: "text-amber-400", requires: [["transaction", "view"]] },
-      { label: "Campaigns", path: "/campaigns", icon: Megaphone, color: "text-pink-400", requires: [["marketing_campaign", "view"]] },
     ],
   },
   {
