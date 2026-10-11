@@ -22,7 +22,7 @@ RBAC_MATRIX = {
         "property": {"view", "create", "edit", "delete", "approve", "publish", "export"},
         "property_verification": {"view", "edit", "approve"},
         "lead": {"view", "assign", "export"},
-        "client": {"view", "export"},
+        "client": {"view", "create", "edit", "export"},
         "interaction": {"view", "export"},
         "lead_source_stats": {"view", "export"},
         "viewing": {"view", "export"},

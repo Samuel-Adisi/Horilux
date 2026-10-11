@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { UserRound } from "lucide-react";
 import { Page, PageHeader, SearchInput, Toolbar } from "@/components/ui/page";
@@ -8,11 +9,16 @@ import { useSearchBox } from "@/hooks/use-search-box";
 import { useDocumentTitle } from "@/hooks/use-document-title";
 import { formatDate, formatMoney } from "@/lib/format";
 import { PAGE_SIZE } from "@/lib/types";
+import { Button } from "@/components/ui/button";
+import { useCan } from "@/features/accounts/permissions";
 import { useClients } from "../api";
+import { ClientFormDialog } from "../components/ClientFormDialog";
 
 export function ClientsPage() {
   useDocumentTitle("Clients");
   const navigate = useNavigate();
+  const can = useCan();
+  const [creating, setCreating] = useState(false);
   const { values, page, set } = useUrlState(["search"] as const);
   const [text, setText] = useSearchBox(values.search, (v) => set({ search: v }));
   const q = useClients({ page, search: values.search });
@@ -20,7 +26,7 @@ export function ClientsPage() {
 
   return (
     <Page>
-      <PageHeader title="Clients" count={q.data ? `${q.data.count.toLocaleString()} clients` : undefined} description="Qualified buyers and tenants. Leads become clients once they're qualified." />
+      <PageHeader title="Clients" count={q.data ? `${q.data.count.toLocaleString()} clients` : undefined} description="Qualified buyers and tenants. Leads become clients once they're qualified." actions={can("client", "create") && (<Button variant="primary" onClick={() => setCreating(true)}>New client</Button>)} />
       <Panel flush>
         <Toolbar>
           <SearchInput value={text} onChange={setText} placeholder="Search name, phone or email" />
@@ -33,7 +39,7 @@ export function ClientsPage() {
           <EmptyState
             icon={<UserRound />}
             title={values.search ? "No clients match" : "No clients yet"}
-            description={values.search ? undefined : "Open a qualified lead and choose Convert to client."}
+            description={values.search ? undefined : "Add one with New client, or open a qualified lead and choose Convert to client."}
           />
         ) : (
           <>
@@ -73,6 +79,7 @@ export function ClientsPage() {
           </>
         )}
       </Panel>
+    <ClientFormDialog open={creating} onClose={() => setCreating(false)} onSaved={(c) => navigate("/clients/" + c.id)} />
     </Page>
   );
 }
