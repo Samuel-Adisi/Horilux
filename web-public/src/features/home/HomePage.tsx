@@ -52,7 +52,7 @@ export default function HomePage() {
       <section onTouchStart={(e) => { touchX.current = e.touches[0].clientX; }} onTouchEnd={(e) => { const dx = e.changedTouches[0].clientX - touchX.current; if (Math.abs(dx) > 40) setHeroIndex((i) => (i + (dx < 0 ? 1 : HERO_IMAGES.length - 1)) % HERO_IMAGES.length); }} className="relative flex items-end aspect-[4/5] md:aspect-auto md:h-[100svh] px-6 md:px-12 pb-16 overflow-hidden">
         {HERO_IMAGES.map((src, i) => (
           <div
-            key={src}
+            key={src + "-" + i}
             aria-hidden={i !== heroIndex}
             className={`absolute inset-0 bg-cover bg-center transition-opacity duration-[1800ms] ease-in-out ${
               i === heroIndex ? "opacity-100" : "opacity-0"
@@ -64,7 +64,7 @@ export default function HomePage() {
             }}
           />
         ))}
-        <div className={`relative z-10 max-w-3xl transition-opacity duration-[1200ms] ${heroIndex === 0 ? "opacity-0 pointer-events-none" : "opacity-100"}`}>
+        <div className="relative z-10 max-w-3xl">
           <p className="text-white/80 uppercase tracking-[0.3em] text-xs md:text-sm mb-4">
             Ghana&apos;s Premium Real Estate
           </p>
