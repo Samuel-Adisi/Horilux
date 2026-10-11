@@ -1,7 +1,7 @@
 from rest_framework.routers import DefaultRouter
 from django.urls import path
 
-from .views import CompanyProfileView, IntegrationStatusViewSet
+from .views import CompanyBrandView, CompanyProfileView, IntegrationStatusViewSet
 
 app_name = "company"
 
@@ -10,4 +10,5 @@ router.register(r"integrations", IntegrationStatusViewSet, basename="integration
 
 urlpatterns = [
     path("company-profile/", CompanyProfileView.as_view(), name="company-profile"),
+    path("company-brand/", CompanyBrandView.as_view(), name="company-brand"),
 ] + router.urls

@@ -1,4 +1,7 @@
 from rest_framework import generics, viewsets, mixins
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework.exceptions import PermissionDenied
 from accounts.permissions import RBACPermission, has_permission
 from .models import CompanyProfile, IntegrationStatus
@@ -32,3 +35,13 @@ class IntegrationStatusViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     permission_classes = [RBACPermission]
     rbac_resource = "company_settings"
     rbac_action_map = {"list": "view"}
+
+
+class CompanyBrandView(APIView):
+    """Company name and logo for the app shell; readable by any signed-in staff member."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        profile = CompanyProfile.get_solo()
+        data = CompanyProfileSerializer(profile, context={"request": request}).data
+        return Response({"name": profile.name, "logo": data.get("logo")})

@@ -6,6 +6,7 @@ import { useProperties } from "@/features/properties/api";
 import { useTheme } from "@/lib/theme";
 import { cn } from "@/lib/utils";
 import { UserMenu } from "./UserMenu";
+import { BrandLogo } from "./BrandLogo";
 
 /** Live count for the Approvals item (listings waiting on verification). */
 function useApprovalsBadge(enabled: boolean) {
@@ -33,10 +34,10 @@ function CeoSidebar({ groups, badges, onNavigate }: Props) {
   return (
     <div className="flex h-full select-none flex-col bg-sidebar">
       <div className="flex items-center gap-3 border-b border-line p-4">
-        <img src="/logo1.png" alt="" className="size-10 shrink-0 rounded-lg shadow-md" />
+        <BrandLogo className="size-10 shrink-0 rounded-lg object-contain shadow-md" />
         <div className="overflow-hidden">
-          <p className="text-sm font-bold uppercase tracking-tight text-heading">Horilux</p>
-          <p className="truncate text-[11px] text-ink-subtle">Real Estate Command Center</p>
+          <p className="truncate text-[13px] font-bold uppercase tracking-tight text-heading">Horilux Estates</p>
+          <p className="text-[11px] leading-tight text-ink-subtle">Live better, invest smart</p>
         </div>
       </div>
       <nav className="scrollbar-thin flex-1 space-y-5 overflow-y-auto px-2 py-3 text-xs" aria-label="Main">
@@ -87,10 +88,10 @@ function StaffSidebar({ groups, badges, onNavigate }: Props) {
   return (
     <div className="flex h-full flex-col bg-sidebar">
       <div className="flex items-center gap-2.5 px-5 py-5">
-        <img src="/logo1.png" alt="" className="size-9 shrink-0 object-contain" />
+        <BrandLogo className="size-9 shrink-0 object-contain" />
         <div className="flex min-w-0 flex-col">
           <span className="truncate text-[15px] font-semibold leading-tight tracking-tight text-ink">Horilux Estates</span>
-          <span className="truncate text-[9.5px] font-medium uppercase leading-tight tracking-wider text-ink-subtle">Private Wealth &amp; Realty</span>
+          <span className="truncate text-[9.5px] font-medium uppercase leading-tight tracking-wider text-ink-subtle">Live better, invest smart</span>
         </div>
       </div>
       <nav className="scrollbar-thin flex-1 overflow-y-auto px-3 py-2" aria-label="Main">

@@ -1,3 +1,4 @@
+import { BrandLogo } from "./BrandLogo";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { Outlet, useLocation } from "react-router-dom";
@@ -79,7 +80,7 @@ export function AppShell() {
           >
             <MenuIcon className="size-5" />
           </button>
-          <img src="/logo1.png" alt="" className="size-7 lg:hidden" />
+          <BrandLogo className="size-7 object-contain lg:hidden" />
 
           <button
             type="button"

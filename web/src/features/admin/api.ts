@@ -127,6 +127,14 @@ export function useCompanyProfile(enabled = true) {
   });
 }
 
+export function useCompanyBrand() {
+  return useQuery({
+    queryKey: ["company-brand"],
+    queryFn: async () => (await apiClient.get<{ name: string; logo: string | null }>("/company-brand/")).data,
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
 export function useUpdateCompanyProfile() {
   const qc = useQueryClient();
   return useMutation({
@@ -143,7 +151,10 @@ export function useUploadCompanyLogo() {
       form.append("logo", file);
       return (await apiClient.patch<CompanyProfile>("/company-profile/", form)).data;
     },
-    onSuccess: (d) => qc.setQueryData(["company-profile"], d),
+    onSuccess: (d) => {
+      qc.setQueryData(["company-profile"], d);
+      qc.invalidateQueries({ queryKey: ["company-brand"] });
+    },
   });
 }
 
