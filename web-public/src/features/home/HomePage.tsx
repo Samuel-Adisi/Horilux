@@ -126,7 +126,7 @@ export default function HomePage() {
           <p className="text-xs uppercase tracking-[0.2em] text-brand-taupe font-semibold mb-2">
             Handpicked
           </p>
-          <h2 className="font-serif text-xl sm:text-2xl md:text-4xl text-neutral-900">Featured Properties</h2>
+          <WiggleHeading text="Featured Properties" className="font-serif text-xl sm:text-2xl md:text-4xl text-neutral-900" />
         </Reveal>
 
         {isLoading && <LoadingSpinner />}
