@@ -91,6 +91,7 @@ class PropertyViewSet(viewsets.ModelViewSet):
         "mark_marketing_ready": "approve",
         "set_commission": "edit",
         "offers": "view",
+        "all_offers": "view",
         "approve_commission": "approve",
         "mark_under_offer": "edit",
         "mark_sold": "edit",
@@ -158,6 +159,39 @@ class PropertyViewSet(viewsets.ModelViewSet):
         property_obj.status = Property.Status.VERIFIED
         property_obj.save(update_fields=["status", "updated_at"])
         return Response(PropertyDetailSerializer(property_obj).data)
+
+    @action(detail=False, methods=["get"], url_path="all-offers")
+    def all_offers(self, request):
+        from public.models import PropertyOffer
+        visible = self.filter_queryset(self.get_queryset())
+        if get_user_scopes(request.user, "create", "transaction"):
+            visible = Property.objects.all()
+        rows = list(
+            PropertyOffer.objects.filter(property__in=visible, status="open")
+            .select_related("client", "property")
+            .order_by("property__title", "-amount", "created_at")
+        )
+        seen = {}
+        out = []
+        for o in rows:
+            seen[o.property_id] = seen.get(o.property_id, 0) + 1
+            out.append({
+                "id": str(o.id),
+                "amount": str(o.amount),
+                "message": o.message,
+                "created_at": o.created_at,
+                "rank": seen[o.property_id],
+                "property_id": str(o.property_id),
+                "property_title": o.property.title,
+                "property_price": str(o.property.price),
+                "property_currency": o.property.currency,
+                "client_id": str(o.client_id),
+                "client_name": o.client.name,
+                "client_phone": o.client.phone,
+                "client_email": o.client.email,
+            })
+        out.sort(key=lambda r: r["created_at"], reverse=True)
+        return Response(out)
 
     @action(detail=True, methods=["get"])
     def offers(self, request, pk=None):

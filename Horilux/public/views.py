@@ -315,6 +315,12 @@ class ContactSubmissionView(generics.CreateAPIView):
                 PropertyOffer.objects.create(
                     property=prop, client=offer_client, amount=offer, message=submission.message or ""
                 )
+                lead.notes = f"Offer: GHS {offer}\n\n" + (lead.notes or "")
+                update_fields = ["notes"]
+                if prop.agent and lead.assigned_agent_id is None:
+                    lead.assigned_agent = prop.agent
+                    update_fields.append("assigned_agent")
+                lead.save(update_fields=update_fields)
                 try:
                     from accounts.models import User
                     from notifications.tasks import create_notification
