@@ -29,6 +29,7 @@ import {
 } from "../api";
 import { LeadFormDialog } from "../components/LeadFormDialog";
 import { ActivityTimeline } from "../components/ActivityTimeline";
+import { StartTransactionLink } from "../components/StartTransactionLink";
 
 const NEXT_LABEL: Partial<Record<LS, string>> = {
   new: "Mark contacted",
@@ -229,12 +230,12 @@ function LeadView({ lead }: { lead: Lead }) {
                 </p>
                 {lead.offer.message && <p className="text-ink-muted">{lead.offer.message}</p>}
                 {lead.offer.status === "open" && (
-                  <Link
+                  <StartTransactionLink
                     to={"/transactions/new?property=" + lead.offer.property_id + "&client=" + lead.offer.client_id + "&price=" + lead.offer.amount}
                     className="inline-block rounded bg-brand px-3 py-1.5 text-sm font-semibold text-white"
                   >
                     Start transaction
-                  </Link>
+                  </StartTransactionLink>
                 )}
               </div>
             </Panel>

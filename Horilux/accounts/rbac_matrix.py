@@ -43,6 +43,7 @@ RBAC_MATRIX = {
     "Listing": {
         "property": {"view", "create", "edit", "approve"},
         "property_verification": {"view", "create", "edit"},
+        "lead": {"view"},
         "report_listing": {"view"},
         "task": {"view", "edit"},
     },
@@ -68,6 +69,7 @@ RBAC_MATRIX = {
     },
     "Finance": {
         "property": {"view"},
+        "lead": {"view"},
         "client": {"view"},
         "transaction": {"view", "create", "edit"},
         "payment_commission": {"view", "create", "edit", "approve"},
@@ -192,3 +194,8 @@ def sync_rbac(Department, Role, Permission, RolePermission, log=None):
         stats["links_removed"] += removed
 
     return stats
+
+
+# Listing and Finance only ever see the leads assigned to them.
+SCOPE_OVERRIDES[("Listing", "lead")] = "assigned"
+SCOPE_OVERRIDES[("Finance", "lead")] = "assigned"
