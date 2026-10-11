@@ -45,7 +45,7 @@ const ROLE_GRANTS: Record<string, Grants> = {
     property: ["view", "create", "edit", "delete", "approve", "publish"],
     property_verification: ["view", "edit", "approve"],
     lead: ["view", "assign"],
-    client: V,
+    client: VCE,
     interaction: V,
     lead_source_stats: V,
     viewing: V,
@@ -70,6 +70,7 @@ const ROLE_GRANTS: Record<string, Grants> = {
   Listing: {
     property: ["view", "create", "edit", "approve"],
     property_verification: VCE,
+    lead: V,
     report_listing: V,
     task: ["view", "edit"],
   },
@@ -91,6 +92,7 @@ const ROLE_GRANTS: Record<string, Grants> = {
     task: ["view", "edit"],
   },
   Finance: {
+    lead: V,
     property: V,
     client: V,
     transaction: VCE,
