@@ -27,7 +27,6 @@ export default function HomePage() {
   const [subscribed, setSubscribed] = useState(false);
 
   const HERO_IMAGES = [
-    "/covers/cover-0.png",
     "/covers/cover-9.jpg",
     "/covers/cover-10.jpg",
     "/covers/cover-5.jpg",
@@ -61,7 +60,7 @@ export default function HomePage() {
             style={{
               backgroundImage:
                 "linear-gradient(to top, rgba(10,10,20,0.28), rgba(10,10,20,0.03)), url('" + src + "')",
-              backgroundPosition: src.includes("cover-0") ? "center 40%" : "center",
+              backgroundPosition: "center",
             }}
           />
         ))}
