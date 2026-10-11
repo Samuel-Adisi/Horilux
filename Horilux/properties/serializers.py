@@ -104,11 +104,13 @@ class PropertyDetailSerializer(serializers.ModelSerializer):
             "amenities", "rental_period", "description", "owner", "owner_detail", "agent", "agent_name",
             "status", "status_label",
             "completion_percent", "published_at", "views_count", "inquiries_count",
+            "commission_percent", "commission_approved", "commission_proposed_by",
             "media", "documents", "verification",
             "created_at", "updated_at",
         ]
         read_only_fields = [
             "id", "status", "completion_percent", "published_at", "views_count", "inquiries_count",
+            "commission_percent", "commission_approved", "commission_proposed_by",
             "created_at", "updated_at",
         ]
 

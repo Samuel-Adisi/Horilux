@@ -61,6 +61,11 @@ class Property(models.Model):
     agent = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name="listed_properties")
     status = models.CharField(max_length=25, choices=Status.choices, default=Status.DRAFT)
     completion_percent = models.PositiveSmallIntegerField(default=0)
+    commission_percent = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    commission_approved = models.BooleanField(default=False)
+    commission_proposed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+    )
     views_count = models.PositiveIntegerField(default=0)
     inquiries_count = models.PositiveIntegerField(default=0)
     published_at = models.DateTimeField(null=True, blank=True)

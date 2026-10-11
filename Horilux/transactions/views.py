@@ -63,10 +63,15 @@ class TransactionViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         price = serializer.validated_data.get("price")
         commission_percent = serializer.validated_data.get("commission_percent")
+        extra = {}
+        prop = serializer.validated_data.get("property")
+        if prop is not None and prop.commission_approved and prop.commission_percent:
+            commission_percent = prop.commission_percent
+            extra["commission_percent"] = commission_percent
         expected_commission = (price * commission_percent / 100) if price and commission_percent else 0
         # Default agent to the creator so Sales (assigned scope) can see it afterwards.
         agent = serializer.validated_data.get("agent") or self.request.user
-        serializer.save(status=Transaction.Status.OFFER, expected_commission=expected_commission, agent=agent)
+        serializer.save(status=Transaction.Status.OFFER, expected_commission=expected_commission, agent=agent, **extra)
 
     @action(detail=True, methods=["post"])
     def advance(self, request, pk=None):

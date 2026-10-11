@@ -25,14 +25,19 @@ export function TransactionFormPage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
   const [loadingOwner, setLoadingOwner] = useState(false);
+  const [commissionLocked, setCommissionLocked] = useState(false);
 
   async function pickProperty(id: string) {
     setF((s) => ({ ...s, property: id, owner: "", ownerName: "" }));
+    setCommissionLocked(false);
     if (!id) return;
     setLoadingOwner(true);
     try {
       const p = await fetchProperty(id);
-      setF((s) => ({ ...s, owner: p.owner, ownerName: p.owner_detail?.name ?? "", price: s.price || String(Number(p.price)) }));
+      const pc = p as unknown as { commission_approved?: boolean; commission_percent?: string | null };
+      const locked = !!pc.commission_approved && pc.commission_percent != null;
+      setCommissionLocked(locked);
+      setF((s) => ({ ...s, owner: p.owner, ownerName: p.owner_detail?.name ?? "", price: s.price || String(Number(p.price)), ...(locked ? { commission_percent: String(Number(pc.commission_percent)) } : {}) }));
     } catch (err) {
       toast.error("Couldn't load the property's owner", getErrorMessage(err));
     } finally {
@@ -94,8 +99,8 @@ export function TransactionFormPage() {
             <Field label="Agreed price (GH₵)" error={errors.price}>
               {(p) => <Input {...p} type="number" min="0" step="0.01" className="num" value={f.price} onChange={(e) => setF({ ...f, price: e.target.value })} />}
             </Field>
-            <Field label="Commission (%)" error={errors.commission_percent}>
-              {(p) => <Input {...p} type="number" min="0" max="100" step="0.25" className="num" value={f.commission_percent} onChange={(e) => setF({ ...f, commission_percent: e.target.value })} />}
+            <Field label="Commission (%)" error={errors.commission_percent} hint={commissionLocked ? "Set by the company for this property." : undefined}>
+              {(p) => <Input {...p} type="number" min="0" max="100" step="0.25" className="num" value={f.commission_percent} disabled={commissionLocked} onChange={(e) => setF({ ...f, commission_percent: e.target.value })} />}
             </Field>
           </div>
           <p className="mt-4 rounded bg-surface-sunken px-3 py-2 text-sm text-ink-muted">

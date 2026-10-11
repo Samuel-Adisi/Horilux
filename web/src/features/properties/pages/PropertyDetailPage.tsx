@@ -14,6 +14,7 @@ import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import { PROPERTY_STATUS_LABEL, useDeleteProperty, useProperty, usePropertyAction, type PropertyAction, type PropertyDetail, type PropertyStatus as PStatus } from "../api";
 import { ChecklistPanel } from "../components/ChecklistPanel";
+import { CommissionPanel } from "../components/CommissionPanel";
 import { MediaGallery } from "../components/MediaGallery";
 import { DocumentsPanel } from "../components/DocumentsPanel";
 
@@ -325,6 +326,7 @@ function PropertyView({ property: p }: { property: PropertyDetail }) {
         </div>
 
         <div className="space-y-6">
+          <CommissionPanel property={p} />
           <ChecklistPanel property={p} />
 
           <Panel title="Owner">

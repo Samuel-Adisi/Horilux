@@ -89,6 +89,8 @@ class PropertyViewSet(viewsets.ModelViewSet):
         "publish": "publish",
         "publish_now": "publish",
         "mark_marketing_ready": "approve",
+        "set_commission": "edit",
+        "approve_commission": "approve",
         "mark_under_offer": "edit",
         "mark_sold": "edit",
         "archive": "edit",
@@ -144,6 +146,9 @@ class PropertyViewSet(viewsets.ModelViewSet):
 
         self._check_ceo_threshold(request.user, property_obj)
 
+        if property_obj.commission_percent is None or not property_obj.commission_approved:
+            raise ValidationError("Set and approve the commission before verifying this property.")
+
         checklist.manager_approved = True
         checklist.approved_by = request.user
         checklist.approved_at = timezone.now()
@@ -151,6 +156,58 @@ class PropertyViewSet(viewsets.ModelViewSet):
 
         property_obj.status = Property.Status.VERIFIED
         property_obj.save(update_fields=["status", "updated_at"])
+        return Response(PropertyDetailSerializer(property_obj).data)
+
+    @staticmethod
+    def _has_role(user, names):
+        return user.user_roles.filter(role__name__in=names).exists()
+
+    @action(detail=True, methods=["post"])
+    def set_commission(self, request, pk=None):
+        """CEO/Operations set it directly (auto-approved). Anyone else proposes; the CEO must approve."""
+        from decimal import Decimal
+        property_obj = self.get_object()
+        try:
+            pct = Decimal(str(request.data.get("commission_percent")))
+        except Exception:
+            raise ValidationError("commission_percent must be a number.")
+        if pct <= 0 or pct > 100:
+            raise ValidationError("commission_percent must be greater than 0 and at most 100.")
+
+        privileged = self._has_role(request.user, ["CEO", "Operations"])
+        if not privileged and property_obj.status not in (
+            Property.Status.DRAFT, Property.Status.PENDING_VERIFICATION
+        ):
+            raise ValidationError("Only the CEO or Operations can change the commission after verification.")
+
+        property_obj.commission_percent = pct
+        property_obj.commission_proposed_by = request.user
+        property_obj.commission_approved = bool(privileged)
+        property_obj.save(update_fields=[
+            "commission_percent", "commission_proposed_by", "commission_approved", "updated_at"
+        ])
+
+        if not privileged:
+            try:
+                from accounts.models import User
+                from notifications.tasks import create_notification
+                msg = f'Commission of {pct}% proposed for "{property_obj.title}" needs your approval.'
+                for ceo in User.objects.filter(user_roles__role__name="CEO").distinct():
+                    create_notification(ceo, "property.commission_proposed", msg, related_obj=property_obj)
+            except Exception:
+                pass
+        return Response(PropertyDetailSerializer(property_obj).data)
+
+    @action(detail=True, methods=["post"])
+    def approve_commission(self, request, pk=None):
+        """CEO only."""
+        property_obj = self.get_object()
+        if not self._has_role(request.user, ["CEO"]):
+            raise ValidationError("Only the CEO can approve a commission.")
+        if property_obj.commission_percent is None:
+            raise ValidationError("No commission has been set on this property.")
+        property_obj.commission_approved = True
+        property_obj.save(update_fields=["commission_approved", "updated_at"])
         return Response(PropertyDetailSerializer(property_obj).data)
 
     @action(detail=True, methods=["post"])
