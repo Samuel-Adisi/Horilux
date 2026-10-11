@@ -217,6 +217,8 @@ export default function PropertyDetailPage() {
   const [phone, setPhone] = useState("");
   const [message, setMessage] = useState("");
   const [website, setWebsite] = useState("");
+  const [viewingDate, setViewingDate] = useState("");
+  const [viewingTime, setViewingTime] = useState("");
   const [sending, setSending] = useState(false);
   const [inquiryError, setInquiryError] = useState<string | null>(null);
   const [inquirySuccess, setInquirySuccess] = useState(false);
@@ -229,6 +231,8 @@ export default function PropertyDetailPage() {
     setEmail("");
     setPhone("");
     setMessage("");
+    setViewingDate("");
+    setViewingTime("");
     setInquiryError(null);
     setInquirySuccess(false);
     setHeroSlide(0);
@@ -240,6 +244,10 @@ export default function PropertyDetailPage() {
     if (website) { setInquirySuccess(true); return; }
     if (!property) return;
     setInquiryError(null);
+    if ((viewingDate && !viewingTime) || (!viewingDate && viewingTime)) {
+      setInquiryError("Please choose both a viewing date and a time, or leave both empty.");
+      return;
+    }
     setSending(true);
     try {
       await api.post("/public/contact/", {
@@ -248,9 +256,12 @@ export default function PropertyDetailPage() {
         phone,
         message,
         property: property.id,
+        ...(viewingDate && viewingTime ? { requested_viewing_date: viewingDate, requested_viewing_time: viewingTime } : {}),
       });
       setInquirySuccess(true);
       setMessage("");
+      setViewingDate("");
+      setViewingTime("");
     } catch {
       setInquiryError("Something went wrong sending your message. Please try again.");
     } finally {
@@ -568,6 +579,13 @@ export default function PropertyDetailPage() {
                       className="w-full rounded-xl border border-neutral-200 bg-neutral-50/60 px-4 py-3.5 text-sm text-neutral-800 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue focus:bg-white transition-all"
                     />
                 </>
+                <div className="space-y-2">
+                  <p className="text-xs uppercase tracking-wider text-neutral-500">Request a viewing (optional)</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <input type="date" min={new Date().toISOString().slice(0, 10)} value={viewingDate} onChange={(e) => setViewingDate(e.target.value)} className="w-full rounded-xl border border-neutral-200 bg-neutral-50/60 px-4 py-3.5 text-base sm:text-sm text-neutral-800 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue focus:bg-white transition-all" />
+                    <input type="time" value={viewingTime} onChange={(e) => setViewingTime(e.target.value)} className="w-full rounded-xl border border-neutral-200 bg-neutral-50/60 px-4 py-3.5 text-base sm:text-sm text-neutral-800 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue focus:bg-white transition-all" />
+                  </div>
+                </div>
                 <textarea
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}

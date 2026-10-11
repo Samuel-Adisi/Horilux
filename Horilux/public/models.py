@@ -105,6 +105,8 @@ class ContactSubmission(models.Model):
     property = models.ForeignKey(
         Property, on_delete=models.SET_NULL, null=True, blank=True, related_name="contact_submissions"
     )
+    requested_viewing_date = models.DateField(null=True, blank=True)
+    requested_viewing_time = models.TimeField(null=True, blank=True)
     budget = models.DecimalField(max_digits=14, decimal_places=2, null=True, blank=True)
     bedrooms_preference = models.PositiveIntegerField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)

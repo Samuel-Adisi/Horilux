@@ -240,7 +240,7 @@ class ContactSubmissionView(generics.CreateAPIView):
             notes = f"Interested in: {prop.title} ({prop.region})."
             if submission.message:
                 notes += f"\n\n{submission.message}"
-            Lead.objects.create(
+            lead = Lead.objects.create(
                 name=submission.name,
                 email=submission.email,
                 phone=submission.phone,
@@ -253,6 +253,45 @@ class ContactSubmissionView(generics.CreateAPIView):
                 bedrooms_preference=submission.bedrooms_preference,
                 notes=notes,
             )
+            vdate = submission.requested_viewing_date
+            vtime = submission.requested_viewing_time
+            if (vdate is None) != (vtime is None):
+                from rest_framework.exceptions import ValidationError
+                raise ValidationError("Choose both a viewing date and a time.")
+            if vdate and vtime:
+                from django.utils import timezone
+                if vdate < timezone.localdate():
+                    from rest_framework.exceptions import ValidationError
+                    raise ValidationError("Viewing date cannot be in the past.")
+                client = Client.objects.create(
+                    lead=lead,
+                    name=submission.name,
+                    phone=(submission.phone or "")[:20],
+                    email=submission.email,
+                    assigned_agent=prop.agent,
+                )
+                Viewing.objects.create(
+                    client=client,
+                    property=prop,
+                    agent=prop.agent,
+                    date=vdate,
+                    time=vtime,
+                    notes="Requested via public website.",
+                )
+                try:
+                    from accounts.models import User
+                    from notifications.tasks import create_notification
+                    msg = f"New viewing request for {prop.title} from {submission.name} on {vdate} at {str(vtime)[:5]}."
+                    people = {}
+                    if prop.agent:
+                        people[prop.agent.pk] = prop.agent
+                    for u in User.objects.filter(user_roles__role__name__in=["Operations", "CEO"]).distinct():
+                        people[u.pk] = u
+                    with transaction.atomic():
+                        for u in people.values():
+                            create_notification(u, "viewing.requested", msg, related_obj=prop)
+                except Exception:
+                    pass
         else:
             Lead.objects.create(
                 name=submission.name,
