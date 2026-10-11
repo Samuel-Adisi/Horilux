@@ -535,90 +535,92 @@ export default function PropertyDetailPage() {
 
 
       {/* 3.5 Inquiry / contact this property */}
-      <section className="bg-white px-6 md:px-12 py-16 md:py-24 border-t border-neutral-100">
-        <div className="mx-auto max-w-2xl">
-          <div className="text-center mb-10">
-            <h3 className="font-serif text-2xl sm:text-3xl uppercase tracking-wide text-brand-blue mb-3">
+      <section id="enquire" className="border-t border-neutral-100 bg-neutral-50 px-4 py-14 sm:px-6 md:px-12 md:py-24">
+        <div className="mx-auto w-full max-w-2xl">
+          <div className="mb-8 text-center">
+            <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-neutral-400">Enquire</p>
+            <h3 className="font-serif text-2xl uppercase tracking-wide text-brand-blue sm:text-3xl">
               Interested in this property?
             </h3>
-            <p className="text-neutral-500 text-sm">
+            <p className="mt-3 text-sm text-neutral-500 sm:text-base">
               Fill in your details and we&apos;ll get back to you shortly.
             </p>
           </div>
 
-          <a href={waLink} target="_blank" rel="noopener noreferrer" className="mb-6 hidden md:flex w-full items-center justify-center gap-2 rounded-xl bg-[#25D366] px-6 py-3.5 font-semibold text-white transition hover:brightness-95"><svg viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" /></svg>Chat on WhatsApp</a>
+          <a href={waLink} target="_blank" rel="noopener noreferrer" className="mb-6 hidden w-full items-center justify-center gap-2 rounded-xl bg-[#25D366] px-6 py-3.5 font-semibold text-white transition hover:brightness-95 md:flex"><svg viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" /></svg>Chat on WhatsApp</a>
 
-                    <div className="bg-white rounded-3xl shadow-xl shadow-neutral-200/60 border border-neutral-100 p-6 sm:p-8 md:p-10">
+          <div className="rounded-3xl border border-neutral-100 bg-white p-5 shadow-xl shadow-neutral-200/50 sm:p-8 md:p-10">
             {inquirySuccess ? (
-              <div className="text-center py-6">
-                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-50 text-green-600">
-                  <svg viewBox="0 0 20 20" fill="none" className="h-6 w-6">
+              <div className="py-6 text-center">
+                <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-green-50 text-green-600">
+                  <svg viewBox="0 0 20 20" fill="none" className="h-7 w-7">
                     <path d="M5 10.5L8.5 14L15 6.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </div>
-                <p className="text-neutral-800 font-medium">
+                <p className="font-medium text-neutral-800">
                   Thank you &mdash; we will be in touch shortly about this property.
                 </p>
+                <button type="button" onClick={() => setInquirySuccess(false)} className="mt-6 text-sm font-semibold text-brand-blue underline underline-offset-4">
+                  Send another message
+                </button>
               </div>
             ) : (
-              <form onSubmit={handleInquirySubmit} className="space-y-5"><input type="text" name="website" tabIndex={-1} autoComplete="off" value={website} onChange={(e) => setWebsite(e.target.value)} className="absolute -left-[9999px] h-0 w-0 opacity-0" aria-hidden="true" />
-                <>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <input
-                        type="text"
-                        required
-                        placeholder="Name*"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        className="w-full rounded-xl border border-neutral-200 bg-neutral-50/60 px-4 py-3.5 text-sm text-neutral-800 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue focus:bg-white transition-all"
-                      />
-                      <input
-                        type="email"
-                        required
-                        placeholder="Email*"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        className="w-full rounded-xl border border-neutral-200 bg-neutral-50/60 px-4 py-3.5 text-sm text-neutral-800 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue focus:bg-white transition-all"
-                      />
+              <form onSubmit={handleInquirySubmit} className="relative space-y-6">
+                <input type="text" name="website" tabIndex={-1} autoComplete="off" value={website} onChange={(e) => setWebsite(e.target.value)} className="absolute -left-[9999px] h-0 w-0 opacity-0" aria-hidden="true" />
+
+                <div className="space-y-4">
+                  <div>
+                    <label htmlFor="enq-name" className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-neutral-500">Full name</label>
+                    <input id="enq-name" type="text" required autoComplete="name" enterKeyHint="next" placeholder="Your name" value={name} onChange={(e) => setName(e.target.value)} className="h-12 block w-full min-w-0 appearance-none rounded-xl border border-neutral-200 bg-neutral-50 px-4 text-base text-neutral-900 placeholder:text-neutral-400 transition scroll-mb-32 focus:border-brand-blue focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand-blue/10 [&::-webkit-date-and-time-value]:text-left" />
+                  </div>
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div>
+                      <label htmlFor="enq-email" className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-neutral-500">Email</label>
+                      <input id="enq-email" type="email" required autoComplete="email" inputMode="email" enterKeyHint="next" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} className="h-12 block w-full min-w-0 appearance-none rounded-xl border border-neutral-200 bg-neutral-50 px-4 text-base text-neutral-900 placeholder:text-neutral-400 transition scroll-mb-32 focus:border-brand-blue focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand-blue/10 [&::-webkit-date-and-time-value]:text-left" />
                     </div>
-                    <input
-                      type="tel"
-                      required
-                      placeholder="Phone number*"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      className="w-full rounded-xl border border-neutral-200 bg-neutral-50/60 px-4 py-3.5 text-sm text-neutral-800 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue focus:bg-white transition-all"
-                    />
-                </>
-                <div className="space-y-2">
-                  <p className="text-xs uppercase tracking-wider text-neutral-500">Request a viewing (optional)</p>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <input type="date" min={new Date().toISOString().slice(0, 10)} value={viewingDate} onChange={(e) => setViewingDate(e.target.value)} className="w-full rounded-xl border border-neutral-200 bg-neutral-50/60 px-4 py-3.5 text-base sm:text-sm text-neutral-800 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue focus:bg-white transition-all" />
-                    <input type="time" value={viewingTime} onChange={(e) => setViewingTime(e.target.value)} className="w-full rounded-xl border border-neutral-200 bg-neutral-50/60 px-4 py-3.5 text-base sm:text-sm text-neutral-800 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue focus:bg-white transition-all" />
+                    <div>
+                      <label htmlFor="enq-phone" className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-neutral-500">Phone number</label>
+                      <input id="enq-phone" type="tel" required autoComplete="tel" inputMode="tel" enterKeyHint="next" placeholder="e.g. 024 123 4567" value={phone} onChange={(e) => setPhone(e.target.value)} className="h-12 block w-full min-w-0 appearance-none rounded-xl border border-neutral-200 bg-neutral-50 px-4 text-base text-neutral-900 placeholder:text-neutral-400 transition scroll-mb-32 focus:border-brand-blue focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand-blue/10 [&::-webkit-date-and-time-value]:text-left" />
+                    </div>
                   </div>
                 </div>
-                <div className="space-y-2">
-                  <p className="text-xs uppercase tracking-wider text-neutral-500">Make an offer (optional)</p>
-                  <input type="number" min="1" step="any" placeholder="Your offer in GH₵" value={offerAmount} onChange={(e) => setOfferAmount(e.target.value)} className="w-full rounded-xl border border-neutral-200 bg-neutral-50/60 px-4 py-3.5 text-base sm:text-sm text-neutral-800 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue focus:bg-white transition-all" />
+
+                <div className="space-y-5 rounded-2xl border border-neutral-100 bg-neutral-50/70 p-4 sm:p-5">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Optional</p>
+                  <div>
+                    <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-neutral-500">Request a viewing</span>
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                      <div>
+                        <label htmlFor="enq-date" className="mb-1 block text-xs text-neutral-400">Date</label>
+                        <input id="enq-date" type="date" min={new Date().toISOString().slice(0, 10)} value={viewingDate} onChange={(e) => setViewingDate(e.target.value)} className="h-12 block w-full min-w-0 appearance-none rounded-xl border border-neutral-200 bg-neutral-50 px-4 text-base text-neutral-900 placeholder:text-neutral-400 transition scroll-mb-32 focus:border-brand-blue focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand-blue/10 [&::-webkit-date-and-time-value]:text-left" />
+                      </div>
+                      <div>
+                        <label htmlFor="enq-time" className="mb-1 block text-xs text-neutral-400">Time</label>
+                        <input id="enq-time" type="time" value={viewingTime} onChange={(e) => setViewingTime(e.target.value)} className="h-12 block w-full min-w-0 appearance-none rounded-xl border border-neutral-200 bg-neutral-50 px-4 text-base text-neutral-900 placeholder:text-neutral-400 transition scroll-mb-32 focus:border-brand-blue focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand-blue/10 [&::-webkit-date-and-time-value]:text-left" />
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <label htmlFor="enq-offer" className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-neutral-500">Make an offer</label>
+                    <div className="relative">
+                      <span className="pointer-events-none absolute inset-y-0 left-4 flex items-center text-sm font-semibold text-neutral-400">GH₵</span>
+                      <input id="enq-offer" type="number" inputMode="decimal" min="1" step="any" placeholder="Amount" value={offerAmount} onChange={(e) => setOfferAmount(e.target.value)} className="h-12 block w-full min-w-0 appearance-none rounded-xl border border-neutral-200 bg-neutral-50 px-4 text-base text-neutral-900 placeholder:text-neutral-400 transition scroll-mb-32 focus:border-brand-blue focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand-blue/10 [&::-webkit-date-and-time-value]:text-left pl-16" />
+                    </div>
+                  </div>
                 </div>
-                <textarea
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  required
-                  rows={4}
-                  placeholder="Tell us what you'd like to know about this property..."
-                  className="w-full rounded-xl border border-neutral-200 bg-neutral-50/60 px-4 py-3.5 text-sm text-neutral-800 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue focus:bg-white transition-all resize-none"
-                />
+
+                <div>
+                  <label htmlFor="enq-message" className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-neutral-500">Message</label>
+                  <textarea id="enq-message" required rows={4} placeholder="Tell us what you would like to know about this property..." value={message} onChange={(e) => setMessage(e.target.value)} className="block w-full min-w-0 appearance-none rounded-xl border border-neutral-200 bg-neutral-50 px-4 text-base text-neutral-900 placeholder:text-neutral-400 transition scroll-mb-32 focus:border-brand-blue focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand-blue/10 [&::-webkit-date-and-time-value]:text-left min-h-[120px] resize-none py-3" />
+                </div>
+
                 {inquiryError && (
-                  <div className="rounded-xl bg-red-50 border border-red-100 px-4 py-3">
+                  <div role="alert" className="rounded-xl border border-red-100 bg-red-50 px-4 py-3">
                     <p className="text-sm text-red-600">{inquiryError}</p>
                   </div>
                 )}
-                <button
-                  type="submit"
-                  disabled={sending}
-                  className="w-full px-6 py-3.5 rounded-xl bg-brand-blue text-white font-serif tracking-wider uppercase text-xs sm:text-sm hover:bg-brand-blue/90 hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                >
+
+                <button type="submit" disabled={sending} className="flex h-14 w-full items-center justify-center rounded-xl bg-brand-blue px-6 font-serif text-sm uppercase tracking-wider text-white transition hover:bg-brand-blue/90 hover:shadow-lg active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50">
                   {sending ? "Sending..." : "Send Message"}
                 </button>
               </form>
