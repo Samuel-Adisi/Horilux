@@ -26,7 +26,6 @@ const ClientDetailPage = page(() => import("@/features/crm/pages/ClientDetailPag
 const ActivityPage = page(() => import("@/features/crm/pages/ActivityPage"), "ActivityPage");
 const ViewingsPage = page(() => import("@/features/viewings/pages/ViewingsPage"), "ViewingsPage");
 const FollowUpsPage = page(() => import("@/features/viewings/pages/FollowUpsPage"), "FollowUpsPage");
-const OffersPage = page(() => import("@/features/properties/pages/OffersPage"), "OffersPage");
 const TransactionsPage = page(() => import("@/features/transactions/pages/TransactionsPage"), "TransactionsPage");
 const TransactionFormPage = page(() => import("@/features/transactions/pages/TransactionFormPage"), "TransactionFormPage");
 const TransactionDetailPage = page(() => import("@/features/transactions/pages/TransactionDetailPage"), "TransactionDetailPage");
@@ -124,7 +123,6 @@ export default function App() {
               <Route path="clients/:id" element={gate([["client", "view"]], <ClientDetailPage />)} />
               <Route path="viewings" element={gate([["viewing", "view"]], <ViewingsPage />)} />
               <Route path="follow-ups" element={gate([["followup", "view"]], <FollowUpsPage />)} />
-              <Route path="offers" element={gate([["property", "view"]], <OffersPage />)} />
               <Route path="activity" element={gate([["interaction", "view"]], <ActivityPage />)} />
 
               <Route path="transactions" element={gate([["transaction", "view"]], <TransactionsPage />)} />

@@ -72,7 +72,6 @@ export const NAV: NavGroup[] = [
       { label: "Leads", path: "/leads", icon: Target, color: "text-teal-400", requires: [["lead", "view"]] },
       { label: "Clients", path: "/clients", icon: UserRound, color: "text-blue-400", requires: [["client", "view"]] },
       { label: "Viewings", path: "/viewings", icon: CalendarCheck, color: "text-sky-400", requires: [["viewing", "view"]] },
-      { label: "Offers", path: "/offers", icon: Handshake, color: "text-emerald-400", requires: [["property", "view"]] },
       { label: "Follow-ups", path: "/follow-ups", icon: CalendarClock, color: "text-orange-400", requires: [["followup", "view"]] },
       { label: "Activity", path: "/activity", icon: Activity, color: "text-fuchsia-400", requires: [["interaction", "view"]] },
     ],

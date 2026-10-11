@@ -35,6 +35,19 @@ export const LEAD_OPEN: LeadStatus[] = ["new", "contacted", "qualified", "proper
 
 export const LEAD_SOURCES = ["Website", "Contact Form", "Referral", "Walk-in", "Phone call", "WhatsApp", "Instagram", "Facebook", "Property portal", "Signboard", "Other"];
 
+export interface LeadOffer {
+  id: string;
+  amount: string;
+  status: string;
+  message: string;
+  created_at: string;
+  property_id: string;
+  property_title: string;
+  property_price: string;
+  property_currency: string;
+  client_id: string;
+}
+
 export interface Lead {
   id: string;
   name: string;
@@ -53,6 +66,7 @@ export interface Lead {
   assigned_agent_name: string | null;
   status: LeadStatus;
   status_label: string;
+  offer?: LeadOffer | null;
   last_contact: string | null;
   next_follow_up: string | null;
   notes: string;

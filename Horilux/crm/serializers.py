@@ -7,6 +7,7 @@ class LeadSerializer(serializers.ModelSerializer):
     assigned_agent_name = serializers.SerializerMethodField()
     status_label = serializers.CharField(source="get_status_display", read_only=True)
     property_interest_title = serializers.SerializerMethodField()
+    offer = serializers.SerializerMethodField()
 
     class Meta:
         model = Lead
@@ -15,7 +16,7 @@ class LeadSerializer(serializers.ModelSerializer):
             "location_preference", "property_type_preference", "bedrooms_preference",
             "purpose", "property_interest", "property_interest_title",
             "assigned_agent", "assigned_agent_name", "status", "status_label",
-            "last_contact", "next_follow_up", "notes", "created_at",
+            "last_contact", "next_follow_up", "notes", "created_at", "offer",
         ]
         read_only_fields = ["id", "status", "created_at"]
 
@@ -26,6 +27,29 @@ class LeadSerializer(serializers.ModelSerializer):
 
     def get_property_interest_title(self, obj):
         return obj.property_interest.title if obj.property_interest_id else None
+
+    def get_offer(self, obj):
+        from public.models import PropertyOffer
+        o = (
+            PropertyOffer.objects.filter(client__lead_id=obj.pk)
+            .select_related("property")
+            .order_by("-amount", "created_at")
+            .first()
+        )
+        if o is None:
+            return None
+        return {
+            "id": str(o.id),
+            "amount": str(o.amount),
+            "status": o.status,
+            "message": o.message,
+            "created_at": o.created_at,
+            "property_id": str(o.property_id),
+            "property_title": o.property.title,
+            "property_price": str(o.property.price),
+            "property_currency": o.property.currency,
+            "client_id": str(o.client_id),
+        }
 
 
 class ClientSerializer(serializers.ModelSerializer):

@@ -93,6 +93,7 @@ function LeadView({ lead }: { lead: Lead }) {
   const canEdit = can("lead", "edit");
   const next = LEAD_NEXT[lead.status];
   const isOpen = LEAD_OPEN.includes(lead.status);
+  const offerMoney = (v: string, cur: string) => (cur === "GHS" ? "GH₵" : cur) + " " + Number(v).toLocaleString();
   const canConvert = canEdit && (lead.status === "qualified" || lead.status === "property_matched" || lead.status === "viewing" || lead.status === "negotiation") && !client.data;
 
   async function move(to: LS) {
@@ -217,6 +218,27 @@ function LeadView({ lead }: { lead: Lead }) {
           <ActivityTimeline lead={lead.id} />
         </div>
         <div className="space-y-6">
+          {lead.offer && (
+            <Panel title="Offer">
+              <div className="space-y-2 text-sm">
+                <p className="text-lg font-semibold">{offerMoney(lead.offer.amount, lead.offer.property_currency)}</p>
+                <Link to={"/properties/" + lead.offer.property_id} className="block font-semibold hover:underline">{lead.offer.property_title}</Link>
+                <p className="text-xs text-ink-subtle">
+                  Asking {offerMoney(lead.offer.property_price, lead.offer.property_currency)}
+                  {Number(lead.offer.property_price) > 0 ? " - offer is " + ((Number(lead.offer.amount) / Number(lead.offer.property_price)) * 100).toFixed(1) + "% of asking" : ""}
+                </p>
+                {lead.offer.message && <p className="text-ink-muted">{lead.offer.message}</p>}
+                {lead.offer.status === "open" && (
+                  <Link
+                    to={"/transactions/new?property=" + lead.offer.property_id + "&client=" + lead.offer.client_id + "&price=" + lead.offer.amount}
+                    className="inline-block rounded bg-brand px-3 py-1.5 text-sm font-semibold text-white"
+                  >
+                    Start transaction
+                  </Link>
+                )}
+              </div>
+            </Panel>
+          )}
           <Panel title="Contact">
             <div className="space-y-2 text-sm">
               <a href={`tel:${lead.phone}`} className="flex items-center gap-2 font-semibold text-ink hover:text-brand-fg">
