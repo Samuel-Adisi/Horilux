@@ -138,6 +138,7 @@ export interface OwnerInput {
 }
 
 export interface PropertiesQuery {
+  commission_pending?: boolean;
   page?: number;
   status?: string;
   search?: string;
@@ -187,7 +188,7 @@ export type PropertyAction =
 
 export async function fetchProperties(q: PropertiesQuery = {}): Promise<Paginated<PropertyListItem>> {
   const { data } = await apiClient.get<Paginated<PropertyListItem>>("/properties/", {
-    params: cleanParams({ page: q.page ?? 1, status: q.status, search: q.search, property_type: q.property_type, listing_type: q.listing_type }),
+    params: cleanParams({ page: q.page ?? 1, status: q.status, search: q.search, property_type: q.property_type, listing_type: q.listing_type, ...(q.commission_pending ? { commission_approved: "false", commission_percent__isnull: "false" } : {}) }),
   });
   return data;
 }

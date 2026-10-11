@@ -97,7 +97,7 @@ class PropertyViewSet(viewsets.ModelViewSet):
     }
     protected_message = "This property is referenced by transactions and cannot be deleted."
 
-    filterset_fields = ["status", "property_type", "listing_type"]
+    filterset_fields = {"status": ["exact"], "property_type": ["exact"], "listing_type": ["exact"], "commission_approved": ["exact"], "commission_percent": ["isnull"]}
 
     def get_queryset(self):
         qs = filter_queryset_for_user(

@@ -16,6 +16,7 @@ const QUEUES = [
   { value: "pending_verification", label: "Verification", hint: "Check the listing and tick the checklist, then mark it verified." },
   { value: "verified", label: "Marketing approval", hint: "Verified listings waiting for sign-off before marketing can use them." },
   { value: "marketing_ready", label: "Ready to publish", hint: "Approved for marketing. Publishing makes the listing live." },
+  { value: "commission", label: "Commission", hint: "Rates proposed by agents. Open the property and approve the rate." },
 ] as const;
 
 export function ApprovalsPage() {
@@ -29,8 +30,9 @@ export function ApprovalsPage() {
     pending_verification: useProperties({ status: "pending_verification" }),
     verified: useProperties({ status: "verified" }),
     marketing_ready: useProperties({ status: "marketing_ready" }),
+    commission: useProperties({ commission_pending: true }),
   };
-  const list = useProperties({ status: queue.value, page });
+  const list = useProperties(queue.value === "commission" ? { commission_pending: true, page } : { status: queue.value, page });
   const threshold = useApprovalThreshold(can("company_settings", "view"));
   const rows = list.data?.results ?? [];
   const thresholdValue = Number(threshold.data?.ceo_approval_min_price ?? 0);
