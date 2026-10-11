@@ -248,8 +248,8 @@ export default function PropertyDetailPage() {
       setInquiryError("Please choose both a viewing date and a time, or leave both empty.");
       return;
     }
-    if (viewingDate && viewingTime && !phone.trim()) {
-      setInquiryError("Please enter your phone number so the agent can call you to confirm the viewing.");
+    if (!phone.trim()) {
+      setInquiryError("Please enter your phone number so an agent can contact you.");
       return;
     }
     setSending(true);
@@ -577,8 +577,8 @@ export default function PropertyDetailPage() {
                     </div>
                     <input
                       type="tel"
-                      required={!!viewingDate}
-                      placeholder={viewingDate ? "Phone number*" : "Phone number"}
+                      required
+                      placeholder="Phone number*"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       className="w-full rounded-xl border border-neutral-200 bg-neutral-50/60 px-4 py-3.5 text-sm text-neutral-800 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue focus:bg-white transition-all"
