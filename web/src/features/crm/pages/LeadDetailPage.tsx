@@ -29,6 +29,7 @@ import {
 } from "../api";
 import { LeadFormDialog } from "../components/LeadFormDialog";
 import { LeadViewingsPanel } from "../components/LeadViewingsPanel";
+import { FollowUpsPanel } from "../components/FollowUpsPanel";
 import { ActivityTimeline } from "../components/ActivityTimeline";
 import { StartTransactionLink } from "../components/StartTransactionLink";
 
@@ -221,6 +222,7 @@ function LeadView({ lead }: { lead: Lead }) {
         </div>
         <div className="space-y-6">
           {client.data && <LeadViewingsPanel clientId={client.data.id} />}
+          {client.data && <FollowUpsPanel clientId={client.data.id} />}
           {lead.offer && (
             <Panel title="Offer">
               <div className="space-y-2 text-sm">

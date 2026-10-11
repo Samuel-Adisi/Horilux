@@ -147,13 +147,13 @@ export function useCancelViewing() {
   });
 }
 
-export function useFollowUps(q: { page?: number; completed?: "true" | "false" | "" }, opts: { enabled?: boolean } = {}) {
+export function useFollowUps(q: { page?: number; completed?: "true" | "false" | ""; client?: string }, opts: { enabled?: boolean } = {}) {
   return useQuery({
     queryKey: ["follow-ups", q],
     queryFn: async () =>
       (
         await apiClient.get<Paginated<FollowUp>>("/follow-ups/", {
-          params: cleanParams({ page: q.page ?? 1, completed: q.completed }),
+          params: cleanParams({ page: q.page ?? 1, completed: q.completed, client: q.client }),
         })
       ).data,
     placeholderData: keepPreviousData,

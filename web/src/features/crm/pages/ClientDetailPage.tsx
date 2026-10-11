@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { Link, useParams } from "react-router-dom";
-import { ArrowRight, CalendarPlus, Handshake, Mail, Pencil, Phone } from "lucide-react";
+import { ArrowRight, Handshake, Mail, Pencil, Phone } from "lucide-react";
 import { Page, PageHeader } from "@/components/ui/page";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { DescriptionList, ErrorState, Panel, Skeleton } from "@/components/ui/display";
@@ -13,6 +13,8 @@ import { formatDate, formatMoney } from "@/lib/format";
 import { toast } from "@/lib/toast";
 import { useClient, useUpdateClient, type Client } from "../api";
 import { ActivityTimeline } from "../components/ActivityTimeline";
+import { LeadViewingsPanel } from "../components/LeadViewingsPanel";
+import { FollowUpsPanel } from "../components/FollowUpsPanel";
 
 export function ClientDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -46,11 +48,6 @@ function ClientView({ client }: { client: Client }) {
         meta={<span className="text-sm text-ink-subtle">Client since {formatDate(client.created_at)}</span>}
         actions={
           <>
-            {can("viewing", "create") && (
-              <ButtonLink to={`/viewings?book=1&client=${client.id}`} variant="primary" icon={<CalendarPlus />}>
-                Book viewing
-              </ButtonLink>
-            )}
             {can("transaction", "create") && (
               <ButtonLink to={`/transactions/new?client=${client.id}`} icon={<Handshake />}>
                 Start deal
@@ -70,6 +67,8 @@ function ClientView({ client }: { client: Client }) {
           <ActivityTimeline client={client.id} />
         </div>
         <div className="space-y-6">
+          <LeadViewingsPanel clientId={client.id} />
+          <FollowUpsPanel clientId={client.id} />
           <Panel title="Contact">
             <div className="space-y-2 text-sm">
               <a href={`tel:${client.phone}`} className="flex items-center gap-2 font-semibold text-ink hover:text-brand-fg">

@@ -147,6 +147,14 @@ class FollowUpViewSet(viewsets.ModelViewSet):
             qs = qs.filter(completed=True)
         elif completed in ("false", "0", "no"):
             qs = qs.filter(completed=False)
+        client_param = self.request.query_params.get("client")
+        if client_param:
+            import uuid
+            try:
+                qs = qs.filter(client_id=uuid.UUID(client_param))
+            except ValueError:
+                qs = qs.none()
+
         return qs.order_by("due_date", "-created_at")
 
     def perform_create(self, serializer):

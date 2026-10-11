@@ -23,9 +23,9 @@ export function notificationLink(n: Notification): string | null {
     case "transaction":
       return `/transactions/${n.object_id}`;
     case "viewing":
-      return "/viewings";
+      return "/leads";
     case "followup":
-      return "/follow-ups";
+      return "/leads";
     case "marketingcampaign":
       return "/campaigns";
     case "task":

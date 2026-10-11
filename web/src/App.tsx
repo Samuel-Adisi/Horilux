@@ -24,8 +24,6 @@ const LeadDetailPage = page(() => import("@/features/crm/pages/LeadDetailPage"),
 const ClientsPage = page(() => import("@/features/crm/pages/ClientsPage"), "ClientsPage");
 const ClientDetailPage = page(() => import("@/features/crm/pages/ClientDetailPage"), "ClientDetailPage");
 const ActivityPage = page(() => import("@/features/crm/pages/ActivityPage"), "ActivityPage");
-const ViewingsPage = page(() => import("@/features/viewings/pages/ViewingsPage"), "ViewingsPage");
-const FollowUpsPage = page(() => import("@/features/viewings/pages/FollowUpsPage"), "FollowUpsPage");
 const TransactionsPage = page(() => import("@/features/transactions/pages/TransactionsPage"), "TransactionsPage");
 const TransactionFormPage = page(() => import("@/features/transactions/pages/TransactionFormPage"), "TransactionFormPage");
 const TransactionDetailPage = page(() => import("@/features/transactions/pages/TransactionDetailPage"), "TransactionDetailPage");
@@ -74,7 +72,7 @@ const LEGACY: Record<string, string> = {
   "/ceo/campaigns": "/campaigns",
   "/ceo/lead-sources": "/insights/lead-sources",
   "/ceo/approvals": "/approvals",
-  "/ceo/viewings": "/viewings",
+  "/ceo/viewings": "/leads",
   "/ceo/audit-logs": "/audit-log",
   "/ceo/settings": "/settings",
   "/properties/performance": "/insights/properties",
@@ -121,8 +119,6 @@ export default function App() {
               <Route path="leads/:id" element={gate([["lead", "view"]], <LeadDetailPage />)} />
               <Route path="clients" element={gate([["client", "view"]], <ClientsPage />)} />
               <Route path="clients/:id" element={gate([["client", "view"]], <ClientDetailPage />)} />
-              <Route path="viewings" element={gate([["viewing", "view"]], <ViewingsPage />)} />
-              <Route path="follow-ups" element={gate([["followup", "view"]], <FollowUpsPage />)} />
               <Route path="activity" element={gate([["interaction", "view"]], <ActivityPage />)} />
 
               <Route path="transactions" element={gate([["transaction", "view"]], <TransactionsPage />)} />

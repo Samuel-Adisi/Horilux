@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowRight, CalendarPlus, Download, Plus } from "lucide-react";
+import { ArrowRight, Download, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Page } from "@/components/ui/page";
 import { ButtonLink } from "@/components/ui/button";
@@ -127,11 +127,6 @@ export function HomePage() {
           </h1>
         </div>
         <div className="flex gap-2">
-          {can(user, "viewing", "create") && (
-            <ButtonLink to="/viewings?book=1" variant="primary" icon={<CalendarPlus />}>
-              Book viewing
-            </ButtonLink>
-          )}
           {can(user, "property", "create") && (
             <ButtonLink to="/properties/new" variant="primary" icon={<Plus />}>
               New property
@@ -234,14 +229,14 @@ function UpcomingViewingsPanel({ title = "Upcoming viewings" }: { title?: string
   return (
     <ListPanel
       title={title}
-      to="/viewings"
+      to="/leads"
       query={q}
       items={items}
       empty="No viewings booked."
       render={(v) => (
         <Row
           key={v.id}
-          to="/viewings"
+          to={`/clients/${v.client}`}
           title={v.property_title}
           sub={`${v.client_name}${v.agent_name ? ` · ${v.agent_name}` : ""}`}
           right={
@@ -491,14 +486,14 @@ function SalesHome() {
         <UpcomingViewingsPanel title="My upcoming viewings" />
         <ListPanel
           title="Follow up today"
-          to="/follow-ups"
+          to="/leads"
           query={followUps}
           items={due.slice(0, 6)}
           empty="No follow-ups due. Nice."
           render={(f) => (
             <Row
               key={f.id}
-              to={f.client ? `/clients/${f.client}` : f.lead ? `/leads/${f.lead}` : "/follow-ups"}
+              to={f.client ? `/clients/${f.client}` : f.lead ? `/leads/${f.lead}` : "/leads"}
               title={f.client_name ?? f.lead_name ?? "Follow-up"}
               sub={f.notes || (f.property_title ? `After viewing ${f.property_title}` : undefined)}
               right={<span className={cn("text-xs", isPast(f.due_date) ? "font-semibold text-danger" : "text-ink-subtle")}>{isPast(f.due_date) ? "Overdue" : "Today"}</span>}
