@@ -1,5 +1,6 @@
 from django.db import transaction
-from django.db.models import Q
+from django.core.cache import cache
+from django.db.models import F, Q
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, generics, filters, status, permissions
 from rest_framework.decorators import action
@@ -55,6 +56,15 @@ class PublicPropertyViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_serializer_class(self):
         return PublicPropertyDetailSerializer if self.action == "retrieve" else PublicPropertyListSerializer
+
+    @action(detail=True, methods=["post"], url_path="view")
+    def record_view(self, request, pk=None):
+        prop = self.get_object()
+        fwd = request.META.get("HTTP_X_FORWARDED_FOR", "")
+        ip = fwd.split(",")[0].strip() if fwd else request.META.get("REMOTE_ADDR", "")
+        if cache.add("pv:" + ip + ":" + str(prop.pk), 1, timeout=60 * 60 * 6):
+            Property.objects.filter(pk=prop.pk).update(views_count=F("views_count") + 1)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class CustomerRegisterView(generics.CreateAPIView):
@@ -173,6 +183,7 @@ class PropertyInquiryViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         visitor = resolve_visitor(self.request, required=True)
         prop = serializer.validated_data["property"]
+        Property.objects.filter(pk=prop.pk).update(inquiries_count=F("inquiries_count") + 1)
 
         contact_name = serializer.validated_data.pop("contact_name", "") or visitor.name
         contact_email = serializer.validated_data.pop("contact_email", "") or visitor.email
@@ -237,6 +248,7 @@ class ContactSubmissionView(generics.CreateAPIView):
 
         prop = submission.property
         if prop:
+            Property.objects.filter(pk=prop.pk).update(inquiries_count=F("inquiries_count") + 1)
             notes = f"Interested in: {prop.title} ({prop.region})."
             if submission.message:
                 notes += f"\n\n{submission.message}"
@@ -253,6 +265,9 @@ class ContactSubmissionView(generics.CreateAPIView):
                 bedrooms_preference=submission.bedrooms_preference,
                 notes=notes,
             )
+            if prop.agent and lead.assigned_agent_id is None:
+                lead.assigned_agent = prop.agent
+                lead.save(update_fields=["assigned_agent"])
             vdate = submission.requested_viewing_date
             vtime = submission.requested_viewing_time
             if (vdate is None) != (vtime is None):

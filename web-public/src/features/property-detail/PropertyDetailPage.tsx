@@ -7,6 +7,7 @@ import LoadingSpinner from "@/components/shared/LoadingSpinner";
 import { useToggleSavedProperty } from "@/features/favorites/hooks/use-saved-properties";
 import { Heart, Share2, Check } from "lucide-react";
 import { api } from "@/lib/api";
+import { useRecordView } from "./use-record-view";
 import { getAmenityIcon } from "./amenity-icons";
 import { BedDouble, Bath, Ruler, LandPlot, Tag, MapPin, Home } from "lucide-react";
 
@@ -166,6 +167,7 @@ function Lightbox({ urls, startIndex, onClose }: { urls: string[]; startIndex: n
 
 export default function PropertyDetailPage() {
   const { id } = useParams<{ id: string }>();
+  useRecordView(id);
   const { data: property, isLoading, isError } = useProperty(id);
   useEffect(() => {
     if (!property?.title) return;
