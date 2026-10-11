@@ -131,6 +131,11 @@ export function LeadsPage() {
                             {l.phone}
                             {l.source && ` · ${l.source}`}
                           </p>
+                          {l.offer && (
+                            <p className="num text-xs font-semibold text-brand-fg">
+                              Offer {formatMoney(l.offer.amount, l.offer.property_currency, { compact: true })} · {l.offer.property_title}
+                            </p>
+                          )}
                         </TD>
                         <TD>
                           <LeadStatus status={l.status} />
