@@ -440,7 +440,7 @@ export default function PropertyDetailPage() {
 
           <div className="md:hidden pointer-events-none absolute inset-x-0 bottom-0 z-10 max-w-2xl px-6 md:px-12 pb-10">
             <h1 className="font-serif text-lg sm:text-2xl md:text-3xl lg:text-4xl text-white leading-snug uppercase tracking-wide [text-shadow:0_2px_12px_rgba(0,0,0,0.5)] flex items-center gap-3 sm:gap-4">
-              <span>{property.title}</span>
+              
               <ShareButton id={property.id} title={property.title} />
               {true && (
                 <button
