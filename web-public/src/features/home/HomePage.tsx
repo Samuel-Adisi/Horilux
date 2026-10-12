@@ -138,7 +138,7 @@ export default function HomePage() {
           <p className="text-xs uppercase tracking-[0.2em] text-brand-taupe font-semibold mb-2">
             Handpicked
           </p>
-          <WiggleHeading text="Featured Properties" className="font-serif text-xl sm:text-2xl md:text-4xl text-neutral-900" />
+          <WiggleHeading text="Featured Properties" soft className="font-serif text-xl sm:text-2xl md:text-4xl text-neutral-900" />
         </Reveal>
 
         {isLoading && <LoadingSpinner />}
@@ -210,7 +210,7 @@ export default function HomePage() {
         <div className="mx-auto max-w-6xl">
           <div className="mb-12 text-center">
             <p className="mb-3 text-xs font-semibold uppercase tracking-[0.3em] text-brand-taupe">Explore</p>
-            <WiggleHeading text="Browse By Category" className="font-serif text-xl sm:text-2xl md:text-4xl uppercase tracking-[0.12em] text-brand-blue" />
+            <WiggleHeading text="Browse By Category" soft className="font-serif text-xl sm:text-2xl md:text-4xl uppercase tracking-[0.12em] text-brand-blue" />
           </div>
           <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-5">
             {CATEGORIES.map((c, i) => (
