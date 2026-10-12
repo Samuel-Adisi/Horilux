@@ -51,7 +51,7 @@ function ShareButton({ id, title }: { id: string | number; title: string }) {
       type="button"
       onClick={handleShare}
       aria-label="Share this property"
-      className="relative shrink-0 flex h-8 w-8 sm:h-10 sm:w-10 md:h-11 md:w-11 items-center justify-center rounded-full bg-black/30 backdrop-blur-sm hover:bg-black/50 transition-colors"
+      className="pointer-events-auto relative shrink-0 flex h-8 w-8 sm:h-10 sm:w-10 md:h-11 md:w-11 items-center justify-center rounded-full bg-black/30 backdrop-blur-sm hover:bg-black/50 transition-colors"
     >
       {copied ? (
         <Check className="h-4 w-4 sm:h-5 sm:w-5 text-white" strokeWidth={1.75} />
@@ -375,9 +375,9 @@ export default function PropertyDetailPage() {
         <div className="hidden md:block relative w-full h-[87vh] min-h-[560px] bg-neutral-900">
           { /* desktop slider */ }<div ref={deskSwipeRef} onScroll={() => { const el = deskSwipeRef.current; if (el) setDeskSlide(Math.round(el.scrollLeft / el.clientWidth)); }} className="flex h-full w-full overflow-x-auto snap-x snap-mandatory scroll-smooth [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">{(photos.length > 0 ? photos : [{ id: "cover", url: property.cover_image }]).map((photo, i) => (<div key={photo.id} className="relative shrink-0 w-full h-full snap-start">{photo.url && (<img src={photo.url} alt={property.title} onClick={() => setLightboxIndex(i)} loading={i === 0 ? "eager" : "lazy"} className="h-full w-full object-cover cursor-zoom-in" />)}</div>))}</div>
           <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: heroOverlay }} />
-          {photos.length > 1 && (<><div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex gap-1.5">{photos.map((photo, i) => (<span key={photo.id} className={`h-1.5 rounded-full transition-all ${i === deskSlide ? "w-5 bg-white" : "w-1.5 bg-white/50"}`} />))}</div></>)}
+          {photos.length > 1 && (<><div className="pointer-events-none absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex gap-1.5">{photos.map((photo, i) => (<span key={photo.id} className={`h-1.5 rounded-full transition-all ${i === deskSlide ? "w-5 bg-white" : "w-1.5 bg-white/50"}`} />))}</div></>)}
           <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 max-w-4xl px-6 md:px-12 pb-16">
-            <h1 className="font-serif text-2xl sm:text-4xl md:text-6xl text-white leading-tight uppercase flex items-center gap-3 sm:gap-4 pointer-events-auto">
+            <h1 className="font-serif text-2xl sm:text-4xl md:text-6xl text-white leading-tight uppercase flex items-center gap-3 sm:gap-4">
               <span>{property.title}</span>
               <ShareButton id={property.id} title={property.title} />
               {true && (
@@ -386,7 +386,7 @@ export default function PropertyDetailPage() {
                   onClick={() => !savePending && toggleSaved(property.id)}
                   aria-label={isSaved(property.id) ? "Remove from favorites" : "Add to favorites"}
                   disabled={savePending}
-                  className="shrink-0 flex h-8 w-8 sm:h-10 sm:w-10 md:h-11 md:w-11 items-center justify-center rounded-full bg-black/30 backdrop-blur-sm hover:bg-black/50 transition-colors disabled:opacity-60"
+                  className="pointer-events-auto shrink-0 flex h-8 w-8 sm:h-10 sm:w-10 md:h-11 md:w-11 items-center justify-center rounded-full bg-black/30 backdrop-blur-sm hover:bg-black/50 transition-colors disabled:opacity-60"
                 >
                   <Heart
                     className={`h-4 w-4 sm:h-5 sm:w-5 transition-colors ${isSaved(property.id) ? "fill-pink-500 text-pink-500" : "text-white"}`}
@@ -423,7 +423,7 @@ export default function PropertyDetailPage() {
         </div>
 
           <div className="md:hidden pointer-events-none absolute inset-x-0 bottom-0 z-10 max-w-4xl px-6 md:px-12 pb-10">
-            <h1 className="font-serif text-2xl sm:text-4xl md:text-6xl text-white leading-tight uppercase flex items-center gap-3 sm:gap-4 pointer-events-auto">
+            <h1 className="font-serif text-2xl sm:text-4xl md:text-6xl text-white leading-tight uppercase flex items-center gap-3 sm:gap-4">
               <span>{property.title}</span>
               <ShareButton id={property.id} title={property.title} />
               {true && (
@@ -432,7 +432,7 @@ export default function PropertyDetailPage() {
                   onClick={() => !savePending && toggleSaved(property.id)}
                   aria-label={isSaved(property.id) ? "Remove from favorites" : "Add to favorites"}
                   disabled={savePending}
-                  className="shrink-0 flex h-8 w-8 sm:h-10 sm:w-10 md:h-11 md:w-11 items-center justify-center rounded-full bg-black/30 backdrop-blur-sm hover:bg-black/50 transition-colors disabled:opacity-60"
+                  className="pointer-events-auto shrink-0 flex h-8 w-8 sm:h-10 sm:w-10 md:h-11 md:w-11 items-center justify-center rounded-full bg-black/30 backdrop-blur-sm hover:bg-black/50 transition-colors disabled:opacity-60"
                 >
                   <Heart
                     className={`h-4 w-4 sm:h-5 sm:w-5 transition-colors ${isSaved(property.id) ? "fill-pink-500 text-pink-500" : "text-white"}`}
