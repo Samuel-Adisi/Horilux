@@ -203,6 +203,12 @@ export default function PropertyDetailPage() {
     const t = el?.children[deskSlide] as HTMLElement | undefined;
     if (el && t) el.scrollTo({ left: t.offsetLeft - el.clientWidth / 2 + t.clientWidth / 2, behavior: "smooth" });
   }, [deskSlide]);
+  const mThumbsRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = mThumbsRef.current;
+    const t = el?.children[heroSlide] as HTMLElement | undefined;
+    if (el && t) el.scrollTo({ left: t.offsetLeft - el.clientWidth / 2 + t.clientWidth / 2, behavior: "smooth" });
+  }, [heroSlide]);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [ratios, setRatios] = useState<Record<string, number>>({});
 
@@ -382,7 +388,7 @@ export default function PropertyDetailPage() {
       {/* 1. Hero / cover */}
       <section className="relative">
         {/* Desktop: real image at its own natural aspect ratio, full width, no crop */}
-        <div style={{ aspectRatio: String(deskRatio) }} className="hidden md:block relative w-full bg-neutral-900 transition-[aspect-ratio] duration-300">
+        <div style={{ aspectRatio: String(deskRatio), maxHeight: "calc(100dvh - 290px)" }} className="hidden md:block relative w-full bg-neutral-900 transition-[aspect-ratio] duration-300">
           { /* desktop slider */ }<div ref={deskSwipeRef} onScroll={() => { const el = deskSwipeRef.current; if (el) setDeskSlide(Math.round(el.scrollLeft / el.clientWidth)); }} className="absolute inset-0 flex w-full overflow-x-auto snap-x snap-mandatory scroll-smooth [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">{(photos.length > 0 ? photos : [{ id: "cover", url: property.cover_image }]).map((photo, i) => (<div key={photo.id} className="relative shrink-0 w-full h-full snap-start">{photo.url && (<img src={photo.url} alt={property.title} onClick={() => setLightboxIndex(i)} onLoad={onImgLoad(photo.id)} loading={i === 0 ? "eager" : "lazy"} className="absolute inset-0 h-full w-full object-cover cursor-zoom-in" />)}</div>))}</div>
           <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: heroOverlay }} />
           {photos.length > 1 && (<><div className="pointer-events-none absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex gap-1.5">{photos.map((photo, i) => (<span key={photo.id} className={`h-1.5 rounded-full transition-all ${i === deskSlide ? "w-5 bg-white" : "w-1.5 bg-white/50"}`} />))}</div></>)}
@@ -419,7 +425,7 @@ export default function PropertyDetailPage() {
           ref={heroSwipeRef}
           onScroll={handleHeroScroll}
           className="md:hidden relative flex overflow-x-auto transition-[aspect-ratio] duration-300 snap-x snap-mandatory touch-pan-x touch-pan-y [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
-          style={{ WebkitOverflowScrolling: "touch", aspectRatio: String(heroRatio) }}
+          style={{ WebkitOverflowScrolling: "touch", aspectRatio: String(heroRatio), maxHeight: "calc(100svh - 310px)" }}
         >
           {(photos.length > 0 ? photos : [{ id: "cover", url: property.cover_image }]).map((photo, i) => (
             <div key={photo.id} className="relative shrink-0 w-full snap-start bg-neutral-900">
@@ -475,6 +481,7 @@ export default function PropertyDetailPage() {
       </section>
 
       {photos.length > 1 && (<div className="hidden md:block bg-white px-6 md:px-12 pt-4"><div ref={thumbsRef} className="relative flex gap-3 overflow-x-auto pb-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">{photos.map((photo, i) => (<button key={photo.id} type="button" aria-label={"Show photo " + (i + 1)} onClick={() => deskSwipeRef.current?.scrollTo({ left: i * (deskSwipeRef.current?.clientWidth ?? 0), behavior: "smooth" })} className={`relative shrink-0 w-28 h-20 overflow-hidden rounded-md transition-all ${i === deskSlide ? "ring-2 ring-brand-blue opacity-100" : "opacity-60 hover:opacity-100"}`}><img src={photo.url ?? undefined} alt="" loading="lazy" className="h-full w-full object-cover" /></button>))}</div></div>)}
+      {photos.length > 1 && (<div className="md:hidden bg-white px-3 pt-3"><div ref={mThumbsRef} className="relative flex gap-2 overflow-x-auto pb-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">{photos.map((photo, i) => (<button key={photo.id} type="button" aria-label={"Show photo " + (i + 1)} onClick={() => heroSwipeRef.current?.scrollTo({ left: i * (heroSwipeRef.current?.clientWidth ?? 0), behavior: "smooth" })} className={`relative shrink-0 w-20 h-14 overflow-hidden rounded-md transition-all ${i === heroSlide ? "ring-2 ring-brand-blue opacity-100" : "opacity-60"}`}><img src={photo.url ?? undefined} alt="" loading="lazy" className="h-full w-full object-cover" /></button>))}</div></div>)}
 
       {/* 2 + 3. Description + property details */}
       <section className="bg-white px-6 md:pl-12 md:pr-12 py-16 md:py-20">
