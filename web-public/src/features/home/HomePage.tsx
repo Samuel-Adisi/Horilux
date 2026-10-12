@@ -28,6 +28,9 @@ export default function HomePage() {
     return shuffle(all.length >= 2 ? all.slice(2) : all).slice(0, 12);
   }, [propertiesPage]);
   const mobileGrid = useMemo(() => shuffle(propertiesPage?.results || []).slice(0, 12), [propertiesPage]);
+  const totalProperties = (propertiesPage as unknown as { count?: number } | undefined)?.count ?? propertiesPage?.results?.length ?? 0;
+  const mobileShown = mobileGrid.length;
+  const desktopShown = ((propertiesPage?.results?.length ?? 0) >= 2 ? 2 : 0) + desktopGrid.length;
   const [subscribed, setSubscribed] = useState(false);
 
   const HERO_IMAGES = [
@@ -164,15 +167,25 @@ export default function HomePage() {
           </>
         )}
 
-        {featured && featured.length > 0 && (
-        <div className="mt-14 text-center">
+        {featured && featured.length > 0 && totalProperties > mobileShown && (
+          <div className="mt-14 text-center md:hidden">
           <Link
             to="/listings"
             className="inline-block px-6 py-3 sm:px-10 sm:py-4 rounded-full border border-brand-blue text-brand-blue font-serif tracking-wider uppercase text-xs sm:text-sm hover:bg-brand-blue hover:text-white transition-colors"
           >
             View More
           </Link>
-        </div>
+          </div>
+        )}
+        {featured && featured.length > 0 && totalProperties > desktopShown && (
+          <div className="mt-14 hidden text-center md:block">
+          <Link
+            to="/listings"
+            className="inline-block px-6 py-3 sm:px-10 sm:py-4 rounded-full border border-brand-blue text-brand-blue font-serif tracking-wider uppercase text-xs sm:text-sm hover:bg-brand-blue hover:text-white transition-colors"
+          >
+            View More
+          </Link>
+          </div>
         )}
       </section>
 
