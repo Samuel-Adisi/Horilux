@@ -23,7 +23,10 @@ export default function HomePage() {
     }
     return arr;
   };
-  const desktopGrid = useMemo(() => shuffle((propertiesPage?.results || []).slice(2)).slice(0, 12), [propertiesPage]);
+  const desktopGrid = useMemo(() => {
+    const all = propertiesPage?.results || [];
+    return shuffle(all.length >= 2 ? all.slice(2) : all).slice(0, 12);
+  }, [propertiesPage]);
   const mobileGrid = useMemo(() => shuffle(propertiesPage?.results || []).slice(0, 12), [propertiesPage]);
   const [subscribed, setSubscribed] = useState(false);
 
