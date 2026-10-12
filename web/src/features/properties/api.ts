@@ -337,6 +337,16 @@ export function useDeleteMedia() {
   });
 }
 
+export function useReorderMedia() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (changes: { id: string; order: number }[]) => {
+      await Promise.all(changes.map((c) => apiClient.patch(`/property-media/${c.id}/`, { order: c.order })));
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: propertyKeys.all }),
+  });
+}
+
 export function useUploadDocument(propertyId: string) {
   const qc = useQueryClient();
   return useMutation({

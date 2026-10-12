@@ -1,12 +1,12 @@
 import { useRef, useState } from "react";
-import { ChevronLeft, ChevronRight, ImagePlus, Trash2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, ImagePlus, Star, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Panel } from "@/components/ui/display";
 import { ConfirmDialog } from "@/components/ui/overlay";
 import { getErrorMessage } from "@/lib/api-client";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
-import { useDeleteMedia, useUploadMedia, type PropertyDetail, type PropertyMedia } from "../api";
+import { useDeleteMedia, useReorderMedia, useUploadMedia, type PropertyDetail, type PropertyMedia } from "../api";
 
 const MAX_BYTES = 10 * 1024 * 1024;
 
@@ -15,10 +15,14 @@ export function MediaGallery({ property, canUpload, canDelete }: { property: Pro
   const [index, setIndex] = useState(0);
   const [uploading, setUploading] = useState<{ done: number; total: number } | null>(null);
   const [toDelete, setToDelete] = useState<PropertyMedia | null>(null);
+  const [dragId, setDragId] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const upload = useUploadMedia(property.id);
   const remove = useDeleteMedia();
+  const reorder = useReorderMedia();
   const current = media[Math.min(index, media.length - 1)];
+  const coverId = media.find((m) => m.media_type === "photo")?.id;
+  const canArrange = canUpload && media.length > 1 && !reorder.isPending;
 
   async function onFiles(list: FileList | null) {
     if (!list?.length) return;
@@ -56,6 +60,29 @@ export function MediaGallery({ property, canUpload, canDelete }: { property: Pro
     }
   }
 
+  async function applyOrder(next: PropertyMedia[], focusId: string) {
+    const changes = next
+      .map((m, i) => ({ id: m.id, order: i, was: m.order }))
+      .filter((c) => c.order !== c.was)
+      .map((c) => ({ id: c.id, order: c.order }));
+    if (!changes.length) return;
+    try {
+      await reorder.mutateAsync(changes);
+      setIndex(next.findIndex((m) => m.id === focusId));
+      toast.success("Photo order saved");
+    } catch (err) {
+      toast.error("Couldn't save the new order", getErrorMessage(err));
+    }
+  }
+
+  function move(from: number, to: number) {
+    if (to < 0 || to >= media.length || from === to) return;
+    const next = [...media];
+    const [item] = next.splice(from, 1);
+    next.splice(to, 0, item);
+    void applyOrder(next, item.id);
+  }
+
   return (
     <Panel
       flush
@@ -89,6 +116,9 @@ export function MediaGallery({ property, canUpload, canDelete }: { property: Pro
               <video key={current.id} src={current.file} controls className="h-full w-full object-contain" />
             ) : (
               <img key={current.id} src={current.file} alt={property.title} className="h-full w-full object-cover" />
+            )}
+            {current.id === coverId && (
+              <span className="absolute left-3 top-3 rounded-sm bg-brand px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">Cover photo</span>
             )}
             {media.length > 1 && (
               <>
@@ -124,25 +154,57 @@ export function MediaGallery({ property, canUpload, canDelete }: { property: Pro
               </button>
             )}
           </div>
+          {canUpload && media.length > 1 && (
+            <div className="flex flex-wrap items-center gap-2 border-t border-line px-3 py-2">
+              {current.media_type === "photo" && current.id !== coverId && (
+                <Button size="sm" variant="primary" icon={<Star />} disabled={reorder.isPending} onClick={() => move(index, 0)}>
+                  Set as cover
+                </Button>
+              )}
+              {current.id === coverId && <span className="text-xs font-semibold text-brand-fg">This is the cover photo</span>}
+              <Button size="sm" icon={<ArrowLeft />} disabled={!canArrange || index === 0} onClick={() => move(index, index - 1)}>
+                Move earlier
+              </Button>
+              <Button size="sm" icon={<ArrowRight />} disabled={!canArrange || index === media.length - 1} onClick={() => move(index, index + 1)}>
+                Move later
+              </Button>
+              <span className="ml-auto text-xs text-ink-subtle">Drag thumbnails to rearrange. The first photo is the cover.</span>
+            </div>
+          )}
           {media.length > 1 && (
             <div className="scrollbar-thin flex gap-2 overflow-x-auto p-3">
               {media.map((m, i) => (
-                <button
+                <div
                   key={m.id}
-                  type="button"
-                  onClick={() => setIndex(i)}
-                  className={cn(
-                    "relative h-14 w-20 shrink-0 overflow-hidden rounded-sm border-2 transition-colors",
-                    i === index ? "border-brand" : "border-transparent opacity-70 hover:opacity-100",
-                  )}
-                  aria-label={`Show file ${i + 1}`}
+                  draggable={canArrange}
+                  onDragStart={() => setDragId(m.id)}
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={() => {
+                    if (dragId && dragId !== m.id) move(media.findIndex((x) => x.id === dragId), i);
+                    setDragId(null);
+                  }}
+                  onDragEnd={() => setDragId(null)}
+                  className={cn("relative h-14 w-20 shrink-0", dragId === m.id && "opacity-40")}
                 >
-                  {m.media_type === "video" ? (
-                    <span className="flex h-full w-full items-center justify-center bg-black text-2xs font-bold text-white">VIDEO</span>
-                  ) : (
-                    <img src={m.file} alt="" loading="lazy" className="h-full w-full object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => setIndex(i)}
+                    className={cn(
+                      "relative h-full w-full overflow-hidden rounded-sm border-2 transition-colors",
+                      i === index ? "border-brand" : "border-transparent opacity-70 hover:opacity-100",
+                    )}
+                    aria-label={`Show file ${i + 1}`}
+                  >
+                    {m.media_type === "video" ? (
+                      <span className="flex h-full w-full items-center justify-center bg-black text-2xs font-bold text-white">VIDEO</span>
+                    ) : (
+                      <img src={m.file} alt="" loading="lazy" draggable={false} className="h-full w-full object-cover" />
+                    )}
+                  </button>
+                  {m.id === coverId && (
+                    <span className="pointer-events-none absolute left-1 top-1 rounded-sm bg-brand px-1 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white">Cover</span>
                   )}
-                </button>
+                </div>
               ))}
             </div>
           )}
