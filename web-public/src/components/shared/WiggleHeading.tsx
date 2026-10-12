@@ -43,10 +43,10 @@ export default function WiggleHeading({ text, className = "", soft = false }: Wi
                   style={{
                     opacity: go ? undefined : 0,
                     animationName: go ? (soft ? "letter-jiggle-soft" : "letter-jiggle") : undefined,
-                    animationDuration: soft ? "1500ms" : "900ms",
-                    animationTimingFunction: soft ? "cubic-bezier(0.22, 1, 0.36, 1)" : "cubic-bezier(0.34, 1.56, 0.64, 1)",
+                    animationDuration: soft ? "650ms" : "900ms",
+                    animationTimingFunction: soft ? "ease-out" : "cubic-bezier(0.34, 1.56, 0.64, 1)",
                     animationFillMode: "both",
-                    animationDelay: 150 + i * (soft ? 80 : 45) + "ms",
+                    animationDelay: (soft ? 80 : 150) + i * (soft ? 22 : 45) + "ms",
                   }}
                 >
                   {ch}
