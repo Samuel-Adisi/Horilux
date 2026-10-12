@@ -244,6 +244,12 @@ class ContactSubmissionView(generics.CreateAPIView):
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        from rest_framework.exceptions import ValidationError as ContactValidationError
+        phone_value = (serializer.validated_data.get("phone") or "").strip()
+        if serializer.validated_data.get("property") is not None and not phone_value:
+            raise ContactValidationError({"phone": "Please enter your phone number so an agent can contact you."})
+        if len(phone_value) > 20:
+            raise ContactValidationError({"phone": "Phone number is too long."})
         submission = serializer.save()
 
         prop = submission.property
@@ -364,7 +370,7 @@ class ContactSubmissionView(generics.CreateAPIView):
         if recipient:
             body_lines = [
                 f"Name: {submission.name}",
-                f"Email: {submission.email}",
+                f"Email: {submission.email or '(not provided)'}",
                 f"Phone: {submission.phone or ''}",
                 f"Country: {submission.country or ''}",
                 "",

@@ -98,7 +98,7 @@ class ContactSubmission(models.Model):
     """General-purpose contact form submission. Optionally tied to a specific
     property when submitted from a property detail page's inquiry form."""
     name = models.CharField(max_length=200)
-    email = models.EmailField()
+    email = models.EmailField(blank=True)
     phone = models.CharField(max_length=30, blank=True)
     country = models.CharField(max_length=100, blank=True)
     message = models.TextField(blank=True)

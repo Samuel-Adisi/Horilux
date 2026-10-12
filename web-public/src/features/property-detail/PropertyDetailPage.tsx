@@ -575,8 +575,8 @@ export default function PropertyDetailPage() {
                   </div>
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div>
-                      <label htmlFor="enq-email" className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-neutral-500">Email</label>
-                      <input id="enq-email" type="email" required autoComplete="email" inputMode="email" enterKeyHint="next" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} className="h-12 block w-full min-w-0 appearance-none rounded-xl border border-neutral-200 bg-neutral-50 px-4 text-base text-neutral-900 placeholder:text-neutral-400 transition scroll-mb-32 focus:border-brand-blue focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand-blue/10 [&::-webkit-date-and-time-value]:text-left" />
+                      <label htmlFor="enq-email" className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-neutral-500">Email (optional)</label>
+                      <input id="enq-email" type="email" autoComplete="email" inputMode="email" enterKeyHint="next" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} className="h-12 block w-full min-w-0 appearance-none rounded-xl border border-neutral-200 bg-neutral-50 px-4 text-base text-neutral-900 placeholder:text-neutral-400 transition scroll-mb-32 focus:border-brand-blue focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand-blue/10 [&::-webkit-date-and-time-value]:text-left" />
                     </div>
                     <div>
                       <label htmlFor="enq-phone" className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-neutral-500">Phone number</label>
@@ -610,8 +610,8 @@ export default function PropertyDetailPage() {
                 </div>
 
                 <div>
-                  <label htmlFor="enq-message" className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-neutral-500">Message</label>
-                  <textarea id="enq-message" required rows={4} placeholder="Tell us what you would like to know about this property..." value={message} onChange={(e) => setMessage(e.target.value)} className="block w-full min-w-0 appearance-none rounded-xl border border-neutral-200 bg-neutral-50 px-4 text-base text-neutral-900 placeholder:text-neutral-400 transition scroll-mb-32 focus:border-brand-blue focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand-blue/10 [&::-webkit-date-and-time-value]:text-left min-h-[120px] resize-none py-3" />
+                  <label htmlFor="enq-message" className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-neutral-500">Message (optional)</label>
+                  <textarea id="enq-message" rows={4} placeholder="Tell us what you would like to know about this property..." value={message} onChange={(e) => setMessage(e.target.value)} className="block w-full min-w-0 appearance-none rounded-xl border border-neutral-200 bg-neutral-50 px-4 text-base text-neutral-900 placeholder:text-neutral-400 transition scroll-mb-32 focus:border-brand-blue focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand-blue/10 [&::-webkit-date-and-time-value]:text-left min-h-[120px] resize-none py-3" />
                 </div>
 
                 {inquiryError && (
