@@ -376,8 +376,8 @@ export default function PropertyDetailPage() {
           { /* desktop slider */ }<div ref={deskSwipeRef} onScroll={() => { const el = deskSwipeRef.current; if (el) setDeskSlide(Math.round(el.scrollLeft / el.clientWidth)); }} className="flex h-full w-full overflow-x-auto snap-x snap-mandatory scroll-smooth [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">{(photos.length > 0 ? photos : [{ id: "cover", url: property.cover_image }]).map((photo, i) => (<div key={photo.id} className="relative shrink-0 w-full h-full snap-start">{photo.url && (<img src={photo.url} alt={property.title} onClick={() => setLightboxIndex(i)} loading={i === 0 ? "eager" : "lazy"} className="h-full w-full object-cover cursor-zoom-in" />)}</div>))}</div>
           <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: heroOverlay }} />
           {photos.length > 1 && (<><div className="pointer-events-none absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex gap-1.5">{photos.map((photo, i) => (<span key={photo.id} className={`h-1.5 rounded-full transition-all ${i === deskSlide ? "w-5 bg-white" : "w-1.5 bg-white/50"}`} />))}</div></>)}
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 max-w-4xl px-6 md:px-12 pb-16">
-            <h1 className="font-serif text-2xl sm:text-4xl md:text-6xl text-white leading-tight uppercase flex items-center gap-3 sm:gap-4">
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 max-w-2xl px-6 md:px-12 pb-16">
+            <h1 className="font-serif text-lg sm:text-2xl md:text-3xl lg:text-4xl text-white leading-snug uppercase tracking-wide [text-shadow:0_2px_12px_rgba(0,0,0,0.5)] flex items-center gap-3 sm:gap-4">
               <span>{property.title}</span>
               <ShareButton id={property.id} title={property.title} />
               {true && (
@@ -395,7 +395,7 @@ export default function PropertyDetailPage() {
                 </button>
               )}
             </h1>
-            <div className="mt-4 flex flex-wrap gap-x-6 gap-y-1 text-white/85 text-sm">
+            <div className="mt-4 flex flex-wrap gap-x-6 gap-y-1 text-white/85 text-xs sm:text-sm [text-shadow:0_1px_6px_rgba(0,0,0,0.5)]">
               {property.bedrooms != null && <span>{String(property.bedrooms).padStart(2, "0")} Bedrooms</span>}
               {property.bathrooms != null && <span>{String(property.bathrooms).padStart(2, "0")} Bathrooms</span>}
               {property.building_size && <span>Floor Area {property.building_size}</span>}
@@ -422,8 +422,8 @@ export default function PropertyDetailPage() {
 
         </div>
 
-          <div className="md:hidden pointer-events-none absolute inset-x-0 bottom-0 z-10 max-w-4xl px-6 md:px-12 pb-10">
-            <h1 className="font-serif text-2xl sm:text-4xl md:text-6xl text-white leading-tight uppercase flex items-center gap-3 sm:gap-4">
+          <div className="md:hidden pointer-events-none absolute inset-x-0 bottom-0 z-10 max-w-2xl px-6 md:px-12 pb-10">
+            <h1 className="font-serif text-lg sm:text-2xl md:text-3xl lg:text-4xl text-white leading-snug uppercase tracking-wide [text-shadow:0_2px_12px_rgba(0,0,0,0.5)] flex items-center gap-3 sm:gap-4">
               <span>{property.title}</span>
               <ShareButton id={property.id} title={property.title} />
               {true && (
