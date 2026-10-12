@@ -173,6 +173,16 @@ export default function HomePage() {
           </>
         )}
 
+        {featured && featured.length > 0 && totalProperties <= mobileShown && (
+          <p className="mt-14 text-center font-serif text-sm uppercase tracking-wider text-neutral-500 md:hidden">
+            You&apos;ve seen all properties
+          </p>
+        )}
+        {featured && featured.length > 0 && totalProperties <= desktopShown && (
+          <p className="mt-14 hidden text-center font-serif text-sm uppercase tracking-wider text-neutral-500 md:block">
+            You&apos;ve seen all properties
+          </p>
+        )}
         {featured && featured.length > 0 && totalProperties > mobileShown && (
           <div className="mt-14 text-center md:hidden">
           <Link
