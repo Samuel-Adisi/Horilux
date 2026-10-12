@@ -204,6 +204,7 @@ export default function PropertyDetailPage() {
     if (el && t) el.scrollTo({ left: t.offsetLeft - el.clientWidth / 2 + t.clientWidth / 2, behavior: "smooth" });
   }, [deskSlide]);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const [ratios, setRatios] = useState<Record<string, number>>({});
 
   function handleHeroScroll() {
     const el = heroSwipeRef.current;
@@ -307,6 +308,15 @@ export default function PropertyDetailPage() {
   const heroOverlay =
     "linear-gradient(to top, rgba(10,10,20,0.4) 0%, rgba(10,10,20,0.15) 14%, rgba(10,10,20,0) 32%)";
 
+  const clampRatio = (r: number, min: number) => Math.min(Math.max(r, min), 2.4);
+  const deskRatio = clampRatio(ratios[photos[deskSlide]?.id ?? "cover"] ?? 1.5, 1.25);
+  const heroRatio = clampRatio(ratios[photos[heroSlide]?.id ?? "cover"] ?? 1.5, 0.6);
+  const onImgLoad = (id: string) => (e: React.SyntheticEvent<HTMLImageElement>) => {
+    const w = e.currentTarget.naturalWidth;
+    const h = e.currentTarget.naturalHeight;
+    if (w && h) setRatios((r) => (r[id] === w / h ? r : { ...r, [id]: w / h }));
+  };
+
   const related = (() => {
     const pool = new Map<string, PropertyListItem>();
     [...(sameRegionPage?.results || []), ...(sameTypePage?.results || [])].forEach((p) => {
@@ -372,8 +382,8 @@ export default function PropertyDetailPage() {
       {/* 1. Hero / cover */}
       <section className="relative">
         {/* Desktop: real image at its own natural aspect ratio, full width, no crop */}
-        <div className="hidden md:block relative w-full h-[87vh] min-h-[560px] bg-neutral-900">
-          { /* desktop slider */ }<div ref={deskSwipeRef} onScroll={() => { const el = deskSwipeRef.current; if (el) setDeskSlide(Math.round(el.scrollLeft / el.clientWidth)); }} className="flex h-full w-full overflow-x-auto snap-x snap-mandatory scroll-smooth [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">{(photos.length > 0 ? photos : [{ id: "cover", url: property.cover_image }]).map((photo, i) => (<div key={photo.id} className="relative shrink-0 w-full h-full snap-start">{photo.url && (<img src={photo.url} alt={property.title} onClick={() => setLightboxIndex(i)} loading={i === 0 ? "eager" : "lazy"} className="h-full w-full object-cover cursor-zoom-in" />)}</div>))}</div>
+        <div style={{ aspectRatio: String(deskRatio) }} className="hidden md:block relative w-full bg-neutral-900 transition-[aspect-ratio] duration-300">
+          { /* desktop slider */ }<div ref={deskSwipeRef} onScroll={() => { const el = deskSwipeRef.current; if (el) setDeskSlide(Math.round(el.scrollLeft / el.clientWidth)); }} className="absolute inset-0 flex w-full overflow-x-auto snap-x snap-mandatory scroll-smooth [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">{(photos.length > 0 ? photos : [{ id: "cover", url: property.cover_image }]).map((photo, i) => (<div key={photo.id} className="relative shrink-0 w-full h-full snap-start">{photo.url && (<img src={photo.url} alt={property.title} onClick={() => setLightboxIndex(i)} onLoad={onImgLoad(photo.id)} loading={i === 0 ? "eager" : "lazy"} className="absolute inset-0 h-full w-full object-cover cursor-zoom-in" />)}</div>))}</div>
           <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: heroOverlay }} />
           {photos.length > 1 && (<><div className="pointer-events-none absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex gap-1.5">{photos.map((photo, i) => (<span key={photo.id} className={`h-1.5 rounded-full transition-all ${i === deskSlide ? "w-5 bg-white" : "w-1.5 bg-white/50"}`} />))}</div></>)}
           <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 max-w-2xl px-6 md:px-12 pb-16">
@@ -408,13 +418,13 @@ export default function PropertyDetailPage() {
         <div
           ref={heroSwipeRef}
           onScroll={handleHeroScroll}
-          className="md:hidden relative flex items-start overflow-x-auto snap-x snap-mandatory touch-pan-x touch-pan-y [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
-          style={{ WebkitOverflowScrolling: "touch" }}
+          className="md:hidden relative flex overflow-x-auto transition-[aspect-ratio] duration-300 snap-x snap-mandatory touch-pan-x touch-pan-y [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+          style={{ WebkitOverflowScrolling: "touch", aspectRatio: String(heroRatio) }}
         >
           {(photos.length > 0 ? photos : [{ id: "cover", url: property.cover_image }]).map((photo, i) => (
-            <div key={photo.id} className="relative shrink-0 w-full aspect-[2/3] max-h-[85svh] snap-start bg-neutral-900">
+            <div key={photo.id} className="relative shrink-0 w-full snap-start bg-neutral-900">
               {photo.url && (
-                <img src={photo.url} alt={property.title} onClick={() => setLightboxIndex(i)} loading={i === 0 ? "eager" : "lazy"} className="h-full w-full object-cover block cursor-zoom-in" />
+                <img src={photo.url} alt={property.title} onClick={() => setLightboxIndex(i)} onLoad={onImgLoad(photo.id)} loading={i === 0 ? "eager" : "lazy"} className="absolute inset-0 h-full w-full object-cover block cursor-zoom-in" />
               )}
               <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: heroOverlay }} />
             </div>
