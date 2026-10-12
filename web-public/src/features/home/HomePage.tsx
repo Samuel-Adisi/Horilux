@@ -7,6 +7,13 @@ import LoadingSpinner from "@/components/shared/LoadingSpinner";
 import Reveal from "@/components/shared/Reveal";
 import WiggleHeading from "@/components/shared/WiggleHeading";
 
+const CATEGORIES = [
+  { label: "For Sale", to: "/listings?listing_type=sale", image: "/covers/cover-7.jpg" },
+  { label: "For Rent", to: "/listings?listing_type=rent", image: "/covers/cover-3.jpg" },
+  { label: "Residential", to: "/listings?property_type=residential", image: "/covers/cover-6.jpg" },
+  { label: "Commercial", to: "/listings?property_type=commercial", image: "/covers/cover-4.jpg" },
+];
+
 export default function HomePage() {
   const { data: propertiesPage, isLoading, isError } = useProperties({
     ordering: "-published_at",
@@ -31,7 +38,6 @@ export default function HomePage() {
   const totalProperties = (propertiesPage as unknown as { count?: number } | undefined)?.count ?? propertiesPage?.results?.length ?? 0;
   const mobileShown = mobileGrid.length;
   const desktopShown = ((propertiesPage?.results?.length ?? 0) >= 2 ? 2 : 0) + desktopGrid.length;
-  const [subscribed, setSubscribed] = useState(false);
 
   const HERO_IMAGES = [
     "/covers/cover-9.jpg",
@@ -189,52 +195,29 @@ export default function HomePage() {
         )}
       </section>
 
-      {/* Newsletter + stats */}
-      <section className="relative px-6 py-24 md:py-32">
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{
-            backgroundImage:
-              "linear-gradient(to bottom, rgba(10,10,20,0.25), rgba(10,10,20,0.12)), url('/covers/cover-4.jpg')",
-          }}
-        />
-        <div className="relative z-10 max-w-3xl mx-auto text-center">
-          <Reveal>
-            <h2 className="font-serif text-xl sm:text-2xl md:text-3xl text-white uppercase tracking-[0.1em] mb-10">
-              Keep Yourself Updated On The Latest Homes Available
-            </h2>
-          </Reveal>
-
-          {subscribed ? (
-            <p className="text-white font-serif text-lg">Thank you &mdash; you&apos;re on the list.</p>
-          ) : (
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                setSubscribed(true);
-              }}
-              className="flex flex-col md:flex-row gap-3"
-            >
-              <input
-                type="text"
-                required
-                placeholder="Name*"
-                className="flex-1 px-4 py-3 sm:px-6 sm:py-4 rounded-full bg-black/40 border border-white/50 text-white placeholder:text-white text-sm sm:text-base font-medium focus:outline-none focus:ring-2 focus:ring-white/60"
-              />
-              <input
-                type="email"
-                required
-                placeholder="Email*"
-                className="flex-1 px-4 py-3 sm:px-6 sm:py-4 rounded-full bg-black/40 border border-white/50 text-white placeholder:text-white text-sm sm:text-base font-medium focus:outline-none focus:ring-2 focus:ring-white/60"
-              />
-              <button
-                type="submit"
-                className="px-6 py-3 sm:px-10 sm:py-4 rounded-full bg-white text-brand-blue font-serif tracking-wider uppercase text-xs sm:text-sm hover:opacity-90 transition-opacity whitespace-nowrap"
-              >
-                Sign Up
-              </button>
-            </form>
-          )}
+      {/* Browse by category */}
+      <section className="bg-white px-6 py-20 md:py-28">
+        <div className="mx-auto max-w-6xl">
+          <div className="mb-12 text-center">
+            <p className="mb-3 text-xs font-semibold uppercase tracking-[0.3em] text-brand-taupe">Explore</p>
+            <WiggleHeading text="Browse By Category" className="font-serif text-xl sm:text-2xl md:text-4xl uppercase tracking-[0.12em] text-brand-blue" />
+          </div>
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-5">
+            {CATEGORIES.map((c, i) => (
+              <Reveal key={c.label} delay={i * 100} className="h-full">
+                <Link to={c.to} className="group relative block aspect-[4/5] overflow-hidden rounded-3xl bg-neutral-200">
+                  <div
+                    className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
+                    style={{ backgroundImage: "linear-gradient(to top, rgba(10,10,20,0.78), rgba(10,10,20,0.08)), url('" + c.image + "')" }}
+                  />
+                  <div className="absolute inset-x-0 bottom-0 p-4 text-left sm:p-6">
+                    <p className="font-serif text-lg text-white sm:text-2xl">{c.label}</p>
+                    <p className="mt-1 text-[10px] uppercase tracking-[0.25em] text-white/70 sm:text-xs">Browse &rarr;</p>
+                  </div>
+                </Link>
+              </Reveal>
+            ))}
+          </div>
         </div>
       </section>
 
