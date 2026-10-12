@@ -312,7 +312,7 @@ export default function PropertyDetailPage() {
         : [];
 
   const heroOverlay =
-    "linear-gradient(to top, rgba(10,10,20,0.4) 0%, rgba(10,10,20,0.15) 14%, rgba(10,10,20,0) 32%)";
+    "linear-gradient(to top, rgba(10,10,20,0.26) 0%, rgba(10,10,20,0.08) 14%, rgba(10,10,20,0) 28%)";
 
   const clampRatio = (r: number, min: number) => Math.min(Math.max(r, min), 2.4);
   const deskRatio = clampRatio(ratios[photos[deskSlide]?.id ?? "cover"] ?? 1.5, 1.25);
