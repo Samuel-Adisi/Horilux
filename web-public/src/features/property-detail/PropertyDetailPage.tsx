@@ -424,8 +424,8 @@ export default function PropertyDetailPage() {
         <div
           ref={heroSwipeRef}
           onScroll={handleHeroScroll}
-          className="md:hidden relative flex overflow-x-auto transition-[aspect-ratio] duration-300 snap-x snap-mandatory touch-pan-x touch-pan-y [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
-          style={{ WebkitOverflowScrolling: "touch", aspectRatio: String(heroRatio), maxHeight: "calc(100svh - 310px)" }}
+          className="md:hidden relative flex w-full overflow-x-auto transition-[aspect-ratio] duration-300 snap-x snap-mandatory touch-pan-x touch-pan-y [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+          style={{ WebkitOverflowScrolling: "touch", aspectRatio: String(heroRatio), maxHeight: "calc(100svh - 270px)" }}
         >
           {(photos.length > 0 ? photos : [{ id: "cover", url: property.cover_image }]).map((photo, i) => (
             <div key={photo.id} className="relative shrink-0 w-full snap-start bg-neutral-900">
