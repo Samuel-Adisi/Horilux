@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { api } from "../../lib/api";
 import { Mail, Phone } from "lucide-react";
 
-const CONTACT_EMAIL = "horiluxestates@gmail.com";
+const CONTACT_EMAIL = "info@horiluxestates.com";
 
 const inputClass =
   "w-full rounded-2xl bg-white px-5 py-4 text-sm text-neutral-700 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-brand-blue/30 transition-shadow";
