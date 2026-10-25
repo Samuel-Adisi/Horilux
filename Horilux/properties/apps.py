@@ -7,3 +7,4 @@ class PropertiesConfig(AppConfig):
 
     def ready(self):
         import properties.signals  # noqa: F401
+        
