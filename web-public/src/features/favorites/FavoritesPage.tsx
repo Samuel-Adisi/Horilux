@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { useSavedProperties } from "./hooks/use-saved-properties";
 import PropertyCard from "@/features/shared/PropertyCard";
 import LoadingSpinner from "@/components/shared/LoadingSpinner";
@@ -34,7 +35,11 @@ export default function FavoritesPage() {
         )}
 
         {!isLoading && !isError && (data?.length ?? 0) === 0 && (
-          <p className="text-center text-neutral-500 px-6">You haven&apos;t saved any properties yet.</p>
+          <div className="px-6 py-10 text-center">
+            <p className="font-serif text-xl text-brand-blue">Nothing saved yet</p>
+            <p className="mx-auto mt-2 max-w-md text-sm text-neutral-600">Tap the heart on any property to keep it here, on this device, for later.</p>
+            <Link to="/listings" className="mt-6 inline-flex min-h-12 items-center rounded-full bg-brand-blue px-8 font-serif text-xs uppercase tracking-[0.18em] text-white transition hover:bg-brand-blue/90">Browse Properties</Link>
+          </div>
         )}
 
         {data && data.length > 0 && (

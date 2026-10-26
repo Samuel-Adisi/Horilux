@@ -10,8 +10,8 @@ const TYPE_OPTIONS = [
   { value: "property_type:commercial", label: "Commercial" },
 ];
 
-const BEDROOM_OPTIONS = ["1", "2", "3", "4", "5+"];
-const BATHROOM_OPTIONS = ["1", "2", "3", "4", "5+"];
+const BEDROOM_OPTIONS = ["1+", "2+", "3+", "4+", "5+"];
+const BATHROOM_OPTIONS = ["1+", "2+", "3+", "4+", "5+"];
 const PRICE_RANGES = [
   { label: "Under GHS 500,000", min: undefined, max: 500000 },
   { label: "GHS 500,000 - 1,000,000", min: 500000, max: 1000000 },
@@ -63,8 +63,8 @@ export default function SearchBar({ initialParams }: SearchBarProps = {}) {
   const [search, setSearch] = useState(initialParams?.get("search") ?? "");
   const [region, setRegion] = useState(initialParams?.get("region") ?? "");
   const [typeFilter, setTypeFilter] = useState(typeFilterFromParams(initialParams));
-  const [bedrooms, setBedrooms] = useState(initialParams?.get("bedrooms") ?? "");
-  const [bathrooms, setBathrooms] = useState(initialParams?.get("bathrooms") ?? "");
+  const [bedrooms, setBedrooms] = useState(initialParams?.get("bedrooms") ? initialParams.get("bedrooms") + "+" : "");
+  const [bathrooms, setBathrooms] = useState(initialParams?.get("bathrooms") ? initialParams.get("bathrooms") + "+" : "");
   const [priceRange, setPriceRange] = useState(priceRangeIndexFromParams(initialParams));
 
   function handleSearch() {
@@ -111,13 +111,13 @@ export default function SearchBar({ initialParams }: SearchBarProps = {}) {
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search"
+          placeholder="Search by title or area" aria-label="Search properties"
           className={pillClass + " pl-12"}
         />
       </div>
 
       <div className="relative">
-        <select value={region} onChange={(e) => setRegion(e.target.value)} className={pillClass}>
+        <select aria-label="Location" value={region} onChange={(e) => setRegion(e.target.value)} className={pillClass}>
           <option value="">Location</option>
           {REGIONS.map((r) => (<option key={r} value={r}>{r}</option>))}
         </select>
@@ -125,7 +125,7 @@ export default function SearchBar({ initialParams }: SearchBarProps = {}) {
       </div>
 
       <div className="relative">
-        <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)} className={pillClass}>
+        <select aria-label="Property type" value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)} className={pillClass}>
           <option value="">Property Type</option>
           {TYPE_OPTIONS.map((t) => (<option key={t.value} value={t.value}>{t.label}</option>))}
         </select>
@@ -133,23 +133,23 @@ export default function SearchBar({ initialParams }: SearchBarProps = {}) {
       </div>
 
       <div className="relative">
-        <select value={bedrooms} onChange={(e) => setBedrooms(e.target.value)} className={pillClass}>
-          <option value="">Bedroom</option>
+        <select aria-label="Minimum bedrooms" value={bedrooms} onChange={(e) => setBedrooms(e.target.value)} className={pillClass}>
+          <option value="">Min. Bedrooms</option>
           {BEDROOM_OPTIONS.map((b) => (<option key={b} value={b}>{b}</option>))}
         </select>
         <Chevron />
       </div>
 
       <div className="relative">
-        <select value={bathrooms} onChange={(e) => setBathrooms(e.target.value)} className={pillClass}>
-          <option value="">Bathroom</option>
+        <select aria-label="Minimum bathrooms" value={bathrooms} onChange={(e) => setBathrooms(e.target.value)} className={pillClass}>
+          <option value="">Min. Bathrooms</option>
           {BATHROOM_OPTIONS.map((b) => (<option key={b} value={b}>{b}</option>))}
         </select>
         <Chevron />
       </div>
 
       <div className="relative col-span-2 sm:col-span-1">
-        <select value={priceRange} onChange={(e) => setPriceRange(e.target.value)} className={pillClass}>
+        <select aria-label="Price range" value={priceRange} onChange={(e) => setPriceRange(e.target.value)} className={pillClass}>
           <option value="">Price Range</option>
           {PRICE_RANGES.map((r, i) => (<option key={r.label} value={i}>{r.label}</option>))}
         </select>

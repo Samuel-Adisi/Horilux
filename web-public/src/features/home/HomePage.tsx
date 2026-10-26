@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import { useProperties } from "@/features/listings/hooks/use-properties";
 import PropertyCard from "@/features/shared/PropertyCard";
 import SearchBar from "./SearchBar";
-import LoadingSpinner from "@/components/shared/LoadingSpinner";
 import Reveal from "@/components/shared/Reveal";
 import WiggleHeading from "@/components/shared/WiggleHeading";
 
@@ -52,6 +51,7 @@ export default function HomePage() {
   const touchX = useRef(0);
 
   useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const timer = setInterval(() => {
       setHeroIndex((i) => (i + 1) % HERO_IMAGES.length);
     }, 6000);
@@ -84,6 +84,17 @@ export default function HomePage() {
           <h1 className="font-serif text-2xl sm:text-4xl md:text-6xl text-white leading-tight">
             Find Your Place Among Ghana&apos;s Finest Homes
           </h1>
+          <div className="mt-8 flex flex-wrap items-center gap-3">
+            <Link to="/listings" className="inline-flex min-h-12 items-center rounded-full bg-white px-8 font-serif text-xs uppercase tracking-[0.18em] text-brand-blue transition hover:bg-white/90 sm:text-sm">Browse Properties</Link>
+            <Link to="/contact" className="inline-flex min-h-12 items-center rounded-full border border-white/60 px-8 font-serif text-xs uppercase tracking-[0.18em] text-white transition hover:bg-white/15 sm:text-sm">Talk to an Agent</Link>
+          </div>
+          <div className="mt-6 flex items-center" role="group" aria-label="Hero slides">
+            {HERO_IMAGES.map((_, i) => (
+              <button key={i} type="button" onClick={() => setHeroIndex(i)} aria-label={"Show slide " + (i + 1)} aria-current={i === heroIndex} className="flex h-11 w-6 items-center justify-center">
+                <span className={"block h-1.5 rounded-full transition-all " + (i === heroIndex ? "w-6 bg-white" : "w-1.5 bg-white/50")} />
+              </button>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -141,7 +152,13 @@ export default function HomePage() {
           <WiggleHeading text="Featured Properties" soft className="font-serif text-xl sm:text-2xl md:text-4xl text-neutral-900" />
         </Reveal>
 
-        {isLoading && <LoadingSpinner />}
+        {isLoading && (
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2" aria-busy="true" aria-label="Loading properties">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="skeleton aspect-[4/3] sm:aspect-[16/9]" />
+            ))}
+          </div>
+        )}
 
         {isError && (
           <p className="text-center text-neutral-500 px-6">Couldn&apos;t load featured properties right now.</p>

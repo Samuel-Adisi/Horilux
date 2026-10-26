@@ -48,6 +48,10 @@ export default function Footer() {
           </h4>
           <ul className="space-y-2 text-sm">
             <li><Link to="/listings" className="hover:text-white/80">All Listings</Link></li>
+            <li><Link to="/listings?listing_type=sale" className="hover:text-white/80">For Sale</Link></li>
+            <li><Link to="/listings?listing_type=rent" className="hover:text-white/80">For Rent</Link></li>
+            <li><Link to="/listings?property_type=residential" className="hover:text-white/80">Residential</Link></li>
+            <li><Link to="/listings?property_type=commercial" className="hover:text-white/80">Commercial</Link></li>
             <li><Link to="/about" className="hover:text-white/80">About Us</Link></li>
             <li><Link to="/contact" className="hover:text-white/80">Contact</Link></li>
           </ul>
@@ -131,7 +135,7 @@ export default function Footer() {
         </div>
       </div>
 
-      <div className="border-t border-white/10 py-6 text-center text-xs text-white/50">
+      <div className="border-t border-white/10 py-6 text-center text-xs text-white/70">
         © {new Date().getFullYear()} Horilux Estates. All rights reserved.
       </div>
     </footer>

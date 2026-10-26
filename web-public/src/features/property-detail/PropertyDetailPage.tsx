@@ -9,7 +9,7 @@ import { Heart, Share2, Check } from "lucide-react";
 import { api } from "@/lib/api";
 import { useRecordView } from "./use-record-view";
 import { getAmenityIcon } from "./amenity-icons";
-import { BedDouble, Bath, Ruler, LandPlot, Tag, MapPin, Home } from "lucide-react";
+import { BedDouble, Bath, Ruler, LandPlot, Tag, MapPin, Home, ChevronLeft, ChevronRight } from "lucide-react";
 
 const FACT_ICONS: Record<string, typeof BedDouble> = {
   "Bedrooms": BedDouble,
@@ -102,7 +102,7 @@ function Lightbox({ urls, startIndex, onClose }: { urls: string[]; startIndex: n
   }, []);
 
   return (
-    <div className="fixed inset-0 z-[100] bg-black/95">
+    <div role="dialog" aria-modal="true" aria-label="Photo viewer" className="fixed inset-0 z-[100] bg-black/95">
       <div
         ref={trackRef}
         onScroll={handleScroll}
@@ -117,7 +117,7 @@ function Lightbox({ urls, startIndex, onClose }: { urls: string[]; startIndex: n
             }}
             className="shrink-0 w-full h-full snap-center snap-always flex items-center justify-center px-2 sm:px-16"
           >
-            <img src={url} alt="" draggable={false} className="max-h-full max-w-full object-contain select-none" />
+            <img src={url} alt={"Photo " + (i + 1) + " of " + urls.length} draggable={false} className="max-h-full max-w-full object-contain select-none" />
           </div>
         ))}
       </div>
@@ -125,7 +125,7 @@ function Lightbox({ urls, startIndex, onClose }: { urls: string[]; startIndex: n
       <button
         type="button"
         onClick={onClose}
-        aria-label="Close"
+        aria-label="Close" autoFocus
         className="absolute top-4 right-4 sm:top-6 sm:right-6 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors"
       >
         <svg viewBox="0 0 20 20" fill="none" className="h-5 w-5">
@@ -195,14 +195,6 @@ export default function PropertyDetailPage() {
 
   const heroSwipeRef = useRef<HTMLDivElement>(null);
   const [heroSlide, setHeroSlide] = useState(0);
-  const deskSwipeRef = useRef<HTMLDivElement>(null);
-  const [deskSlide, setDeskSlide] = useState(0);
-  const thumbsRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const el = thumbsRef.current;
-    const t = el?.children[deskSlide] as HTMLElement | undefined;
-    if (el && t) el.scrollTo({ left: t.offsetLeft - el.clientWidth / 2 + t.clientWidth / 2, behavior: "smooth" });
-  }, [deskSlide]);
   const mThumbsRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const el = mThumbsRef.current;
@@ -210,7 +202,6 @@ export default function PropertyDetailPage() {
     if (el && t) el.scrollTo({ left: t.offsetLeft - el.clientWidth / 2 + t.clientWidth / 2, behavior: "smooth" });
   }, [heroSlide]);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
-  const [ratios, setRatios] = useState<Record<string, number>>({});
 
   function handleHeroScroll() {
     const el = heroSwipeRef.current;
@@ -304,6 +295,7 @@ export default function PropertyDetailPage() {
     .sort((a, b) => a.order - b.order);
   const videos = property.media.filter((m) => m.media_type === "video" && m.url);
   const heroImageUrl = photos[0]?.url || property.cover_image;
+  const slides: { id: string; url: string | null }[] = photos.length > 0 ? photos : [{ id: "cover", url: property.cover_image }];
   const galleryUrls: string[] =
     photos.length > 0
       ? photos.map((m) => m.url as string)
@@ -314,14 +306,6 @@ export default function PropertyDetailPage() {
   const heroOverlay =
     "linear-gradient(to top, rgba(10,10,20,0.26) 0%, rgba(10,10,20,0.08) 14%, rgba(10,10,20,0) 28%)";
 
-  const clampRatio = (r: number, min: number) => Math.min(Math.max(r, min), 2.4);
-  const deskRatio = clampRatio(ratios[photos[deskSlide]?.id ?? "cover"] ?? 1.5, 1.25);
-  const heroRatio = clampRatio(ratios[photos[heroSlide]?.id ?? "cover"] ?? 1.5, 0.6);
-  const onImgLoad = (id: string) => (e: React.SyntheticEvent<HTMLImageElement>) => {
-    const w = e.currentTarget.naturalWidth;
-    const h = e.currentTarget.naturalHeight;
-    if (w && h) setRatios((r) => (r[id] === w / h ? r : { ...r, [id]: w / h }));
-  };
 
   const related = (() => {
     const pool = new Map<string, PropertyListItem>();
@@ -378,110 +362,119 @@ export default function PropertyDetailPage() {
 
   return (
     <div className="bg-white pb-20 md:pb-0">
-      <Link
-        to="/contact"
-        className="hidden md:block fixed bottom-4 right-4 sm:bottom-6 sm:right-6 md:bottom-8 md:right-8 z-30 animate-float px-4 py-2 sm:px-6 sm:py-3 rounded-full bg-brand-blue text-white font-serif tracking-wider uppercase text-[10px] sm:text-xs md:text-sm shadow-lg hover:bg-brand-blue/90 transition-colors"
+      <a
+        href="#enquire"
+        className="hidden md:block fixed bottom-8 right-8 z-30 animate-float rounded-full bg-brand-blue px-6 py-3 font-serif text-sm uppercase tracking-wider text-white shadow-lg transition-colors hover:bg-brand-blue/90"
       >
-        Contact Us
-      </Link>
+        Enquire About This Property
+      </a>
 
-      {/* 1. Hero / cover */}
+      {/* 1. Hero carousel: one design for every screen size */}
       <section className="relative">
-        {/* Desktop: real image at its own natural aspect ratio, full width, no crop */}
-        <div style={{ aspectRatio: String(deskRatio), maxHeight: "calc(100dvh - 120px)" }} className="hidden md:block relative w-full bg-neutral-200 transition-[aspect-ratio] duration-300">
-          { /* desktop slider */ }<div ref={deskSwipeRef} onScroll={() => { const el = deskSwipeRef.current; if (el) setDeskSlide(Math.round(el.scrollLeft / el.clientWidth)); }} className="absolute inset-0 flex w-full overflow-x-auto snap-x snap-mandatory scroll-smooth [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">{(photos.length > 0 ? photos : [{ id: "cover", url: property.cover_image }]).map((photo, i) => (<div key={photo.id} className="relative shrink-0 w-full h-full snap-start">{photo.url && (<><img src={photo.url} alt="" aria-hidden="true" className="absolute inset-0 h-full w-full object-cover scale-110 blur-2xl opacity-80" /><img src={photo.url} alt={property.title} onClick={() => setLightboxIndex(i)} onLoad={onImgLoad(photo.id)} loading="eager" decoding="async" className="absolute inset-0 h-full w-full object-contain object-center cursor-zoom-in" /></>)}</div>))}</div>
-          <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: heroOverlay }} />
-          {photos.length > 1 && (<><div className="pointer-events-none absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex gap-1.5">{photos.map((photo, i) => (<span key={photo.id} className={`h-1.5 rounded-full transition-all ${i === deskSlide ? "w-5 bg-white" : "w-1.5 bg-white/50"}`} />))}</div></>)}
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 max-w-2xl px-6 md:px-12 pb-16">
-            <h1 className="font-serif text-lg sm:text-2xl md:text-3xl lg:text-4xl text-white leading-snug uppercase tracking-wide [text-shadow:0_2px_12px_rgba(0,0,0,0.5)] flex items-center gap-3 sm:gap-4">
-              <span>{property.title}</span>
-              <ShareButton id={property.id} title={property.title} />
-              {true && (
-                <button
-                  type="button"
-                  onClick={() => !savePending && toggleSaved(property.id)}
-                  aria-label={isSaved(property.id) ? "Remove from favorites" : "Add to favorites"}
-                  disabled={savePending}
-                  className="pointer-events-auto shrink-0 flex h-8 w-8 sm:h-10 sm:w-10 md:h-11 md:w-11 items-center justify-center rounded-full bg-black/30 backdrop-blur-sm hover:bg-black/50 transition-colors disabled:opacity-60"
-                >
-                  <Heart
-                    className={`h-4 w-4 sm:h-5 sm:w-5 transition-colors ${isSaved(property.id) ? "fill-pink-500 text-pink-500" : "text-white"}`}
-                    strokeWidth={1.75}
-                  />
-                </button>
-              )}
-            </h1>
-            <div className="mt-4 flex flex-wrap gap-x-6 gap-y-1 text-white/85 text-xs sm:text-sm [text-shadow:0_1px_6px_rgba(0,0,0,0.5)]">
-              {property.bedrooms != null && <span>{String(property.bedrooms).padStart(2, "0")} Bedrooms</span>}
-              {property.bathrooms != null && <span>{String(property.bathrooms).padStart(2, "0")} Bathrooms</span>}
-              {property.building_size && <span>Floor Area {property.building_size}</span>}
-              {property.land_size && <span>Land Area {property.land_size}</span>}
-            </div>
-          </div>
-        </div>
-
-        {/* Mobile: swipeable cover carousel, no arrows, dot indicator only */}
         <div
           ref={heroSwipeRef}
           onScroll={handleHeroScroll}
-          className="md:hidden relative flex w-full overflow-x-auto transition-[aspect-ratio] duration-300 snap-x snap-mandatory touch-pan-x touch-pan-y [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
-          style={{ WebkitOverflowScrolling: "touch", aspectRatio: String(heroRatio), height: "calc(100svh - 180px)" }}
+          role="region"
+          aria-roledescription="carousel"
+          aria-label={property.title + " photos"}
+          tabIndex={0}
+          onKeyDown={(e) => {
+            const el = heroSwipeRef.current;
+            if (!el) return;
+            if (e.key === "ArrowRight") el.scrollBy({ left: el.clientWidth, behavior: "smooth" });
+            if (e.key === "ArrowLeft") el.scrollBy({ left: -el.clientWidth, behavior: "smooth" });
+          }}
+          className="relative flex h-[calc(100svh-180px)] min-h-[420px] w-full snap-x snap-mandatory overflow-x-auto bg-neutral-900 touch-pan-x touch-pan-y md:h-[calc(100svh-96px)] md:max-h-[860px] [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+          style={{ WebkitOverflowScrolling: "touch" }}
         >
-          {(photos.length > 0 ? photos : [{ id: "cover", url: property.cover_image }]).map((photo, i) => (
-            <div key={photo.id} className="relative shrink-0 w-full snap-start bg-neutral-900">
+          {slides.map((photo, i) => (
+            <div key={photo.id} role="group" aria-roledescription="slide" aria-label={(i + 1) + " of " + slides.length} className="relative h-full w-full shrink-0 snap-start">
               {photo.url && (
-                <img src={photo.url} alt={property.title} onClick={() => setLightboxIndex(i)} onLoad={onImgLoad(photo.id)} loading={i === 0 ? "eager" : "lazy"} className="absolute inset-0 h-full w-full object-cover object-center block cursor-zoom-in" />
+                <img
+                  src={photo.url}
+                  alt={property.title + ", photo " + (i + 1)}
+                  onClick={() => setLightboxIndex(i)}
+                  loading={i === 0 ? "eager" : "lazy"}
+                  fetchPriority={i === 0 ? "high" : "auto"}
+                  decoding="async"
+                  className="absolute inset-0 block h-full w-full cursor-zoom-in object-cover object-center"
+                />
               )}
-              <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: heroOverlay }} />
+              <div className="pointer-events-none absolute inset-0" style={{ backgroundImage: heroOverlay }} />
             </div>
           ))}
-
         </div>
 
-          <div className="md:hidden pointer-events-none absolute inset-x-0 bottom-0 z-10 max-w-2xl px-6 md:px-12 pb-10">
-            <h1 className="font-serif text-lg sm:text-2xl md:text-3xl lg:text-4xl text-white leading-snug uppercase tracking-wide [text-shadow:0_2px_12px_rgba(0,0,0,0.5)] flex items-center gap-3 sm:gap-4">
-              
-              <ShareButton id={property.id} title={property.title} />
-              {true && (
-                <button
-                  type="button"
-                  onClick={() => !savePending && toggleSaved(property.id)}
-                  aria-label={isSaved(property.id) ? "Remove from favorites" : "Add to favorites"}
-                  disabled={savePending}
-                  className="pointer-events-auto shrink-0 flex h-8 w-8 sm:h-10 sm:w-10 md:h-11 md:w-11 items-center justify-center rounded-full bg-black/30 backdrop-blur-sm hover:bg-black/50 transition-colors disabled:opacity-60"
-                >
-                  <Heart
-                    className={`h-4 w-4 sm:h-5 sm:w-5 transition-colors ${isSaved(property.id) ? "fill-pink-500 text-pink-500" : "text-white"}`}
-                    strokeWidth={1.75}
-                  />
-                </button>
-              )}
-            </h1>
-            <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-white/85 text-xs">
-              {property.bedrooms != null && <span>{String(property.bedrooms).padStart(2, "0")} Bedrooms</span>}
-              {property.bathrooms != null && <span>{String(property.bathrooms).padStart(2, "0")} Bathrooms</span>}
-              {property.building_size && <span>Floor Area {property.building_size}</span>}
-              {property.land_size && <span>Land Area {property.land_size}</span>}
-            </div>
-          </div>
+        {slides.length > 1 && (
+          <>
+            <button type="button" aria-label="Previous photo" onClick={() => heroSwipeRef.current?.scrollBy({ left: -(heroSwipeRef.current?.clientWidth ?? 0), behavior: "smooth" })} className="absolute left-4 top-1/2 z-20 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-black/35 text-white backdrop-blur-sm transition hover:bg-black/55 md:flex">
+              <ChevronLeft className="h-6 w-6" aria-hidden />
+            </button>
+            <button type="button" aria-label="Next photo" onClick={() => heroSwipeRef.current?.scrollBy({ left: heroSwipeRef.current?.clientWidth ?? 0, behavior: "smooth" })} className="absolute right-4 top-1/2 z-20 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-black/35 text-white backdrop-blur-sm transition hover:bg-black/55 md:flex">
+              <ChevronRight className="h-6 w-6" aria-hidden />
+            </button>
+          </>
+        )}
 
-        {photos.length > 1 && (
-          <div className="md:hidden absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex gap-1.5">
-            {photos.map((photo, i) => (
-              <span
-                key={photo.id}
-                className={`h-1.5 rounded-full transition-all ${
-                  i === heroSlide ? "w-5 bg-white" : "w-1.5 bg-white/50"
-                }`}
-              />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex items-end justify-between gap-4 px-6 pb-14 md:px-12">
+          <h1 className="sr-only">{property.title}</h1>
+          <ul className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-white/90 [text-shadow:0_1px_6px_rgba(0,0,0,0.5)] sm:text-sm">
+            {[
+              property.bedrooms != null && String(property.bedrooms).padStart(2, "0") + " Bedrooms",
+              property.bathrooms != null && String(property.bathrooms).padStart(2, "0") + " Bathrooms",
+              property.building_size && "Floor Area " + property.building_size,
+              property.land_size && "Land Area " + property.land_size,
+            ].filter(Boolean).map((t) => (
+              <li key={String(t)}>{t}</li>
             ))}
+          </ul>
+          <div className="pointer-events-auto flex shrink-0 items-center gap-2">
+            <ShareButton id={property.id} title={property.title} />
+            <button
+              type="button"
+              onClick={() => !savePending && toggleSaved(property.id)}
+              aria-label={isSaved(property.id) ? "Remove from favorites" : "Add to favorites"}
+              aria-pressed={isSaved(property.id)}
+              disabled={savePending}
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-black/30 backdrop-blur-sm transition-colors hover:bg-black/50 disabled:opacity-60 md:h-11 md:w-11"
+            >
+              <Heart className={"h-5 w-5 transition-colors " + (isSaved(property.id) ? "fill-rose-500 text-rose-500" : "text-white")} strokeWidth={1.75} aria-hidden />
+            </button>
+          </div>
+        </div>
+
+        {slides.length > 1 && (
+          <div className="pointer-events-none absolute inset-x-0 bottom-4 z-20 flex items-center justify-center px-6">
+            <div className="flex gap-1.5" aria-hidden>
+              {slides.map((photo, i) => (
+                <span key={photo.id} className={"h-1.5 rounded-full transition-all " + (i === heroSlide ? "w-5 bg-white" : "w-1.5 bg-white/50")} />
+              ))}
+            </div>
+            <span className="absolute right-6 rounded-full bg-black/50 px-2.5 py-1 text-xs font-medium text-white backdrop-blur-sm md:right-12" aria-live="polite">
+              {heroSlide + 1} / {slides.length}
+            </span>
           </div>
         )}
-        {photos.length > 1 && (<div className="md:hidden absolute bottom-6 right-4 z-20 rounded-full bg-black/50 px-2.5 py-1 text-xs font-medium text-white backdrop-blur-sm">{heroSlide + 1} / {photos.length}</div>)}
       </section>
 
-      {photos.length > 1 && (<div className="hidden md:block bg-white px-6 md:px-12 pt-4"><div ref={thumbsRef} className="relative flex gap-3 overflow-x-auto pb-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">{photos.map((photo, i) => (<button key={photo.id} type="button" aria-label={"Show photo " + (i + 1)} onClick={() => deskSwipeRef.current?.scrollTo({ left: i * (deskSwipeRef.current?.clientWidth ?? 0), behavior: "smooth" })} className={`relative shrink-0 w-28 h-20 overflow-hidden rounded-md transition-all ${i === deskSlide ? "ring-2 ring-brand-blue opacity-100" : "opacity-60 hover:opacity-100"}`}><img src={photo.url ?? undefined} alt="" loading="lazy" className="h-full w-full object-cover" /></button>))}</div></div>)}
-      {photos.length > 1 && (<div className="md:hidden bg-white px-3 pt-3"><div ref={mThumbsRef} className="relative flex gap-2 overflow-x-auto pb-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">{photos.map((photo, i) => (<button key={photo.id} type="button" aria-label={"Show photo " + (i + 1)} onClick={() => heroSwipeRef.current?.scrollTo({ left: i * (heroSwipeRef.current?.clientWidth ?? 0), behavior: "smooth" })} className={`relative shrink-0 w-20 h-14 overflow-hidden rounded-md transition-all ${i === heroSlide ? "ring-2 ring-brand-blue opacity-100" : "opacity-60"}`}><img src={photo.url ?? undefined} alt="" loading="lazy" className="h-full w-full object-cover" /></button>))}</div></div>)}
+      {slides.length > 1 && (
+        <div className="bg-white px-3 pt-3 md:px-12">
+          <div ref={mThumbsRef} className="flex gap-2 overflow-x-auto pb-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+            {slides.map((photo, i) => (
+              <button
+                key={photo.id}
+                type="button"
+                aria-label={"Show photo " + (i + 1)}
+                aria-current={i === heroSlide}
+                onClick={() => heroSwipeRef.current?.scrollTo({ left: i * (heroSwipeRef.current?.clientWidth ?? 0), behavior: "smooth" })}
+                className={"relative h-14 w-20 shrink-0 overflow-hidden rounded-md transition-all md:h-20 md:w-28 " + (i === heroSlide ? "opacity-100 ring-2 ring-brand-blue" : "opacity-60 hover:opacity-100")}
+              >
+                <img src={photo.url ?? undefined} alt="" loading="lazy" className="h-full w-full object-cover" />
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* 2 + 3. Description + property details */}
       <section className="bg-white px-6 md:pl-12 md:pr-12 py-16 md:py-20">
@@ -491,7 +484,7 @@ export default function PropertyDetailPage() {
               {property.title}
             </h2>
             <span className="inline-flex items-center rounded-full bg-[#F4EFE6] border border-green-600/20 px-4 py-1.5 font-bold text-base sm:text-lg text-green-600 whitespace-nowrap">
-              {formatPrice(property.price, property.currency)}
+              {formatPrice(property.price, property.currency)}{property.listing_type === "rent" && property.rental_period ? " / " + ({ daily: "day", monthly: "month", yearly: "year" } as Record<string, string>)[property.rental_period] : ""}
             </span>
           </div>
           {property.description ? (

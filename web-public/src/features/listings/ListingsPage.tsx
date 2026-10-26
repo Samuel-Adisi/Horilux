@@ -5,11 +5,10 @@ import type { PropertyFilters } from "./api/properties";
 import type { PropertyListItem } from "@/lib/types";
 import PropertyCard from "@/features/shared/PropertyCard";
 import SearchBar from "@/features/home/SearchBar";
-import LoadingSpinner from "@/components/shared/LoadingSpinner";
 import logo from "@/assets/logo.png";
 
 export default function ListingsPage() {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
 
   function handleReset() {
@@ -17,7 +16,8 @@ export default function ListingsPage() {
   }
 
   const filters = useMemo(() => {
-    const f: PropertyFilters = { ordering: "-published_at" };
+    const ord = searchParams.get("ordering") || "";
+    const f: PropertyFilters = { ordering: ["price", "-price"].includes(ord) ? ord : "-published_at" };
     const region = searchParams.get("region");
     if (region) f.region = region;
     const propertyType = searchParams.get("property_type");
@@ -118,7 +118,7 @@ export default function ListingsPage() {
           <h2 className="font-serif text-xl sm:text-2xl md:text-4xl tracking-[0.15em] uppercase text-brand-blue">
             Explore Our Properties
           </h2>
-          <p className="mt-4 text-neutral-500 text-sm">Please reset filters before starting a new search.</p>
+          <p className="mt-4 text-neutral-500 text-sm">Refine your search below, or sort the results.</p>
         </div>
         <div className="mt-10">
           <SearchBar key={searchParams.toString()} initialParams={searchParams} />
@@ -127,7 +127,37 @@ export default function ListingsPage() {
 
       {
         <section className="bg-cream pb-20">
-          {showInitialLoading && <LoadingSpinner />}
+          {showInitialLoading && (
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2" aria-busy="true" aria-label="Loading properties">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="skeleton aspect-[4/3] sm:aspect-[16/9]" />
+              ))}
+            </div>
+          )}
+
+          {!showInitialLoading && !isError && (
+            <div className="mx-auto mb-8 flex max-w-7xl flex-col gap-3 px-6 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-sm text-neutral-600" aria-live="polite">
+                {data?.count ?? 0} {data?.count === 1 ? "property" : "properties"} found
+              </p>
+              <label className="flex items-center gap-3 text-sm text-neutral-600">
+                Sort by
+                <select
+                  value={searchParams.get("ordering") || "-published_at"}
+                  onChange={(e) => {
+                    const n = new URLSearchParams(searchParams);
+                    n.set("ordering", e.target.value);
+                    setSearchParams(n);
+                  }}
+                  className="min-h-11 rounded-full border border-line bg-white px-4 text-sm text-neutral-800"
+                >
+                  <option value="-published_at">Newest first</option>
+                  <option value="price">Price: low to high</option>
+                  <option value="-price">Price: high to low</option>
+                </select>
+              </label>
+            </div>
+          )}
 
           {isError && (
             <p className="text-center text-neutral-500 px-6">Couldn&apos;t load properties right now.</p>

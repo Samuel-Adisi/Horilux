@@ -70,7 +70,7 @@ export default function ContactPage() {
                     <input
                       type="text"
                       required
-                      placeholder="Name*"
+                      placeholder="Name*" aria-label="Your name" autoComplete="name"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       className={inputClass}
@@ -78,7 +78,7 @@ export default function ContactPage() {
                     <input
                       type="email"
                       required
-                      placeholder="Email*"
+                      placeholder="Email*" aria-label="Your email" autoComplete="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       className={inputClass}
@@ -87,7 +87,7 @@ export default function ContactPage() {
 
                   <input
                     type="tel"
-                    placeholder="Phone number"
+                    placeholder="Phone number" aria-label="Your phone number" autoComplete="tel"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     className={inputClass}
@@ -95,7 +95,7 @@ export default function ContactPage() {
               </>
 
               <textarea
-                placeholder="Message"
+                placeholder="Message" aria-label="Your message"
                 rows={5}
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}

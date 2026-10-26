@@ -1,9 +1,15 @@
+export type RentalPeriod = "daily" | "monthly" | "yearly";
+
 export interface PropertyListItem {
   id: string;
   title: string;
   region: string;
+  /** Area name (e.g. East Legon). Not yet sent by the list endpoint; shown when present. */
+  location?: string;
   property_type: string;
   listing_type: "sale" | "rent";
+  /** Not yet sent by the list endpoint; the detail endpoint already sends it. */
+  rental_period?: RentalPeriod | null;
   price: string;
   currency: string;
   bedrooms: number | null;

@@ -1,258 +1,197 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
+import { ChevronDown, Heart, Menu, X } from "lucide-react";
 import logo from "@/assets/logo.png";
 import { useFavoritesCount } from "@/features/favorites/hooks/use-saved-properties";
 
+const PROPERTY_LINKS = [
+  { to: "/listings", label: "All Properties" },
+  { to: "/listings?listing_type=sale", label: "For Sale" },
+  { to: "/listings?listing_type=rent", label: "For Rent" },
+  { to: "/listings?property_type=residential", label: "Residential" },
+  { to: "/listings?property_type=commercial", label: "Commercial" },
+];
+
 export default function Header() {
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
   const favCount = useFavoritesCount();
-  const isHome = pathname === "/" || pathname.startsWith("/listings") || pathname === "/about" || pathname === "/favorites";
+  const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [propertiesOpen, setPropertiesOpen] = useState(false);
+  const [dropOpen, setDropOpen] = useState(false);
+  const dropRef = useRef<HTMLDivElement>(null);
 
-  const mobileNavLinks = [
-    { to: "/", label: "Home", end: true },
-    { to: "/about", label: "About", end: false },
-    { to: "/contact", label: "Contact", end: false },
-  ];
+  const overHero =
+    pathname === "/" || pathname.startsWith("/listings") || pathname === "/about" || pathname === "/favorites";
+  const onDark = overHero && !scrolled && !menuOpen;
 
-  const navLinkClass = ({ isActive }: { isActive: boolean }) =>
-    `relative inline-block pb-1 text-sm uppercase tracking-wide transition-colors group ${
-      isHome
-        ? isActive
-          ? "text-white"
-          : "text-white/75 hover:text-white"
-        : isActive
-        ? "text-brand-blue"
-        : "text-neutral-600 hover:text-brand-blue"
-    }`;
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 24);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
-  function NavUnderline({ isActive }: { isActive: boolean }) {
-    return (
-      <span
-        aria-hidden
-        className={`pointer-events-none absolute left-0 -bottom-0.5 h-px w-full origin-center transition-transform duration-300 ease-out ${
-          isActive ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"
-        } ${isHome ? "bg-white" : "bg-brand-blue"}`}
-      />
-    );
-  }
+  useEffect(() => {
+    setMenuOpen(false);
+    setDropOpen(false);
+  }, [pathname, search]);
+
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        setMenuOpen(false);
+        setDropOpen(false);
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  useEffect(() => {
+    document.body.style.overflow = menuOpen ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [menuOpen]);
+
+  const linkClass = ({ isActive }: { isActive: boolean }) =>
+    "relative inline-flex min-h-11 items-center text-[13px] font-medium uppercase tracking-[0.14em] transition-colors " +
+    (onDark
+      ? isActive ? "text-white" : "text-white/80 hover:text-white"
+      : isActive ? "text-brand-blue" : "text-neutral-600 hover:text-brand-blue");
+
+  const mobileLink = ({ isActive }: { isActive: boolean }) =>
+    "flex min-h-12 items-center rounded-xl px-4 text-[15px] font-medium uppercase tracking-[0.14em] transition-colors " +
+    (isActive ? "bg-sand text-brand-blue" : "text-brand-blue/90 hover:bg-sand");
+
+  const iconBtn = onDark ? "text-white" : "text-brand-blue";
 
   return (
     <header
       className={
-        isHome
-          ? "absolute top-0 left-0 w-full z-40 bg-transparent"
-          : "sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-neutral-200"
+        (overHero ? "fixed inset-x-0 top-0 " : "sticky top-0 ") +
+        "z-40 transition-[background-color,box-shadow,backdrop-filter] duration-300 " +
+        (onDark ? "bg-transparent" : "border-b border-line bg-white/90 shadow-sm backdrop-blur-md")
       }
     >
-      {isHome && (
+      {onDark && (
         <div
-          className="pointer-events-none absolute inset-x-0 top-0 h-40 -z-10"
-          style={{
-            backgroundImage:
-              "linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.25) 60%, rgba(0,0,0,0) 100%)",
-          }}
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-40"
+          style={{ backgroundImage: "linear-gradient(to bottom, rgba(0,0,0,0.55), rgba(0,0,0,0.2) 60%, rgba(0,0,0,0))" }}
         />
       )}
-      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 h-20 flex items-center justify-between gap-2">
-        <Link to="/" className="flex items-center gap-2 sm:gap-3 min-w-0">
-          <img
-            src={logo}
-            alt=""
-            className={`h-8 sm:h-10 w-auto object-contain shrink-0 ${isHome ? "" : "brightness-0"}`}
-          />
-          <div className="flex flex-col leading-tight min-w-0">
-            <span
-              className={`text-base sm:text-xl md:text-2xl font-serif tracking-tight whitespace-nowrap truncate ${
-                isHome ? "text-white" : "text-brand-blue"
-              }`}
-              style={{
-                display: "inline-block",
-                animation: "logo-spin-once 1.3s cubic-bezier(0.65, 0, 0.35, 1) both",
-                backfaceVisibility: "hidden",
-              }}
-            >
+
+      <div className="mx-auto flex h-20 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6">
+        <Link to="/" aria-label="Horilux Estates home" className="flex min-w-0 items-center gap-3">
+          <img src={logo} alt="" className={"h-9 w-auto shrink-0 object-contain sm:h-10 " + (onDark ? "" : "brightness-0")} />
+          <span className="flex min-w-0 flex-col leading-tight">
+            <span className={"truncate font-serif text-lg tracking-tight sm:text-2xl " + (onDark ? "text-white" : "text-brand-blue")}>
               Horilux Estates
             </span>
-            <span
-              className={`block text-[8px] sm:text-[10px] md:text-xs uppercase tracking-[0.1em] sm:tracking-[0.15em] whitespace-nowrap ${
-                isHome ? "text-white/70" : "text-brand-taupe"
-              }`}
-            >
+            <span className={"truncate text-[9px] uppercase tracking-[0.16em] sm:text-[11px] " + (onDark ? "text-white/75" : "text-brand-taupe")}>
               Live Better, Invest Smart
             </span>
-          </div>
+          </span>
         </Link>
 
-        <nav className="hidden md:flex items-center gap-8">
-          <NavLink to="/" end className={navLinkClass}>
-            {({ isActive }) => (
-              <>
-                Home
-                <NavUnderline isActive={isActive} />
-              </>
-            )}
-          </NavLink>
-          <div className="relative" onMouseEnter={() => setPropertiesOpen(true)} onMouseLeave={() => setPropertiesOpen(false)}>
-            <NavLink to="/listings" className={navLinkClass}>
-              {({ isActive }) => (
-                <>
-                  Properties
-                  <NavUnderline isActive={isActive || propertiesOpen} />
-                </>
-              )}
-            </NavLink>
-            <div
-              className={`absolute top-full left-0 pt-3 w-48 z-50 transition-all duration-200 ease-out ${
-                propertiesOpen ? "opacity-100 translate-y-0 visible" : "opacity-0 -translate-y-1 invisible pointer-events-none"
-              }`}
+        <nav aria-label="Main" className="hidden items-center gap-8 md:flex">
+          <NavLink to="/" end className={linkClass}>Home</NavLink>
+
+          <div
+            ref={dropRef}
+            className="relative flex items-center"
+            onMouseEnter={() => setDropOpen(true)}
+            onMouseLeave={() => setDropOpen(false)}
+            onBlur={(e) => {
+              if (!dropRef.current?.contains(e.relatedTarget as Node)) setDropOpen(false);
+            }}
+          >
+            <NavLink to="/listings" end={false} className={linkClass}>Properties</NavLink>
+            <button
+              type="button"
+              aria-label="Properties menu"
+              aria-haspopup="true"
+              aria-expanded={dropOpen}
+              onClick={() => setDropOpen((v) => !v)}
+              className={"ml-1 flex h-11 w-8 items-center justify-center " + iconBtn}
             >
-              <div className="bg-white rounded-md shadow-lg border border-neutral-100 py-2">
-                <Link to="/listings" onClick={() => setPropertiesOpen(false)} className="block px-4 py-2 text-sm text-neutral-700 hover:bg-[#F4EFE6] hover:text-brand-blue transition-colors">All Properties</Link>
-                <Link to="/listings?listing_type=rent" onClick={() => setPropertiesOpen(false)} className="block px-4 py-2 text-sm text-neutral-700 hover:bg-[#F4EFE6] hover:text-brand-blue transition-colors">For Rent</Link>
-                <Link to="/listings?listing_type=sale" onClick={() => setPropertiesOpen(false)} className="block px-4 py-2 text-sm text-neutral-700 hover:bg-[#F4EFE6] hover:text-brand-blue transition-colors">For Sale</Link>
+              <ChevronDown className={"h-4 w-4 transition-transform " + (dropOpen ? "rotate-180" : "")} aria-hidden />
+            </button>
+            {dropOpen && (
+              <div className="absolute left-0 top-full z-50 w-56 pt-2 animate-menu-in">
+                <ul className="overflow-hidden rounded-2xl border border-line bg-white py-2 shadow-xl">
+                  {PROPERTY_LINKS.map((l) => (
+                    <li key={l.to}>
+                      <Link
+                        to={l.to}
+                        onClick={() => setDropOpen(false)}
+                        className="flex min-h-11 items-center px-5 text-sm text-neutral-700 transition-colors hover:bg-sand hover:text-brand-blue"
+                      >
+                        {l.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
               </div>
-            </div>
+            )}
           </div>
-          <NavLink to="/about" className={navLinkClass}>
-            {({ isActive }) => (
-              <>
-                About
-                <NavUnderline isActive={isActive} />
-              </>
-            )}
-          </NavLink>
-          <NavLink to="/contact" className={navLinkClass}>
-            {({ isActive }) => (
-              <>
-                Contact
-                <NavUnderline isActive={isActive} />
-              </>
-            )}
-          </NavLink>
+
+          <NavLink to="/about" className={linkClass}>About</NavLink>
+          <NavLink to="/contact" className={linkClass}>Contact</NavLink>
         </nav>
 
-        <div className="flex items-center gap-3 md:gap-4 shrink-0">
+        <div className="flex shrink-0 items-center gap-1">
           <Link
             to="/favorites"
-            className={`hidden md:inline-block text-sm uppercase tracking-wide transition-colors ${
-              isHome ? "text-white/75 hover:text-white" : "text-neutral-600 hover:text-brand-blue"
-            }`}
+            aria-label={"Favorites" + (favCount > 0 ? ", " + favCount + " saved" : "")}
+            className={"relative flex h-11 w-11 items-center justify-center " + iconBtn}
           >
-            Favorites{favCount > 0 && <span className="ml-1.5 inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-pink-500 px-1.5 text-[11px] font-semibold leading-none text-white align-middle">{favCount > 99 ? "99+" : favCount}</span>}
-          </Link>
-          <Link
-            to="/favorites"
-            aria-label="Favorites"
-            className={"relative md:hidden p-1 transition-colors " + (isHome ? "text-white" : "text-brand-blue")}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6">
-              <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
-            </svg>
-            {favCount > 0 && <span className="absolute -top-1 -right-1.5 inline-flex h-4 min-w-[16px] items-center justify-center rounded-full bg-pink-500 px-1 text-[10px] font-semibold leading-none text-white">{favCount > 99 ? "99+" : favCount}</span>}
+            <Heart className="h-6 w-6" strokeWidth={1.75} aria-hidden />
+            {favCount > 0 && (
+              <span
+                className={
+                  "absolute right-0.5 top-1 inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full px-1 text-[10px] font-bold leading-none " +
+                  (onDark ? "bg-white text-brand-blue" : "bg-brand-blue text-white")
+                }
+              >
+                {favCount > 99 ? "99+" : favCount}
+              </span>
+            )}
           </Link>
           <button
             type="button"
-            onClick={() => {
-              setMenuOpen((v) => !v);
-              setPropertiesOpen(false);
-            }}
+            onClick={() => setMenuOpen((v) => !v)}
             aria-label={menuOpen ? "Close menu" : "Open menu"}
             aria-expanded={menuOpen}
-            className={`md:hidden flex flex-col justify-center items-center gap-1.5 w-9 h-9 shrink-0 ${
-              isHome ? "text-white" : "text-brand-blue"
-            }`}
+            aria-controls="mobile-menu"
+            className={"flex h-11 w-11 items-center justify-center md:hidden " + iconBtn}
           >
-            <span
-              className={`block h-0.5 w-6 bg-current transition-transform ${
-                menuOpen ? "translate-y-2 rotate-45" : ""
-              }`}
-            />
-            <span
-              className={`block h-0.5 w-6 bg-current transition-opacity ${
-                menuOpen ? "opacity-0" : "opacity-100"
-              }`}
-            />
-            <span
-              className={`block h-0.5 w-6 bg-current transition-transform ${
-                menuOpen ? "-translate-y-2 -rotate-45" : ""
-              }`}
-            />
+            {menuOpen ? <X className="h-6 w-6" aria-hidden /> : <Menu className="h-6 w-6" aria-hidden />}
           </button>
         </div>
       </div>
 
       {menuOpen && (
-        <div className="md:hidden absolute top-full left-0 w-full bg-white shadow-2xl">
-          <nav className="flex flex-col px-8 py-2">
-            <NavLink
-              to="/"
-              end
-              onClick={() => setMenuOpen(false)}
-              className={({ isActive }) =>
-                `-mx-4 px-4 py-5 text-[15px] uppercase tracking-[0.15em] font-medium rounded-md transition-colors ${
-                  isActive ? "bg-[#F4EFE6] text-brand-blue" : "text-brand-blue/90 hover:bg-[#F4EFE6]"
-                }`
-              }
-            >
-              Home
-            </NavLink>
-
-            <button
-              type="button"
-              onClick={() => setPropertiesOpen((v) => !v)}
-              aria-expanded={propertiesOpen}
-              className="-mx-4 px-4 py-5 flex items-center justify-between text-[15px] uppercase tracking-[0.15em] font-medium rounded-md transition-colors text-brand-blue/90 hover:bg-[#F4EFE6]"
-            >
-              Properties
-              <svg
-                className={`h-4 w-4 transition-transform ${propertiesOpen ? "rotate-180" : ""}`}
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
-            {propertiesOpen && (
-              <div className="flex flex-col pl-4 pb-2">
-                <Link to="/listings" onClick={() => setMenuOpen(false)} className="px-4 py-3 text-sm uppercase tracking-[0.1em] text-brand-blue/70 hover:text-brand-blue">All Properties</Link>
-                <Link to="/listings?listing_type=rent" onClick={() => setMenuOpen(false)} className="px-4 py-3 text-sm uppercase tracking-[0.1em] text-brand-blue/70 hover:text-brand-blue">For Rent</Link>
-                <Link to="/listings?listing_type=sale" onClick={() => setMenuOpen(false)} className="px-4 py-3 text-sm uppercase tracking-[0.1em] text-brand-blue/70 hover:text-brand-blue">For Sale</Link>
-              </div>
-            )}
-
-            {mobileNavLinks.slice(1).map((link) => (
-              <NavLink
-                key={link.to}
-                to={link.to}
-                end={link.end}
-                onClick={() => setMenuOpen(false)}
-                className={({ isActive }) =>
-                  `-mx-4 px-4 py-5 text-[15px] uppercase tracking-[0.15em] font-medium rounded-md transition-colors ${
-                    isActive ? "bg-[#F4EFE6] text-brand-blue" : "text-brand-blue/90 hover:bg-[#F4EFE6]"
-                  }`
-                }
-              >
-                {link.label}
-              </NavLink>
-            ))}
-            <div className="my-1 border-t border-neutral-100" />
-            <NavLink
-              to="/favorites"
-              onClick={() => setMenuOpen(false)}
-              className={({ isActive }) =>
-                `-mx-4 px-4 py-5 text-[15px] uppercase tracking-[0.15em] font-medium rounded-md transition-colors ${
-                  isActive ? "bg-[#F4EFE6] text-brand-blue" : "text-brand-blue/90 hover:bg-[#F4EFE6]"
-                }`
-              }
-            >
-              Favorites{favCount > 0 && <span className="ml-2 inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-pink-500 px-1.5 text-[11px] font-semibold leading-none text-white align-middle">{favCount > 99 ? "99+" : favCount}</span>}
-            </NavLink>
-          </nav>
-        </div>
+        <nav
+          id="mobile-menu"
+          aria-label="Mobile"
+          className="absolute left-0 top-full max-h-[calc(100dvh-5rem)] w-full overflow-y-auto border-t border-line bg-white px-4 pb-6 pt-3 shadow-2xl animate-menu-in md:hidden"
+        >
+          <NavLink to="/" end className={mobileLink}>Home</NavLink>
+          <p className="px-4 pb-1 pt-4 text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-taupe">Properties</p>
+          {PROPERTY_LINKS.map((l) => (
+            <Link key={l.to} to={l.to} className="flex min-h-12 items-center rounded-xl px-4 text-sm uppercase tracking-[0.12em] text-brand-blue/80 hover:bg-sand">
+              {l.label}
+            </Link>
+          ))}
+          <div className="my-3 border-t border-line" />
+          <NavLink to="/about" className={mobileLink}>About</NavLink>
+          <NavLink to="/contact" className={mobileLink}>Contact</NavLink>
+          <NavLink to="/favorites" className={mobileLink}>
+            Favorites{favCount > 0 ? " (" + favCount + ")" : ""}
+          </NavLink>
+        </nav>
       )}
     </header>
   );
