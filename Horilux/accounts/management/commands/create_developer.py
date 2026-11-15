@@ -33,9 +33,9 @@ class Command(BaseCommand):
         if user is not None and not opts["convert"] and not user.user_roles.filter(role=role).exists():
             raise CommandError("That email belongs to an existing non-developer account. Use a new email.")
 
-        pw = getpass("Password (12+ chars): ")
-        if len(pw) < 12 or pw != getpass("Repeat password: "):
-            raise CommandError("Passwords must match and be at least 12 characters.")
+        pw = getpass("Password (8+ chars): ")
+        if len(pw) < 8 or pw != getpass("Repeat password: "):
+            raise CommandError("Passwords must match and be at least 8 characters.")
 
         if user is None:
             user = User.objects.create_user(
