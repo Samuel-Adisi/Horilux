@@ -17,44 +17,53 @@ accounts data migration, so it only takes model classes as arguments (works
 with historical models).
 """
 
+import copy
+
+_CEO = {
+    "property": {"view", "create", "edit", "delete", "approve", "publish", "export"},
+    "property_verification": {"view", "edit", "approve"},
+    "lead": {"view", "create", "edit", "assign", "delete", "export"},
+    "client": {"view", "create", "edit", "delete", "export"},
+    "interaction": {"view", "export"},
+    "lead_source_stats": {"view", "export"},
+    "viewing": {"view", "edit", "export"},
+    "followup": {"view", "edit", "export"},
+    "transaction": {"view", "create", "edit", "delete", "approve", "export"},
+    "payment_commission": {"view", "export"},
+    "marketing_campaign": {"view", "export"},
+    "user_management": {"view", "create", "edit", "delete", "assign"},
+    "report_listing": {"view", "export"},
+    "report_sales": {"view", "export"},
+    "report_marketing": {"view", "export"},
+    "report_finance": {"view", "export"},
+    "report_operations": {"view", "export"},
+    "audit_log": {"view"},
+    "company_settings": {"view", "edit"},
+    "task": {"view", "create", "edit", "delete"},
+}
+
+# Operations = CEO in everything except managing staff.
+_OPS = copy.deepcopy(_CEO)
+del _OPS["user_management"]
+
 RBAC_MATRIX = {
-    "CEO": {
-        "property": {"view", "create", "edit", "delete", "approve", "publish", "export"},
-        "property_verification": {"view", "edit", "approve"},
-        "lead": {"view", "edit", "assign", "delete", "export"},
-        "client": {"view", "create", "edit", "delete", "export"},
-        "interaction": {"view", "export"},
-        "lead_source_stats": {"view", "export"},
-        "viewing": {"view", "export"},
-        "followup": {"view", "export"},
-        "transaction": {"view", "create", "edit", "delete", "approve", "export"},
-        "payment_commission": {"view", "export"},
-        "marketing_campaign": {"view", "export"},
-        "user_management": {"view", "create", "edit", "delete", "assign"},
-        "report_listing": {"view", "export"},
-        "report_sales": {"view", "export"},
-        "report_marketing": {"view", "export"},
-        "report_finance": {"view", "export"},
-        "report_operations": {"view", "export"},
-        "audit_log": {"view"},
-        "company_settings": {"view", "edit"},
-        "task": {"view", "create", "edit", "delete"},
-    },
+    "CEO": _CEO,
+    "Operations": _OPS,
     "Listing": {
-        "property": {"view", "create", "edit", "delete"},
+        "property": {"view", "create", "edit"},
         "property_verification": {"view", "create", "edit"},
         "lead": {"view", "create", "edit", "assign"},
         "report_listing": {"view"},
         "task": {"view", "edit"},
     },
     "Sales": {
-        "property": {"view", "create", "edit", "delete"},
+        "property": {"view", "create", "edit"},
         "lead": {"view", "create", "edit", "assign"},
         "client": {"view", "create", "edit"},
         "interaction": {"view", "create", "edit"},
         "viewing": {"view", "create", "edit"},
         "followup": {"view", "create", "edit"},
-        "transaction": {"view", "create", "edit", "delete"},
+        "transaction": {"view", "create", "edit"},
         "report_sales": {"view"},
         "task": {"view", "edit"},
     },
@@ -64,32 +73,18 @@ RBAC_MATRIX = {
         # (see properties.views.PropertyViewSet.get_queryset).
         "property": {"view"},
         "marketing_campaign": {"view", "create", "edit", "publish"},
+        "lead_source_stats": {"view"},
         "report_marketing": {"view"},
         "task": {"view", "edit"},
     },
     "Finance": {
-        "property": {"view", "create", "edit", "delete"},
+        "property": {"view"},
         "lead": {"view", "create", "edit", "assign"},
         "client": {"view"},
-        "transaction": {"view", "create", "edit", "delete"},
+        "transaction": {"view", "create", "edit"},
         "payment_commission": {"view", "create", "edit", "approve"},
         "report_finance": {"view", "export"},
         "task": {"view", "edit"},
-    },
-    "Operations": {
-        "property": {"view", "edit", "approve", "publish"},
-        "property_verification": {"view"},
-        "lead": {"view", "edit", "assign", "delete"},
-        "client": {"view", "create", "edit", "delete"},
-        "interaction": {"view"},
-        "lead_source_stats": {"view"},
-        "viewing": {"view", "edit"},
-        "followup": {"view", "edit"},
-        "transaction": {"view", "create", "edit", "delete"},
-        "marketing_campaign": {"view"},
-        "report_operations": {"view", "export"},
-        "audit_log": {"view"},
-        "task": {"view", "create", "edit", "delete"},
     },
 }
 
@@ -201,3 +196,8 @@ SCOPE_OVERRIDES[("Finance", "lead")] = "assigned"
 
 # Every agent role browses and manages the whole property catalogue.
 SCOPE_OVERRIDES[("Listing", "property")] = "company"
+# Agents see the whole catalogue but only edit listings they created.
+SCOPE_OVERRIDES[("Listing", "property", "edit")] = "assigned"
+SCOPE_OVERRIDES[("Sales", "property", "edit")] = "assigned"
+# Marketing reads aggregate lead-source stats company-wide.
+SCOPE_OVERRIDES[("Marketing", "lead_source_stats")] = "company"
