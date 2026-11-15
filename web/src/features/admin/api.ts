@@ -61,6 +61,16 @@ export function useSaveStaff() {
   });
 }
 
+export function useDeleteStaff() {
+  const invalidate = useInvalidateStaff();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      await apiClient.post(`/accounts/staff/${id}/delete-permanently/`);
+    },
+    onSuccess: invalidate,
+  });
+}
+
 export function useSetStaffActive() {
   const invalidate = useInvalidateStaff();
   return useMutation({

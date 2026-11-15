@@ -45,7 +45,7 @@ class StaffViewSet(viewsets.ModelViewSet):
     rbac_action_map = {
         "list": "view", "retrieve": "view", "create": "create",
         "update": "edit", "partial_update": "edit", "destroy": "delete",
-        "deactivate": "delete", "reactivate": "assign",
+        "deactivate": "delete", "reactivate": "assign", "delete_permanently": "delete",
     }
     queryset = (
         User.objects.all()
@@ -85,6 +85,15 @@ class StaffViewSet(viewsets.ModelViewSet):
         user.is_active = True
         user.save()
         return Response(UserSerializer(user).data)
+
+
+    @action(detail=True, methods=["post"], url_path="delete-permanently")
+    def delete_permanently(self, request, pk=None):
+        user = self.get_object()
+        if user.pk == request.user.pk:
+            return Response({"detail": "You cannot delete your own account."}, status=status.HTTP_400_BAD_REQUEST)
+        user.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class DepartmentListView(generics.ListAPIView):

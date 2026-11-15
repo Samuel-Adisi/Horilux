@@ -13,7 +13,7 @@ import { useDocumentTitle } from "@/hooks/use-document-title";
 import { getErrorMessage, getFieldErrors } from "@/lib/api-client";
 import { formatDate } from "@/lib/format";
 import { toast } from "@/lib/toast";
-import { useDepartments, useRoles, useSaveStaff, useSetStaffActive, useStaff, type StaffInput } from "./api";
+import { useDeleteStaff, useDepartments, useRoles, useSaveStaff, useSetStaffActive, useStaff, type StaffInput } from "./api";
 
 export function StaffPage() {
   useDocumentTitle("Staff");
@@ -116,7 +116,9 @@ function StaffDrawer({ user, onClose }: { user?: User; onClose: () => void }) {
   const roles = useRoles();
   const save = useSaveStaff();
   const setActive = useSetStaffActive();
+  const del = useDeleteStaff();
   const [confirmDeactivate, setConfirmDeactivate] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const canEdit = user ? can("user_management", "edit") : can("user_management", "create");
   const [f, setF] = useState({
     email: user?.email ?? "",
@@ -175,6 +177,19 @@ function StaffDrawer({ user, onClose }: { user?: User; onClose: () => void }) {
     }
   }
 
+  async function doDelete() {
+    if (!user) return;
+    try {
+      await del.mutateAsync(user.id);
+      toast.success("Staff member deleted", user.full_name);
+      onClose();
+    } catch (err) {
+      toast.error("Couldn't delete", getErrorMessage(err));
+    } finally {
+      setConfirmDelete(false);
+    }
+  }
+
   const isSelf = user?.id === me?.id;
 
   return (
@@ -188,6 +203,11 @@ function StaffDrawer({ user, onClose }: { user?: User; onClose: () => void }) {
           {user && !isSelf && can("user_management", "delete") && (
             <Button variant={user.is_active ? "danger" : "secondary"} className="mr-auto" onClick={() => (user.is_active ? setConfirmDeactivate(true) : toggleActive())} loading={setActive.isPending}>
               {user.is_active ? "Deactivate" : "Reactivate"}
+            </Button>
+          )}
+          {user && !isSelf && can("user_management", "delete") && (
+            <Button variant="danger" onClick={() => setConfirmDelete(true)} loading={del.isPending}>
+              Delete permanently
             </Button>
           )}
           <Button onClick={onClose}>Cancel</Button>
@@ -263,6 +283,16 @@ function StaffDrawer({ user, onClose }: { user?: User; onClose: () => void }) {
         confirmLabel="Deactivate"
         tone="danger"
         loading={setActive.isPending}
+      />
+      <ConfirmDialog
+        open={confirmDelete}
+        onClose={() => setConfirmDelete(false)}
+        onConfirm={doDelete}
+        title="Delete this account permanently?"
+        description="This removes the user from the system for good and cannot be undone. Leads, clients, properties and tasks assigned to them become unassigned, and their name disappears from past activity and transaction history. If you only want to stop them signing in, use Deactivate instead."
+        confirmLabel="Delete permanently"
+        tone="danger"
+        loading={del.isPending}
       />
     </Drawer>
   );
