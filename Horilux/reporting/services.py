@@ -541,7 +541,8 @@ def staff_directory_report():
     from accounts.models import User
 
     users = (
-        User.objects.select_related("department")
+        User.objects.exclude(user_roles__role__name="Developer")
+        .select_related("department")
         .prefetch_related("user_roles__role")
         .order_by("first_name", "last_name")
     )

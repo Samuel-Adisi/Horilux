@@ -3,6 +3,7 @@ URL configuration for Horilux project.
 """
 from django.contrib import admin
 from django.urls import path, include
+from accounts.system import SystemStatusView
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
@@ -18,6 +19,7 @@ urlpatterns = [
     path('api/v1/auth/logout/', TokenBlacklistView.as_view(), name='token_blacklist'),
 
     # App routers — each app should expose urlpatterns/router in its urls.py
+    path('api/v1/system/status/', SystemStatusView.as_view()),
     path('api/v1/', include('accounts.urls')),
     path('api/v1/', include('properties.urls')),
     path('api/v1/', include('crm.urls')),

@@ -69,7 +69,7 @@ class StaffWriteSerializer(serializers.ModelSerializer):
     """
     password = serializers.CharField(write_only=True, required=False, allow_blank=True)
     role = serializers.PrimaryKeyRelatedField(
-        queryset=Role.objects.all(), write_only=True, required=False, allow_null=True
+        queryset=Role.objects.exclude(name="Developer"), write_only=True, required=False, allow_null=True
     )
     department = serializers.PrimaryKeyRelatedField(
         queryset=Department.objects.all(), required=False, allow_null=True

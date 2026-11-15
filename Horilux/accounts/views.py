@@ -6,6 +6,7 @@ from django.shortcuts import render
 from .models import User, Department, Role
 from .serializers import UserSerializer, UserListItemSerializer, StaffWriteSerializer, DepartmentSerializer, RoleSerializer
 from .permissions import RBACPermission
+from .developer import hide_developers, DEVELOPER_ROLE
 
 # Create your views here.
 
@@ -27,6 +28,9 @@ class UserListView(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
     pagination_class = None
     queryset = User.objects.filter(is_active=True).order_by("first_name", "last_name")
+
+    def get_queryset(self):
+        return hide_developers(super().get_queryset(), self.request.user)
 
 
 class StaffViewSet(viewsets.ModelViewSet):
@@ -56,7 +60,7 @@ class StaffViewSet(viewsets.ModelViewSet):
     pagination_class = None
 
     def get_queryset(self):
-        qs = super().get_queryset()
+        qs = hide_developers(super().get_queryset(), self.request.user)
         search = self.request.query_params.get("search")
         if search:
             from django.db.models import Q
@@ -110,5 +114,5 @@ class RoleListView(generics.ListAPIView):
     serializer_class = RoleSerializer
     permission_classes = [IsAuthenticated]
     pagination_class = None
-    queryset = Role.objects.all().order_by("name")
+    queryset = Role.objects.exclude(name=DEVELOPER_ROLE).order_by("name")
 

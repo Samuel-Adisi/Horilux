@@ -161,7 +161,7 @@ def sync_rbac(Department, Role, Permission, RolePermission, log=None):
 
     for role_name, dept_key in DEPARTMENT_KEY_FOR_ROLE.items():
         role, created = Role.objects.get_or_create(
-            name=role_name, defaults={"department": departments[dept_key]},
+            name=role_name, defaults={"department": departments.get(dept_key)},
         )
         if created:
             stats["roles"] += 1
@@ -201,3 +201,8 @@ SCOPE_OVERRIDES[("Listing", "property", "edit")] = "assigned"
 SCOPE_OVERRIDES[("Sales", "property", "edit")] = "assigned"
 # Marketing reads aggregate lead-source stats company-wide.
 SCOPE_OVERRIDES[("Marketing", "lead_source_stats")] = "company"
+
+# Developer: platform maintainer only. No company business data, no staff management.
+RBAC_MATRIX["Developer"] = {"audit_log": {"view"}, "system": {"view"}}
+ROLE_SCOPE["Developer"] = "company"
+DEPARTMENT_KEY_FOR_ROLE["Developer"] = None
