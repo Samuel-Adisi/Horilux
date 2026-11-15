@@ -24,7 +24,8 @@ export function ApprovalsPage() {
   const navigate = useNavigate();
   const can = useCan();
   const { values, page, set } = useUrlState(["queue"] as const);
-  const queue = QUEUES.find((q) => q.value === values.queue) ?? QUEUES[0];
+  const visibleQueues = QUEUES.filter((q) => q.value !== "commission" || can("property", "approve"));
+  const queue = visibleQueues.find((q) => q.value === values.queue) ?? visibleQueues[0];
 
   const counts = {
     pending_verification: useProperties({ status: "pending_verification" }),
@@ -57,8 +58,8 @@ export function ApprovalsPage() {
         <div className="border-b border-line px-4 py-3">
           <Segmented
             value={queue.value}
-            onChange={(v) => set({ queue: v === QUEUES[0].value ? null : v })}
-            options={QUEUES.map((q) => ({ value: q.value, label: q.label, count: counts[q.value].data?.count }))}
+            onChange={(v) => set({ queue: v === visibleQueues[0].value ? null : v })}
+            options={visibleQueues.map((q) => ({ value: q.value, label: q.label, count: counts[q.value].data?.count }))}
           />
         </div>
 
