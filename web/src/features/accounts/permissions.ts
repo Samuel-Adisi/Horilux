@@ -70,13 +70,13 @@ const ROLE_GRANTS: Record<string, Grants> = {
   Listing: {
     property: ["view", "create", "edit", "approve"],
     property_verification: VCE,
-    lead: V,
+    lead: ["view", "edit"],
     report_listing: V,
     task: ["view", "edit"],
   },
   Sales: {
     property: V,
-    lead: ["view", "create", "edit", "assign"],
+    lead: ["view", "create", "edit"],
     client: VCE,
     interaction: VCE,
     viewing: VCE,

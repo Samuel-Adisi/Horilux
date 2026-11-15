@@ -326,7 +326,7 @@ function LeadView({ lead }: { lead: Lead }) {
           </>
         }
       >
-        <Field label="Sales agent">{(p) => <UserPicker {...p} value={assignee} onChange={setAssignee} departments={["sales"]} />}</Field>
+        <Field label="Agent">{(p) => <UserPicker {...p} value={assignee} onChange={setAssignee} />}</Field>
       </Dialog>
     </Page>
   );

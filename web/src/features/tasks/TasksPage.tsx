@@ -71,7 +71,7 @@ export function TasksPage() {
           )
         }
       />
-      <Panel flush>
+      <Panel flush allowOverflow>
         <div className="border-b border-line px-4 py-3">
           <Segmented
             value={status}

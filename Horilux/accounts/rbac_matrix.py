@@ -43,13 +43,13 @@ RBAC_MATRIX = {
     "Listing": {
         "property": {"view", "create", "edit", "approve"},
         "property_verification": {"view", "create", "edit"},
-        "lead": {"view"},
+        "lead": {"view", "edit"},
         "report_listing": {"view"},
         "task": {"view", "edit"},
     },
     "Sales": {
         "property": {"view"},
-        "lead": {"view", "create", "edit", "assign"},
+        "lead": {"view", "create", "edit"},
         "client": {"view", "create", "edit"},
         "interaction": {"view", "create", "edit"},
         "viewing": {"view", "create", "edit"},
