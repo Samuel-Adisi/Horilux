@@ -13,11 +13,11 @@ class PublicPropertyListSerializer(serializers.ModelSerializer):
         fields = [
             "id", "title", "region", "property_type", "listing_type", "price", "currency",
             "bedrooms", "bathrooms", "building_size", "land_size", "status", "cover_image",
-            "published_at",
+            "published_at", "location", "rental_period",
         ]
 
     def get_cover_image(self, obj):
-        media_list = list(obj.media.all()) if hasattr(obj, "media") else []
+        media_list = [m for m in obj.media.all() if m.media_type == "photo"] if hasattr(obj, "media") else []
         first = media_list[0] if media_list else None
         if first and first.file:
             request = self.context.get("request")
@@ -30,7 +30,12 @@ class PublicPropertyDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Property
-        fields = "__all__"
+        fields = [
+            "id", "title", "property_type", "listing_type", "price", "currency",
+            "location", "region", "address", "bedrooms", "bathrooms", "land_size",
+            "building_size", "amenities", "rental_period", "description", "status",
+            "published_at", "media",
+        ]
 
     def get_media(self, obj):
         request = self.context.get("request")

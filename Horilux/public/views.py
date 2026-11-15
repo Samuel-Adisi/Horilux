@@ -36,8 +36,8 @@ class PublicPropertyViewSet(viewsets.ReadOnlyModelViewSet):
     authentication_classes = []
     pagination_class = PublicPropertyPagination
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ["region", "property_type", "listing_type", "bedrooms", "bathrooms"]
-    search_fields = ["title", "region", "description"]
+    filterset_fields = ["region", "property_type", "listing_type"]
+    search_fields = ["title", "region", "location", "description"]
     ordering_fields = ["price", "published_at", "bedrooms", "building_size"]
     ordering = ["-published_at"]
 
@@ -52,6 +52,10 @@ class PublicPropertyViewSet(viewsets.ReadOnlyModelViewSet):
             qs = qs.filter(price__gte=min_price)
         if max_price:
             qs = qs.filter(price__lte=max_price)
+        for param, lookup in (("bedrooms", "bedrooms__gte"), ("bathrooms", "bathrooms__gte")):
+            raw = params.get(param)
+            if raw and raw.isdigit():
+                qs = qs.filter(**{lookup: int(raw)})
         return qs
 
     def get_serializer_class(self):
