@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from "react";
-import { Link, useParams } from "react-router-dom";
-import { ArrowRight, Check, Plus } from "lucide-react";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { ArrowRight, Check, Plus, Trash2 } from "lucide-react";
 import { Page, PageHeader } from "@/components/ui/page";
 import { Button } from "@/components/ui/button";
 import { DescriptionList, ErrorState, Meter, Panel, Skeleton, Stat, StatStrip, Tag } from "@/components/ui/display";
@@ -14,7 +14,7 @@ import { getErrorMessage } from "@/lib/api-client";
 import { formatDate, formatMoney, humanize, todayISO } from "@/lib/format";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
-import { TRANSACTION_STAGES, TRANSACTION_STATUS_LABEL, useAdvanceTransaction, useRecordPayment, useTransaction, type TransactionDetail } from "../api";
+import { TRANSACTION_STAGES, TRANSACTION_STATUS_LABEL, useAdvanceTransaction, useDeleteTransaction, useRecordPayment, useTransaction, type TransactionDetail } from "../api";
 
 const STAGE_HINT: Record<string, string> = {
   offer: "Offer received from the client.",
@@ -72,6 +72,9 @@ function Stages({ status }: { status: string }) {
 function TransactionView({ t }: { t: TransactionDetail }) {
   const can = useCan();
   const advance = useAdvanceTransaction(t.id);
+  const del = useDeleteTransaction(t.id);
+  const navigate = useNavigate();
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const [confirmAdvance, setConfirmAdvance] = useState(false);
   const [paying, setPaying] = useState(false);
   const idx = TRANSACTION_STAGES.indexOf(t.status);
@@ -80,6 +83,18 @@ function TransactionView({ t }: { t: TransactionDetail }) {
   const price = Number(t.price);
   const received = Number(t.amount_received);
   const paidPct = price > 0 ? Math.min(100, (received / price) * 100) : 0;
+
+  async function doDelete() {
+    try {
+      await del.mutateAsync();
+      toast.success("Transaction deleted");
+      navigate("/transactions");
+    } catch (err) {
+      toast.error("Couldn't delete the transaction", getErrorMessage(err));
+    } finally {
+      setConfirmDelete(false);
+    }
+  }
 
   async function doAdvance() {
     try {
@@ -119,6 +134,11 @@ function TransactionView({ t }: { t: TransactionDetail }) {
               {next && (
                 <Button variant="primary" icon={<ArrowRight />} onClick={() => setConfirmAdvance(true)}>
                   Move to {TRANSACTION_STATUS_LABEL[next]}
+                </Button>
+              )}
+              {can("transaction", "delete") && (
+                <Button variant="danger" icon={<Trash2 />} onClick={() => setConfirmDelete(true)}>
+                  Delete
                 </Button>
               )}
             </>
@@ -230,6 +250,16 @@ function TransactionView({ t }: { t: TransactionDetail }) {
         }
         confirmLabel="Move stage"
         loading={advance.isPending}
+      />
+      <ConfirmDialog
+        open={confirmDelete}
+        onClose={() => setConfirmDelete(false)}
+        onConfirm={doDelete}
+        title="Delete this transaction?"
+        description="This removes the transaction together with its payments and commission record, and cannot be undone. The property, the client and the lead are not deleted."
+        confirmLabel="Delete transaction"
+        tone="danger"
+        loading={del.isPending}
       />
       {paying && <PaymentDialog t={t} onClose={() => setPaying(false)} />}
     </Page>

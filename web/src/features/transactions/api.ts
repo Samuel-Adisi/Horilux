@@ -152,6 +152,16 @@ export function useCreateTransaction() {
   });
 }
 
+export function useDeleteTransaction(id: string) {
+  const invalidate = useInvalidate();
+  return useMutation({
+    mutationFn: async () => {
+      await apiClient.delete(`/transactions/${id}/`);
+    },
+    onSuccess: () => invalidate(),
+  });
+}
+
 export function useAdvanceTransaction(id: string) {
   const invalidate = useInvalidate();
   return useMutation({
