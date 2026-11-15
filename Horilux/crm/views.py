@@ -128,7 +128,7 @@ class LeadViewSet(viewsets.ModelViewSet):
         if hasattr(lead, "client"):
             return Response(ClientSerializer(lead.client).data)
 
-        if lead.status not in [Lead.Status.QUALIFIED, Lead.Status.PROPERTY_MATCHED]:
+        if lead.status not in [Lead.Status.QUALIFIED, Lead.Status.PROPERTY_MATCHED, Lead.Status.VIEWING, Lead.Status.NEGOTIATION]:
             raise ValidationError(f"Cannot convert a lead in status '{lead.status}' to a client.")
 
         client = Client.objects.create(
