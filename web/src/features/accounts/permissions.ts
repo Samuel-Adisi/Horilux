@@ -27,6 +27,7 @@ export type Resource =
   | "audit_log"
   | "company_settings"
   | "task"
+  | "system"
   /** Company-wide analytics endpoints (reports/*) gated on company scope. */
   | "executive_insights"
   | "finance_insights"
@@ -71,8 +72,18 @@ const CEO_GRANTS: Grants = {
 const OPERATIONS_GRANTS: Grants = { ...CEO_GRANTS };
 delete OPERATIONS_GRANTS.user_management;
 
+// Developer: read-only on business data, no money resources, full control of staff.
+const DEVELOPER_GRANTS: Grants = {
+  property: V, property_verification: V, lead: V, client: V, interaction: V, lead_source_stats: V,
+  viewing: V, followup: V, marketing_campaign: V, report_listing: V, report_sales: V,
+  report_marketing: V, report_operations: V, task: V, audit_log: V, company_settings: V,
+  user_management: ["view", "create", "edit", "delete", "assign"],
+  system: V, executive_insights: V, property_insights: V, staff_directory: V,
+};
+
 const ROLE_GRANTS: Record<string, Grants> = {
   CEO: CEO_GRANTS,
+  Developer: DEVELOPER_GRANTS,
   Operations: OPERATIONS_GRANTS,
   Listing: {
     property: VCE,

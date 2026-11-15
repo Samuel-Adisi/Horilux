@@ -6,7 +6,8 @@ import { RequireAuth } from "@/routes/RequireAuth";
 import { RequirePermission } from "@/routes/RequirePermission";
 import { PageFallback } from "@/routes/PageFallback";
 import { NotFoundPage } from "@/routes/NotFoundPage";
-import type { Action, Resource } from "@/features/accounts/permissions";
+import { hasRole, type Action, type Resource } from "@/features/accounts/permissions";
+import { useAuthStore } from "@/features/accounts/store/auth-store";
 
 // Each page is its own chunk so the first load stays small.
 function page<K extends string, T extends Record<K, ComponentType>>(loader: () => Promise<T>, name: K) {
@@ -40,6 +41,13 @@ const ReportsPage = page(() => import("@/features/reports/ReportsPage"), "Report
 const StaffPage = page(() => import("@/features/admin/StaffPage"), "StaffPage");
 const SettingsPage = page(() => import("@/features/admin/SettingsPage"), "SettingsPage");
 const AuditLogPage = page(() => import("@/features/audit/AuditLogPage"), "AuditLogPage");
+const SystemPage = page(() => import("@/features/system/SystemPage"), "SystemPage");
+
+/** The Developer account lands on System; everyone else on the normal home. */
+function Landing() {
+  const user = useAuthStore((s) => s.user);
+  return hasRole(user, "Developer") ? <SystemPage /> : <HomePage />;
+}
 
 function gate(anyOf: [Resource, Action][], el: ReactNode) {
   return <RequirePermission anyOf={anyOf}>{el}</RequirePermission>;
@@ -104,7 +112,7 @@ export default function App() {
                 </Suspense>
               }
             >
-              <Route index element={<HomePage />} />
+              <Route index element={<Landing />} />
               <Route path="tasks" element={gate([["task", "view"]], <TasksPage />)} />
               <Route path="notifications" element={<NotificationsPage />} />
 
@@ -136,6 +144,7 @@ export default function App() {
 
               <Route path="staff" element={gate([["user_management", "view"]], <StaffPage />)} />
               <Route path="audit-log" element={gate([["audit_log", "view"]], <AuditLogPage />)} />
+              <Route path="system" element={gate([["system", "view"]], <SystemPage />)} />
               <Route path="settings" element={<SettingsPage />} />
 
               <Route path="*" element={<LegacyRedirect />} />

@@ -15,6 +15,9 @@ class AuditLogViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         qs = AuditLog.objects.select_related("actor").all()
+        from accounts.developer import is_developer
+        if is_developer(self.request.user):
+            qs = qs.exclude(model_name__in=["Transaction", "Commission", "CommissionRule"])
 
         model_name = self.request.query_params.get("model_name")
         if model_name:

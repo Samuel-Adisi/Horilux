@@ -11,6 +11,7 @@ export interface AuditLog {
   object_id: string;
   old_value: Record<string, unknown> | null;
   new_value: Record<string, unknown> | null;
+  changed_fields?: string[];
   timestamp: string;
 }
 

@@ -13,6 +13,7 @@ import { PAGE_SIZE } from "@/lib/types";
 import { AUDITED_MODELS, useAuditLogs, type AuditLog } from "./api";
 
 function changedFields(log: AuditLog): string[] {
+  if (log.changed_fields) return log.changed_fields;
   const oldV = log.old_value ?? {};
   const newV = log.new_value ?? {};
   const keys = new Set([...Object.keys(oldV), ...Object.keys(newV)]);

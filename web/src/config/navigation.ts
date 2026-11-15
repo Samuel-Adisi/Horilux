@@ -12,6 +12,7 @@ import {
   LineChart,
   MapPin,
   ScrollText,
+  Server,
   Settings,
   Target,
   Trophy,
@@ -103,6 +104,7 @@ export const NAV: NavGroup[] = [
     items: [
       { label: "Staff", path: "/staff", icon: Users, color: "text-orange-400", requires: [["user_management", "view"]] },
       { label: "Audit log", path: "/audit-log", icon: ScrollText, color: "text-slate-300", requires: [["audit_log", "view"]] },
+      { label: "System", path: "/system", icon: Server, color: "text-emerald-300", requires: [["system", "view"]] },
       { label: "Settings", path: "/settings", icon: Settings, color: "text-slate-400" },
     ],
   },
