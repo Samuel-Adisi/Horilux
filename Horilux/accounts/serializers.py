@@ -1,5 +1,7 @@
 from rest_framework import serializers
 from .models import User, Role, Department, UserRole
+from rest_framework.exceptions import PermissionDenied
+from .permissions import has_permission
 
 
 class RoleSerializer(serializers.ModelSerializer):
@@ -91,7 +93,35 @@ class StaffWriteSerializer(serializers.ModelSerializer):
         # unusable password and the account can never log in.
         if self.instance is None and not attrs.get("password"):
             raise serializers.ValidationError({"password": ["A password of at least 8 characters is required."]})
+        if self.instance is not None:
+            self._guard_privileged_changes(attrs)
         return attrs
+
+    def _guard_privileged_changes(self, attrs):
+        # Editing basic details needs user_management:edit. Changing password,
+        # role, department or active status needs user_management:assign
+        # (CEO only), otherwise edit access becomes account takeover.
+        request = self.context.get("request")
+        user = getattr(request, "user", None)
+        if has_permission(user, "assign", "user_management"):
+            return
+        inst = self.instance
+        denied = []
+        if attrs.get("password"):
+            denied.append("password")
+        if "role" in attrs:
+            current_role = inst.user_roles.values_list("role_id", flat=True).first()
+            new_role = attrs["role"].id if attrs["role"] else None
+            if new_role != current_role:
+                denied.append("role")
+        if "department" in attrs:
+            new_dept = attrs["department"].id if attrs["department"] else None
+            if new_dept != inst.department_id:
+                denied.append("department")
+        if "is_active" in attrs and attrs["is_active"] != inst.is_active:
+            denied.append("is_active")
+        if denied:
+            raise PermissionDenied("You are not allowed to change: " + ", ".join(denied) + ".")
 
     def create(self, validated_data):
         password = validated_data.pop("password", None)

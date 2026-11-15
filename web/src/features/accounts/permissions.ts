@@ -113,7 +113,6 @@ const ROLE_GRANTS: Record<string, Grants> = {
     followup: ["view", "edit"],
     transaction: V,
     marketing_campaign: V,
-    user_management: VCE,
     report_operations: V,
     audit_log: V,
     task: ["view", "create", "edit", "delete"],

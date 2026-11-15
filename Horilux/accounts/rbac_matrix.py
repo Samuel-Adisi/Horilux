@@ -87,7 +87,6 @@ RBAC_MATRIX = {
         "followup": {"view", "edit"},
         "transaction": {"view"},
         "marketing_campaign": {"view"},
-        "user_management": {"view", "create", "edit"},  # staff records only
         "report_operations": {"view", "export"},
         "audit_log": {"view"},
         "task": {"view", "create", "edit", "delete"},

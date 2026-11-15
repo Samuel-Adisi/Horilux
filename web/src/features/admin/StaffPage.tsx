@@ -185,7 +185,7 @@ function StaffDrawer({ user, onClose }: { user?: User; onClose: () => void }) {
       subtitle={user ? user.email : "They'll sign in with this email and the password you set."}
       footer={
         <>
-          {user && !isSelf && (user.is_active ? can("user_management", "delete") : can("user_management", "edit")) && (
+          {user && !isSelf && can("user_management", "delete") && (
             <Button variant={user.is_active ? "danger" : "secondary"} className="mr-auto" onClick={() => (user.is_active ? setConfirmDeactivate(true) : toggleActive())} loading={setActive.isPending}>
               {user.is_active ? "Deactivate" : "Reactivate"}
             </Button>

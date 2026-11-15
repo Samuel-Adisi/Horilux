@@ -45,7 +45,7 @@ class StaffViewSet(viewsets.ModelViewSet):
     rbac_action_map = {
         "list": "view", "retrieve": "view", "create": "create",
         "update": "edit", "partial_update": "edit", "destroy": "delete",
-        "deactivate": "delete", "reactivate": "edit",
+        "deactivate": "delete", "reactivate": "assign",
     }
     queryset = (
         User.objects.all()
