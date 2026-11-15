@@ -202,7 +202,27 @@ SCOPE_OVERRIDES[("Sales", "property", "edit")] = "assigned"
 # Marketing reads aggregate lead-source stats company-wide.
 SCOPE_OVERRIDES[("Marketing", "lead_source_stats")] = "company"
 
-# Developer: platform maintainer only. No company business data, no staff management.
-RBAC_MATRIX["Developer"] = {"audit_log": {"view"}, "system": {"view"}}
+# Developer: read-only on business data, NO money resources (transaction,
+# payment_commission, report_finance), full control of staff accounts.
+RBAC_MATRIX["Developer"] = {
+    "property": {"view"},
+    "property_verification": {"view"},
+    "lead": {"view"},
+    "client": {"view"},
+    "interaction": {"view"},
+    "lead_source_stats": {"view"},
+    "viewing": {"view"},
+    "followup": {"view"},
+    "marketing_campaign": {"view"},
+    "report_listing": {"view"},
+    "report_sales": {"view"},
+    "report_marketing": {"view"},
+    "report_operations": {"view"},
+    "task": {"view"},
+    "audit_log": {"view"},
+    "company_settings": {"view"},
+    "user_management": {"view", "create", "edit", "delete", "assign"},
+    "system": {"view"},
+}
 ROLE_SCOPE["Developer"] = "company"
 DEPARTMENT_KEY_FOR_ROLE["Developer"] = None
