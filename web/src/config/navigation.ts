@@ -1,6 +1,6 @@
 import type { LucideIcon } from "lucide-react";
 import {
-  Activity,
+  // Activity,
   BadgeCheck,
   BarChart3,
   Building2,
@@ -67,7 +67,7 @@ export const NAV: NavGroup[] = [
     items: [
       { label: "Leads", path: "/leads", icon: Target, color: "text-teal-400", requires: [["lead", "view"]] },
       { label: "Clients", path: "/clients", icon: UserRound, color: "text-blue-400", requires: [["client", "view"]] },
-      { label: "Activity", path: "/activity", icon: Activity, color: "text-fuchsia-400", requires: [["interaction", "view"]] },
+      // Activity hidden from the sidebar (page and route kept):       { label: "Activity", path: "/activity", icon: Activity, color: "text-fuchsia-400", requires: [["interaction", "view"]] },
     ],
   },
   {
