@@ -80,7 +80,7 @@ RBAC_MATRIX = {
         "property": {"view"},
         "property_verification": {"view"},
         "lead": {"view", "assign"},
-        "client": {"view"},
+        "client": {"view", "create", "edit"},
         "interaction": {"view"},
         "lead_source_stats": {"view"},
         "viewing": {"view", "edit"},

@@ -106,7 +106,7 @@ const ROLE_GRANTS: Record<string, Grants> = {
     property: V,
     property_verification: V,
     lead: ["view", "assign"],
-    client: V,
+    client: VCE,
     interaction: V,
     lead_source_stats: V,
     viewing: ["view", "edit"],
