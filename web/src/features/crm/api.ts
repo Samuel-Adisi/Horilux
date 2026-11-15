@@ -325,6 +325,21 @@ export function useUpdateClient(id: string) {
   });
 }
 
+export function useDeleteClient(id: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      await apiClient.delete(`/clients/${id}/`);
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["clients", "list"] });
+      qc.invalidateQueries({ queryKey: ["clients", "for-lead"] });
+      qc.invalidateQueries({ queryKey: ["interactions"] });
+      qc.invalidateQueries({ queryKey: ["reports"] });
+    },
+  });
+}
+
 export function useInteractions(q: InteractionsQuery, opts: { enabled?: boolean } = {}) {
   return useQuery({
     queryKey: ["interactions", q],

@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from "react";
-import { Link, useParams } from "react-router-dom";
-import { ArrowRight, Handshake, Mail, Pencil, Phone } from "lucide-react";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { ArrowRight, Handshake, Mail, Pencil, Phone, Trash2 } from "lucide-react";
 import { Page, PageHeader } from "@/components/ui/page";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { DescriptionList, ErrorState, Panel, Skeleton } from "@/components/ui/display";
@@ -11,7 +11,7 @@ import { useDocumentTitle } from "@/hooks/use-document-title";
 import { getErrorMessage } from "@/lib/api-client";
 import { formatDate, formatMoney } from "@/lib/format";
 import { toast } from "@/lib/toast";
-import { useClient, useUpdateClient, type Client } from "../api";
+import { useClient, useDeleteClient, useUpdateClient, type Client } from "../api";
 import { ActivityTimeline } from "../components/ActivityTimeline";
 import { LeadViewingsPanel } from "../components/LeadViewingsPanel";
 import { FollowUpsPanel } from "../components/FollowUpsPanel";
@@ -39,6 +39,7 @@ export function ClientDetailPage() {
 function ClientView({ client }: { client: Client }) {
   const can = useCan();
   const [editing, setEditing] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   return (
     <Page>
@@ -56,6 +57,11 @@ function ClientView({ client }: { client: Client }) {
             {can("client", "edit") && (
               <Button icon={<Pencil />} onClick={() => setEditing(true)}>
                 Edit
+              </Button>
+            )}
+            {can("client", "delete") && (
+              <Button variant="danger" icon={<Trash2 />} onClick={() => setDeleting(true)}>
+                Delete
               </Button>
             )}
           </>
@@ -101,7 +107,48 @@ function ClientView({ client }: { client: Client }) {
       </div>
 
       {editing && <EditClientDialog client={client} onClose={() => setEditing(false)} />}
+      {deleting && <DeleteClientDialog client={client} onClose={() => setDeleting(false)} />}
     </Page>
+  );
+}
+
+function DeleteClientDialog({ client, onClose }: { client: Client; onClose: () => void }) {
+  const remove = useDeleteClient(client.id);
+  const navigate = useNavigate();
+  const [error, setError] = useState<string | null>(null);
+
+  async function confirm() {
+    try {
+      await remove.mutateAsync();
+      toast.success("Client deleted");
+      navigate("/clients", { replace: true });
+    } catch (err) {
+      setError(getErrorMessage(err, "Couldn't delete the client."));
+    }
+  }
+
+  return (
+    <Dialog
+      open
+      onClose={onClose}
+      title="Delete client"
+      footer={
+        <>
+          <Button onClick={onClose}>Cancel</Button>
+          <Button variant="danger" loading={remove.isPending} onClick={confirm}>
+            Delete client
+          </Button>
+        </>
+      }
+    >
+      <div className="space-y-4">
+        <FormError message={error} />
+        <p className="text-sm text-ink-muted">
+          Delete <span className="font-semibold text-ink">{client.name}</span>? This also deletes their activity log, viewings, follow-ups and offers. This can't be undone.
+        </p>
+        <p className="text-sm text-ink-subtle">Clients with transactions can't be deleted.</p>
+      </div>
+    </Dialog>
   );
 }
 

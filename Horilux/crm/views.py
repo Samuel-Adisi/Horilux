@@ -163,6 +163,21 @@ class ClientViewSet(viewsets.ModelViewSet):
         # Default to the creator so Sales (assigned scope) can see what they create.
         serializer.save(assigned_agent=serializer.validated_data.get("assigned_agent") or self.request.user)
 
+    def destroy(self, request, *args, **kwargs):
+        from django.db.models import ProtectedError
+        from rest_framework import status
+        from rest_framework.response import Response
+
+        client = self.get_object()
+        try:
+            client.delete()
+        except ProtectedError:
+            return Response(
+                {"detail": "This client has transactions and can't be deleted."},
+                status=status.HTTP_409_CONFLICT,
+            )
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 class InteractionViewSet(viewsets.ModelViewSet):
     serializer_class = InteractionSerializer
