@@ -44,7 +44,7 @@ const ROLE_GRANTS: Record<string, Grants> = {
   CEO: {
     property: ["view", "create", "edit", "delete", "approve", "publish"],
     property_verification: ["view", "edit", "approve"],
-    lead: ["view", "edit", "assign"],
+    lead: ["view", "edit", "assign", "delete"],
     client: ["view", "create", "edit", "delete"],
     interaction: V,
     lead_source_stats: V,
@@ -105,7 +105,7 @@ const ROLE_GRANTS: Record<string, Grants> = {
   Operations: {
     property: V,
     property_verification: V,
-    lead: ["view", "edit", "assign"],
+    lead: ["view", "edit", "assign", "delete"],
     client: ["view", "create", "edit", "delete"],
     interaction: V,
     lead_source_stats: V,

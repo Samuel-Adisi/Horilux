@@ -21,7 +21,7 @@ RBAC_MATRIX = {
     "CEO": {
         "property": {"view", "create", "edit", "delete", "approve", "publish", "export"},
         "property_verification": {"view", "edit", "approve"},
-        "lead": {"view", "edit", "assign", "export"},
+        "lead": {"view", "edit", "assign", "delete", "export"},
         "client": {"view", "create", "edit", "delete", "export"},
         "interaction": {"view", "export"},
         "lead_source_stats": {"view", "export"},
@@ -79,7 +79,7 @@ RBAC_MATRIX = {
     "Operations": {
         "property": {"view"},
         "property_verification": {"view"},
-        "lead": {"view", "edit", "assign"},
+        "lead": {"view", "edit", "assign", "delete"},
         "client": {"view", "create", "edit", "delete"},
         "interaction": {"view"},
         "lead_source_stats": {"view"},

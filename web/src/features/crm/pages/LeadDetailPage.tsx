@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { ArrowRight, Mail, MoreHorizontal, Pencil, Phone, RotateCcw, UserPlus, UserRoundCheck, XCircle } from "lucide-react";
+import { ArrowRight, Mail, MoreHorizontal, Pencil, Phone, RotateCcw, Trash2, UserPlus, UserRoundCheck, XCircle } from "lucide-react";
 import { Page, PageHeader } from "@/components/ui/page";
 import { Button } from "@/components/ui/button";
 import { DescriptionList, ErrorState, Panel, Skeleton } from "@/components/ui/display";
@@ -22,6 +22,7 @@ import {
   useAssignLead,
   useClientForLead,
   useConvertLead,
+  useDeleteLead,
   useLead,
   useTransitionLead,
   type Lead,
@@ -92,6 +93,20 @@ function LeadView({ lead }: { lead: Lead }) {
   const [assigning, setAssigning] = useState(false);
   const [assignee, setAssignee] = useState(lead.assigned_agent ?? "");
   const [confirmLost, setConfirmLost] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const del = useDeleteLead(lead.id);
+
+  async function doDelete() {
+    try {
+      await del.mutateAsync();
+      toast.success("Lead deleted");
+      navigate("/leads");
+    } catch (err) {
+      toast.error("Couldn't delete the lead", getErrorMessage(err));
+    } finally {
+      setConfirmDelete(false);
+    }
+  }
 
   const canEdit = can("lead", "edit");
   const next = LEAD_NEXT[lead.status];
@@ -204,6 +219,18 @@ function LeadView({ lead }: { lead: Lead }) {
                         Reopen lead
                       </MenuItem>
                     )}
+                    {can("lead", "delete") && (
+                      <MenuItem
+                        icon={<Trash2 />}
+                        tone="danger"
+                        onClick={() => {
+                          close();
+                          setConfirmDelete(true);
+                        }}
+                      >
+                        Delete lead
+                      </MenuItem>
+                    )}
                   </>
                 )}
               </Menu>
@@ -310,6 +337,16 @@ function LeadView({ lead }: { lead: Lead }) {
         confirmLabel="Mark lost"
         tone="danger"
         loading={transition.isPending}
+      />
+      <ConfirmDialog
+        open={confirmDelete}
+        onClose={() => setConfirmDelete(false)}
+        onConfirm={doDelete}
+        title="Delete this lead permanently?"
+        description="This removes the lead and its activity history for good and cannot be undone. A client already created from this lead is kept. If the lead is just not going anywhere, use Mark as lost instead."
+        confirmLabel="Delete lead"
+        tone="danger"
+        loading={del.isPending}
       />
       <Dialog
         open={assigning}
