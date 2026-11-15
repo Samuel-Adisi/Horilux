@@ -28,8 +28,8 @@ function useSystemStatus() {
 function Line({ label, value }: { label: string; value: ReactNode }) {
   return (
     <div className="flex justify-between gap-4">
-      <span className="text-ink-muted">{label}@@/span>
-      <span className="text-right">{value}@@/span>
+      <span className="text-ink-muted">{label}</span>
+      <span className="text-right">{value}</span>
     </div>
   );
 }
@@ -39,8 +39,8 @@ function Card({ title, ok, children }: { title: string; ok?: boolean; children: 
     <Panel>
       <div className="space-y-2 p-4 text-sm">
         <div className="flex items-center justify-between">
-          <h2 className="font-semibold">{title}@@/h2>
-          {ok === undefined ? null : @@Tag tone={ok ? "success" : "danger"}>{ok ? "OK" : "Problem"}@@/Tag>}
+          <h2 className="font-semibold">{title}</h2>
+          {ok === undefined ? null : <Tag tone={ok ? "success" : "danger"}>{ok ? "OK" : "Problem"}</Tag>}
         </div>
         {children}
       </div>
@@ -87,14 +87,14 @@ export function SystemPage() {
           </div>
           <Panel>
             <div className="p-4">
-              <h2 className="pb-2 text-sm font-semibold">Record counts@@/h2>
+              <h2 className="pb-2 text-sm font-semibold">Record counts</h2>
               <div className="grid gap-x-8 md:grid-cols-2 xl:grid-cols-3">
                 {Object.entries(d.row_counts)
                   .sort(([a], [b]) => a.localeCompare(b))
                   .map(([k, v]) => (
                     <div key={k} className="flex justify-between border-b border-white/10 py-1 text-sm">
-                      <span className="text-ink-muted">{k}@@/span>
-                      <span>{v ?? "n/a"}@@/span>
+                      <span className="text-ink-muted">{k}</span>
+                      <span>{v ?? "n/a"}</span>
                     </div>
                   ))}
               </div>
@@ -102,13 +102,13 @@ export function SystemPage() {
           </Panel>
           <Panel>
             <div className="p-4">
-              <h2 className="pb-2 text-sm font-semibold">Roles and permissions@@/h2>
+              <h2 className="pb-2 text-sm font-semibold">Roles and permissions</h2>
               {Object.entries(d.rbac_matrix).map(([role, grants]) => (
                 <div key={role} className="py-2">
-                  <div className="text-sm font-semibold">{role}@@/div>
+                  <div className="text-sm font-semibold">{role}</div>
                   <div className="flex flex-wrap gap-1 pt-1">
                     {Object.entries(grants).map(([res, acts]) => (
-                      <Tag key={res} tone="neutral">{res + ": " + acts.join(", ")}@@/Tag>
+                      <Tag key={res} tone="neutral">{res + ": " + acts.join(", ")}</Tag>
                     ))}
                   </div>
                 </div>
