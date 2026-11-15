@@ -13,6 +13,7 @@ class Command(BaseCommand):
         parser.add_argument("--email", required=True)
         parser.add_argument("--first-name", default="Developer")
         parser.add_argument("--last-name", default="")
+        parser.add_argument("--convert", action="store_true", help="Convert an existing account into the Developer account")
 
     def handle(self, *args, **opts):
         try:
@@ -29,7 +30,7 @@ class Command(BaseCommand):
             raise CommandError("A Developer account already exists: " + ", ".join(others))
 
         user = User.objects.filter(email__iexact=email).first()
-        if user is not None and not user.user_roles.filter(role=role).exists():
+        if user is not None and not opts["convert"] and not user.user_roles.filter(role=role).exists():
             raise CommandError("That email belongs to an existing non-developer account. Use a new email.")
 
         pw = getpass("Password (12+ chars): ")
@@ -47,5 +48,6 @@ class Command(BaseCommand):
         user.is_superuser = False
         user.is_active = True
         user.save()
+        UserRole.objects.filter(user=user).exclude(role=role).delete()
         UserRole.objects.get_or_create(user=user, role=role)
         self.stdout.write(self.style.SUCCESS("Developer account ready: " + email))
