@@ -22,10 +22,15 @@ const FACT_ICONS: Record<string, typeof BedDouble> = {
   "Status": Tag,
 };
 
-function formatPrice(price: string, _currency: string) {
+const CURRENCY_SYMBOLS: Record<string, string> = { GHS: "GH₵", USD: "$", EUR: "€", GBP: "£" };
+function currencySymbol(currency: string) {
+  return CURRENCY_SYMBOLS[currency] || currency;
+}
+
+function formatPrice(price: string, currency: string) {
   const n = Number(price);
   if (!price || Number.isNaN(n) || n <= 0) return "Price on request";
-  return "GH₵ " + n.toLocaleString();
+  return currencySymbol(currency) + " " + n.toLocaleString();
 }
 
 function ShareButton({ id, title }: { id: string | number; title: string }) {
@@ -613,7 +618,7 @@ export default function PropertyDetailPage() {
                   <div>
                     <label htmlFor="enq-offer" className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-neutral-500">Make an offer</label>
                     <div className="relative">
-                      <span className="pointer-events-none absolute inset-y-0 left-4 flex items-center text-sm font-semibold text-neutral-400">GH₵</span>
+                      <span className="pointer-events-none absolute inset-y-0 left-4 flex items-center text-sm font-semibold text-neutral-400">{currencySymbol(property.currency)}</span>
                       <input id="enq-offer" type="number" inputMode="decimal" min="1" step="any" placeholder="Amount" value={offerAmount} onChange={(e) => setOfferAmount(e.target.value)} className="h-12 block w-full min-w-0 appearance-none rounded-xl border border-neutral-200 bg-neutral-50 px-4 text-base text-neutral-900 placeholder:text-neutral-400 transition scroll-mb-32 focus:border-brand-blue focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand-blue/10 [&::-webkit-date-and-time-value]:text-left pl-16" />
                     </div>
                   </div>

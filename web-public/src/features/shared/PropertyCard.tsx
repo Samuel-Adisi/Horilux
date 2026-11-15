@@ -6,10 +6,12 @@ import { useToggleSavedProperty } from "@/features/favorites/hooks/use-saved-pro
 
 const PERIOD: Record<string, string> = { daily: "/ day", monthly: "/ month", yearly: "/ year" };
 
-function formatPrice(price: string) {
+const CURRENCY_SYMBOLS: Record<string, string> = { GHS: "GH₵", USD: "$", EUR: "€", GBP: "£" };
+
+function formatPrice(price: string, currency: string) {
   const n = Number(price);
   if (!price || Number.isNaN(n) || n <= 0) return "Price on request";
-  return "GH₵ " + n.toLocaleString();
+  return (CURRENCY_SYMBOLS[currency] || currency) + " " + n.toLocaleString();
 }
 
 export default function PropertyCard({
@@ -55,7 +57,7 @@ export default function PropertyCard({
   return (
     <Link
       to={"/listings/" + property.id}
-      aria-label={property.title + ", " + formatPrice(property.price) + (period ? " " + period : "")}
+      aria-label={property.title + ", " + formatPrice(property.price, property.currency) + (period ? " " + period : "")}
       className={"group relative block overflow-hidden bg-neutral-200 " + aspect}
     >
       {hasImage ? (
@@ -125,7 +127,7 @@ export default function PropertyCard({
         <p className={"truncate font-serif uppercase leading-snug tracking-wide " + titleClass}>{property.title}</p>
         <div className="mt-2.5 flex flex-wrap items-end justify-between gap-x-4 gap-y-2">
           <p className={"font-serif " + priceClass}>
-            {formatPrice(property.price)}
+            {formatPrice(property.price, property.currency)}
             {period && <span className="ml-1.5 font-sans text-xs font-medium text-white/75">{period}</span>}
           </p>
           {specs.length > 0 && (
