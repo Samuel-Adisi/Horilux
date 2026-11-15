@@ -41,15 +41,15 @@ RBAC_MATRIX = {
         "task": {"view", "create", "edit", "delete"},
     },
     "Listing": {
-        "property": {"view", "create", "edit", "approve"},
+        "property": {"view", "create", "edit", "delete"},
         "property_verification": {"view", "create", "edit"},
-        "lead": {"view", "edit"},
+        "lead": {"view", "create", "edit", "assign"},
         "report_listing": {"view"},
         "task": {"view", "edit"},
     },
     "Sales": {
-        "property": {"view"},
-        "lead": {"view", "create", "edit"},
+        "property": {"view", "create", "edit", "delete"},
+        "lead": {"view", "create", "edit", "assign"},
         "client": {"view", "create", "edit"},
         "interaction": {"view", "create", "edit"},
         "viewing": {"view", "create", "edit"},
@@ -68,8 +68,8 @@ RBAC_MATRIX = {
         "task": {"view", "edit"},
     },
     "Finance": {
-        "property": {"view"},
-        "lead": {"view"},
+        "property": {"view", "create", "edit", "delete"},
+        "lead": {"view", "create", "edit", "assign"},
         "client": {"view"},
         "transaction": {"view", "create", "edit", "delete"},
         "payment_commission": {"view", "create", "edit", "approve"},
@@ -77,7 +77,7 @@ RBAC_MATRIX = {
         "task": {"view", "edit"},
     },
     "Operations": {
-        "property": {"view"},
+        "property": {"view", "edit", "approve", "publish"},
         "property_verification": {"view"},
         "lead": {"view", "edit", "assign", "delete"},
         "client": {"view", "create", "edit", "delete"},
@@ -198,3 +198,6 @@ def sync_rbac(Department, Role, Permission, RolePermission, log=None):
 # Listing and Finance only ever see the leads assigned to them.
 SCOPE_OVERRIDES[("Listing", "lead")] = "assigned"
 SCOPE_OVERRIDES[("Finance", "lead")] = "assigned"
+
+# Every agent role browses and manages the whole property catalogue.
+SCOPE_OVERRIDES[("Listing", "property")] = "company"
